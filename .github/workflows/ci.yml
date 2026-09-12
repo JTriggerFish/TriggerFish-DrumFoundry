@@ -50,7 +50,7 @@ jobs:
         run: Add-Content -LiteralPath $env:GITHUB_ENV -Value "MSYS2_ROOT=$env:MSYS_LOCATION"
       - name: Install Linux tools
         if: runner.os == 'Linux'
-        run: sudo apt-get update; sudo apt-get install -y ninja-build
+        run: sudo apt-get update; sudo apt-get install -y ninja-build libasound2-dev
       - name: Install macOS tools
         if: runner.os == 'macOS'
         run: brew list ninja || brew install ninja
@@ -73,6 +73,16 @@ jobs:
         with:
           name: clap-${{ matrix.os }}
           path: dist/clap/*.zip
+          if-no-files-found: error
+      - name: Standalone build and hardware-free host tests
+        run: ./dev.ps1 standalone-test
+      - name: Package standalone preview
+        run: ./dev.ps1 standalone-dist
+      - name: Upload standalone preview
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: standalone-${{ matrix.os }}
+          path: dist/standalone/*.zip
           if-no-files-found: error
       - name: Install optional development Python
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9

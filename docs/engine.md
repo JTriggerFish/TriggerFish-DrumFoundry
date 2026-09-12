@@ -36,8 +36,8 @@ supplied values are preserved, not replaced. Explicit null/invalid objects are
 errors. Expanded documents remain independent of later default changes.
 Decimal endpoints are checked at DSP float precision, with no broad tolerance
 or clamping. Choice/boolean values must still be exact integers in JSON.
-Preparation-time validation and host automation will be expanded together when
-the CLAP adapter is added. This C API is a development interface, not a released
+Preparation-time validation and host automation share the CLAP adapter's native
+parameter contract. This C API is a development interface, not a released
 binary compatibility promise.
 
 Optional native host-output protection is implemented separately in
@@ -53,8 +53,9 @@ unlimited, and the future UI must expose bypass, latency and gain reduction.
 - Prepare safe audio-thread publication of structural changes, retirement of old
   state, parameter smoothing and sample-accurate host events.
 - Full CLAP parameter editing and multiple-editor lifecycle; Visage editor and
-  native standalone audio/MIDI device management. The initial headless CLAP
-  state/gesture/limiter integration is documented in [clap.md](clap.md).
+  graphical device management. The headless CLAP state/gesture/limiter integration
+  is documented in [clap.md](clap.md), and the implemented console audio/MIDI host
+  in [standalone.md](standalone.md).
 
 The current runtime still embeds storage for each available recipe inside an
 owned session. This is not a global instance limit, but can be reduced to active

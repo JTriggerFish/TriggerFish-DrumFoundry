@@ -20,11 +20,15 @@ file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/generated")
 file(CONFIGURE OUTPUT "${PROJECT_BINARY_DIR}/generated/builtin_presets.hpp"
   CONTENT "${preset_header}" @ONLY)
 
-add_library(drumfoundry_clap MODULE
+add_library(drumfoundry_clap_objects OBJECT
   adapters/clap/factory.cpp adapters/clap/plugin.cpp adapters/clap/parameters.cpp
   adapters/clap/processing.cpp adapters/clap/state.cpp adapters/clap/extensions.cpp)
-target_include_directories(drumfoundry_clap PRIVATE "${PROJECT_BINARY_DIR}/generated")
-target_link_libraries(drumfoundry_clap PRIVATE drumfoundry_engine drumfoundry_output drumfoundry_clap_sdk)
+target_include_directories(drumfoundry_clap_objects PRIVATE "${PROJECT_BINARY_DIR}/generated")
+target_link_libraries(drumfoundry_clap_objects PUBLIC drumfoundry_engine drumfoundry_output drumfoundry_clap_sdk)
+set_target_properties(drumfoundry_clap_objects PROPERTIES
+  CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN YES)
+add_library(drumfoundry_clap MODULE)
+target_link_libraries(drumfoundry_clap PRIVATE drumfoundry_clap_objects)
 set_target_properties(drumfoundry_clap PROPERTIES PREFIX "" OUTPUT_NAME "TriggerFishDrumFoundry"
   CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN YES)
 if(APPLE)

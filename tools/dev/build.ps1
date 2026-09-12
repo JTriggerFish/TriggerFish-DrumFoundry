@@ -1,12 +1,13 @@
 # Native builds have no Python, Node, Wasm, Rack or GUI dependency.
-function Build-Native([bool]$WithClap = $false) {
+function Build-Native([bool]$WithClap = $false, [bool]$WithStandalone = $false) {
     Initialize-NativeEnvironment
     $arguments = @('--preset','native')
     if ([Environment]::OSVersion.Platform -eq 'Win32NT') {
         $arguments = @('--preset','mingw')
     }
     $clapOption = if ($WithClap) { 'ON' } else { 'OFF' }
-    Invoke-Checked cmake ($arguments + @("-DDRUMFOUNDRY_BUILD_CLAP=$clapOption"))
+    $standaloneOption = if ($WithStandalone) { 'ON' } else { 'OFF' }
+    Invoke-Checked cmake ($arguments + @("-DDRUMFOUNDRY_BUILD_CLAP=$clapOption", "-DDRUMFOUNDRY_BUILD_STANDALONE=$standaloneOption"))
     Invoke-Checked cmake @('--build','build/native','--parallel',"$Jobs")
 }
 

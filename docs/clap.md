@@ -86,6 +86,7 @@ clap-validator validate build/native/TriggerFishDrumFoundry.clap
 
 Real DAW smoke testing remains necessary before treating this as a release.
 
-Next: independent host validation and real-DAW smoke tests, then the Visage editor,
-shared native editing helpers and standalone audio/MIDI device management. The
-existing C API and Python render/fitting paths remain raw and limiter-free.
+The [console standalone](standalone.md) now hosts this same adapter with native
+audio/MIDI devices. Next: real-DAW smoke tests, the Visage editor, shared native
+editing helpers and graphical device management. The existing C API and Python
+render/fitting paths remain raw and limiter-free.

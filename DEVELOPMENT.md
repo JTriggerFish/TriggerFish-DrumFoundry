@@ -26,6 +26,9 @@ Git configuration or install system tools. Configure your own Git identity.
 | `./dev.ps1 clap` | Build the optional headless CLAP preview |
 | `./dev.ps1 clap-test` | DSP tests plus dynamic plugin/host integration tests |
 | `./dev.ps1 clap-dist` | Package CLAP preview under `dist/clap` |
+| `./dev.ps1 standalone` | Build the optional console audio/MIDI application |
+| `./dev.ps1 standalone-test` | Native tests plus hardware-free standalone checks |
+| `./dev.ps1 standalone-dist` | Package standalone under `dist/standalone` |
 | `./dev.ps1 setup` | Locked Python environment and local Git hooks |
 | `./dev.ps1 python-test` | Native binding, fitting and analysis tests |
 | `./dev.ps1 test-fitting-tools` | Alias for the development tests |
@@ -39,7 +42,7 @@ test interpreter override. No command deletes build directories or user presets.
 Git development branch: `dev`. CI builds and tests Windows/MinGW, Linux,
 macOS ARM64 and macOS x64. Each native build/package precedes the optional Python
 job steps, demonstrating that Python is not required to build the engine.
-Engine and CLAP preview artifacts are uploaded per runner; tagged public release
+Engine, CLAP and standalone preview artifacts are uploaded per runner; tagged public release
 automation and application bundles remain future work. The original VCV repo only had a
 CI workflow, not a separate tagged-release workflow.
 

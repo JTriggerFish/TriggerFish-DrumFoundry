@@ -4,8 +4,8 @@ A constructive modular percussion synthesizer: cymbals, gongs, kicks, membranes
 and snares built from reusable native DSP components.
 
 This repository contains the **native engine, offline development tools and an
-optional headless CLAP preview**. The standalone application and Visage editor
-are not implemented yet.
+optional headless CLAP preview**. A console-controlled standalone is available
+for audio/MIDI device testing. The Visage editor is not implemented yet.
 
 ## Build
 
@@ -28,9 +28,17 @@ Pinned, hash-checked Eigen and JSON headers are downloaded on first configure.
 
 Builds `TriggerFishDrumFoundry.clap` with six embedded presets, MIDI strikes,
 host controls and project-state saving. The optional output limiter defaults to
-on with 1 ms latency, reported to the host. No GUI or standalone wrapper yet;
+on with 1 ms latency, reported to the host. No plugin GUI yet;
 use a host's generic parameter editor. See [CLAP integration](docs/clap.md).
-The CLAP SDK is fetched only for this build; Python remains unnecessary.
+The CLAP SDK is fetched only for host builds; Python remains unnecessary.
+
+## Standalone device testing
+
+`./dev.ps1 standalone-test` builds the same CLAP adapter into a small native
+audio/MIDI application. Windows includes ASIO and WASAPI; MIDI inputs and device
+buffers are selectable. Run with `--help` for options; see
+[standalone.md](docs/standalone.md). This first host is console-controlled, not
+the planned Visage editor. Ordinary engine and CLAP-only builds remain separate.
 
 ## Optional Python rendering and fitting
 
