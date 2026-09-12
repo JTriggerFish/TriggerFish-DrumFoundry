@@ -15,7 +15,7 @@ test = ["pytest>=8", "scipy>=1.14"]
 
 [dependency-groups]
 dev = ["pytest>=8.0", "scipy>=1.14", "plotly>=6.0", "black[jupyter]>=26.5.1", "pre-commit>=4.0", "nbstripout>=0.9.1"]
-perceptual-fit = ["torch>=2.8", "auraloss==0.4.0", "librosa==0.11.0"]
+perceptual-fit = ["torch>=2.8", "auraloss==0.4.0", "librosa==0.11.0", "wavespin @ git+https://github.com/OverLordGoldDragon/wavespin.git@5ff1b72785703cd09d4b1bf4b5f52ffcc8a926ae"]
 
 [tool.setuptools.packages.find]
 where = ["python"]

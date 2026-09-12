@@ -2242,6 +2242,7 @@ perceptual-fit = [
     { name = "auraloss" },
     { name = "librosa" },
     { name = "torch" },
+    { name = "wavespin" },
 ]
 
 [package.metadata]
@@ -2267,6 +2268,7 @@ perceptual-fit = [
     { name = "auraloss", specifier = "==0.4.0" },
     { name = "librosa", specifier = "==0.11.0" },
     { name = "torch", specifier = ">=2.8" },
+    { name = "wavespin", git = "https://github.com/OverLordGoldDragon/wavespin.git?rev=5ff1b72785703cd09d4b1bf4b5f52ffcc8a926ae" },
 ]
 
 [[package]]
@@ -2317,6 +2319,17 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/52/5c/ba82fdd0da13ade01453fc08277a70abc79128101319549f55f2e13f8f83/virtualenv-21.7.9.tar.gz", hash = "sha256:a7e42d81d779dec8afd7dc4be71640fb959ea861bccfa5980cb4ad9f92e30675", size = 5348882, upload-time = "2026-09-09T01:03:27.752Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/85/fc/888c80b8da917bfc48a41887eca244f995d190bd3c01175727089fcaf27e/virtualenv-21.7.9-py3-none-any.whl", hash = "sha256:ba3b0bb41063c848d84d76a9fe3fb7711aaa0f2fe78708e8f3cd9714770e4eac", size = 5324667, upload-time = "2026-09-09T01:03:26.023Z" },
+]
+
+[[package]]
+name = "wavespin"
+version = "0.8.0"
+source = { git = "https://github.com/OverLordGoldDragon/wavespin.git?rev=5ff1b72785703cd09d4b1bf4b5f52ffcc8a926ae#5ff1b72785703cd09d4b1bf4b5f52ffcc8a926ae" }
+dependencies = [
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "scipy", version = "1.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
 
 [[package]]

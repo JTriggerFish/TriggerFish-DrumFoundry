@@ -5,6 +5,25 @@
 #include <stdexcept>
 
 namespace drumfoundry {
+namespace {
+// Preserve supplied JSON numbers exactly; fill only absent values from the
+// same authoritative descriptors used by default patches and control metadata.
+void ExpandDefaults(const detail::Session &session, Json &patch) {
+  for (auto &node : patch.at("nodes")) {
+    if (!node.contains("parameters"))
+      node["parameters"] = Json::object();
+    if (!node.at("parameters").is_object())
+      throw std::invalid_argument("Invalid parameters object");
+  }
+  for (std::size_t i = 0; i < detail::ParameterCount(session); ++i) {
+    const auto &d = *detail::Description(session, i);
+    for (auto &node : patch.at("nodes"))
+      if (node.at("id") == ParameterOwner(session.recipe, d.key) &&
+          !node.at("parameters").contains(d.key))
+        node["parameters"][d.key] = d.defaultValue;
+  }
+}
+} // namespace
 Json &Instrument(Json &document) {
   return document.at("schema") == "triggerfish.percussion.fit/v1"
              ? document.at("instrument")
@@ -27,14 +46,13 @@ Json ParseJson(const char *text) {
     return true;
   });
 }
-void ApplyPatch(detail::Session &session, const Json &patch) {
+void ApplyPatch(detail::Session &session, Json &patch) {
   ValidateTopology(patch, session.recipe);
+  ExpandDefaults(session, patch);
   std::map<std::string, std::size_t> indices;
   for (std::size_t i = 0; i < detail::ParameterCount(session); ++i)
     indices.emplace(detail::Description(session, i)->key, i);
   for (const auto &node : patch.at("nodes")) {
-    if (!node.at("parameters").is_object())
-      throw std::invalid_argument("Invalid parameters object");
     for (const auto &[key, value] : node.at("parameters").items()) {
       const auto found = indices.find(key);
       if (found == indices.end() ||
@@ -81,10 +99,7 @@ Json DefaultPatch(const std::string &key) {
   patch["outputs"] = {{"mono", patch["connections"].back()["to"]}};
   for (auto &node : patch["nodes"])
     node["parameters"] = Json::object();
-  for (const auto &d : DescribeParameters(*session))
-    for (auto &node : patch["nodes"])
-      if (node["id"] == d["owner"])
-        node["parameters"][d["key"].get<std::string>()] = d["default"];
+  ExpandDefaults(*session, patch);
   for (std::size_t i = 0; i < patch["connections"].size(); ++i) {
     patch["connections"][i]["id"] = "route-" + std::to_string(i);
     patch["connections"][i]["enabled"] = true;

@@ -67,6 +67,8 @@ def checked(lib, result):
     if not result:
         message = lib.df_last_error()
         raise ValueError(
-            message.decode("utf8") if message else "Native operation failed"
+            message.decode("utf8", errors="replace")
+            if message
+            else "Native operation failed"
         )
     return result

@@ -7,7 +7,17 @@ the same voice that the future CLAP adapter will use. There is no JS renderer.
 `triggerfish_percussion` retains selected existing numerical modules: STFT,
 power envelopes, band-decay shape, short-drum and metallic losses, modal texture,
 and optional perceptual losses. These are engineering diagnostics, not proof
-that a fit sounds right. Optional perceptual packages are a separate uv group.
+that a fit sounds right. Optional perceptual packages are a separate uv group:
+
+```powershell
+uv sync --locked --group dev --group perceptual-fit
+./dev.ps1 perceptual-test
+```
+
+This includes auraloss and the same commit-pinned WaveSpin implementation used
+by the original project. The opt-in tests check both backends execute and prefer
+identical audio over a changed signal. They deliberately are not silently skipped
+when dependencies are missing, and are not required by normal builds/tests.
 
 ```python
 from pathlib import Path

@@ -81,8 +81,8 @@ std::array<CrashMacroDescriptor, CrashMacroCount> BuildDescriptors() {
       Linear("field_phase_tilt", "Blur tilt (1 kHz pivot)", "oct/oct", -2.f, 2.f,
              fit.fieldPhaseTilt));
   set(CrashMacro::FieldDistribution,
-      Linear("field_distribution", "Ring character", "", 0.f, 4.f,
-             float(fit.fieldDistribution)));
+      {"field_distribution", "Ring character", "", 0.f, 4.f,
+       float(fit.fieldDistribution), CrashMacroScale::Choice});
   set(CrashMacro::FieldDoubletSplit,
       Linear("field_doublet_split", "Beat rate", "Hz", 0.f, 80.f,
                   fit.fieldDoubletSplitHz));

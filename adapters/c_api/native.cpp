@@ -1,6 +1,7 @@
 #include "native.h"
 #include "runtime/voice.hpp"
 #include <cmath>
+#include <cstdio>
 #include <exception>
 #include <string>
 
@@ -8,16 +9,17 @@ struct df_voice {
   drumfoundry::Voice voice;
 };
 namespace {
-thread_local std::string error, text;
+thread_local char error[512]{};
+thread_local std::string text;
 template <class Action> int Checked(Action action) noexcept {
   try {
     action();
-    error.clear();
+    error[0] = '\0';
     return 1;
   } catch (const std::exception &e) {
-    error = e.what();
+    std::snprintf(error, sizeof(error), "%s", e.what());
   } catch (...) {
-    error = "Unknown native engine error";
+    std::snprintf(error, sizeof(error), "%s", "Unknown native engine error");
   }
   return 0;
 }
@@ -27,7 +29,7 @@ void Require(const void *pointer) {
 }
 } // namespace
 extern "C" {
-const char *df_last_error() { return error.c_str(); }
+const char *df_last_error() { return error; }
 df_voice *df_create(float sampleRate, const char *document) {
   df_voice *result = nullptr;
   Checked([&] {
@@ -36,7 +38,10 @@ df_voice *df_create(float sampleRate, const char *document) {
   });
   return result;
 }
-void df_destroy(df_voice *p) { delete p; }
+void df_destroy(df_voice *p) {
+  delete p;
+  error[0] = '\0';
+}
 int df_configure(df_voice *p, const char *document) {
   return Checked([&] {
     Require(p);
@@ -68,18 +73,19 @@ const char *df_default_patch(const char *recipe) {
              : nullptr;
 }
 int df_reset(df_voice *p) {
-  if (!p)
-    return 0;
-  p->voice.Reset();
-  return 1;
+  return Checked([&] {
+    Require(p);
+    p->voice.Reset();
+  });
 }
 int df_default_strike(df_voice *p, df_strike *destination) {
-  if (!p || !destination)
-    return 0;
-  const auto &e = p->voice.Event();
-  *destination = {e.strength,      e.location,   e.hardness, e.implement,
-                  e.contactSpread, e.constraint, e.seed};
-  return 1;
+  return Checked([&] {
+    Require(p);
+    Require(destination);
+    const auto &e = p->voice.Event();
+    *destination = {e.strength,      e.location,   e.hardness, e.implement,
+                    e.contactSpread, e.constraint, e.seed};
+  });
 }
 int df_trigger(df_voice *p, const df_strike *event) {
   return Checked([&] {
@@ -94,15 +100,20 @@ int df_trigger(df_voice *p, const df_strike *event) {
   });
 }
 int df_process(df_voice *p, float *output, uint32_t frames) {
-  if (!p || (!output && frames))
-    return 0;
-  p->voice.Process(output, frames);
-  return 1;
+  return Checked([&] {
+    Require(p);
+    if (frames)
+      Require(output);
+    p->voice.Process(output, frames);
+  });
 }
 int df_set_mute(df_voice *p, float amount) {
-  if (!p || !std::isfinite(amount) || amount < 0 || amount > 1)
-    return 0;
-  p->voice.SetMute(amount);
-  return 1;
+  return Checked([&] {
+    Require(p);
+    if (!std::isfinite(amount) || amount < 0 || amount > 1)
+      throw std::invalid_argument(
+          "Mute must be finite and between zero and one");
+    p->voice.SetMute(amount);
+  });
 }
 }

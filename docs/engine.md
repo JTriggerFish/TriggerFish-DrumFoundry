@@ -30,6 +30,12 @@ immediately by the Python wrapper; NumPy owns each output buffer.
 Topology is a fixed compiled recipe, not a general graph interpreter. The JSON
 contract rejects wrong owners, invalid values, duplicate keys/IDs/routes, unknown
 types/versions, missing/disabled required connections and disconnected outputs.
+Missing node parameters are expanded from the authoritative C++ defaults during
+loading. Returned/saved documents therefore contain every effective parameter;
+supplied values are preserved, not replaced. Explicit null/invalid objects are
+errors. Expanded documents remain independent of later default changes.
+Decimal endpoints are checked at DSP float precision, with no broad tolerance
+or clamping. Choice/boolean values must still be exact integers in JSON.
 Preparation-time validation and host automation will be expanded together when
 the CLAP adapter is added. This C API is a development interface, not a released
 binary compatibility promise.

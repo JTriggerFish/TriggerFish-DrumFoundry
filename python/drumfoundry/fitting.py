@@ -51,11 +51,18 @@ def _coordinates(renderer, document, bounds):
         raise ValueError("Invalid search bounds")
     for k, lo, hi in zip(keys, low, high):
         d = descriptors[k]
-        if d["scale"] >= 2 or lo < d["minimum"] or hi > d["maximum"]:
+        # Match native float endpoint validation without broad epsilon clamps.
+        if (
+            d["scale"] >= 2
+            or abs(lo) > np.finfo(np.float32).max
+            or abs(hi) > np.finfo(np.float32).max
+            or np.float32(lo) < d["minimum"]
+            or np.float32(hi) > d["maximum"]
+        ):
             raise ValueError(f"Invalid continuous search coordinate: {k}")
-        if not lo <= original[k] <= hi:
+        if not np.float32(lo) <= np.float32(original[k]) <= np.float32(hi):
             raise ValueError(f"Starting value outside bounds: {k}")
-    start = (np.array([original[k] for k in keys]) - low) / (high - low)
+    start = np.clip((np.array([original[k] for k in keys]) - low) / (high - low), 0, 1)
     return keys, low, high, start
 
 

@@ -15,6 +15,8 @@ typedef struct df_strike {
 } df_strike;
 // Creation/configuration/JSON functions are non-realtime. Returned strings
 // remain owned by the library; copy them before the next string-returning call.
+// Errors are thread-local, truncated to 511 bytes, and cleared by a successful
+// operation (except df_last_error itself). Valid audio operations do not allocate.
 DF_EXPORT const char *df_last_error(void);
 DF_EXPORT df_voice *df_create(float sample_rate, const char *document);
 DF_EXPORT void df_destroy(df_voice *);

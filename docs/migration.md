@@ -34,11 +34,51 @@ Worst relative RMS difference: **0.0008752 (0.08752%)**, the repeated gong at
 These are numerical migration checks, not a new listening approval of the fits.
 The local report and oracle renders are under ignored `build/parity/`.
 
-The 22 inherited native DSP tests and 66 Python tests passed on Windows/MinGW.
+### Repeatable regression checks
+
+`tests/fixtures/migration-v1.json` preserves temporal and spectral RMS signatures
+from those **legacy model outputs**, alongside the source commit, preset hashes
+(LF-normalized) and full oracle PCM hashes. These are not private recordings.
+The 24 cases run in the ordinary Python suite and CI. A 0.5% relative tolerance
+plus a small floor allows cross-compiler rounding; absolute levels are retained.
+These compact checks detect envelope/colour/gain regressions, but do not prove
+sample-level or perceptual equivalence. Do not regenerate them from new output
+merely to make a failing test pass.
+
+Where the six-second legacy little-endian float32 files are available, reproduce
+the full sample-by-sample comparison without Node or any legacy runtime:
+
+```powershell
+python -m drumfoundry.migration tests/fixtures/migration-v1.json presets build/parity
+```
+
+The command verifies preset/oracle hashes and fails above 0.2% relative RMS. It
+is read-only. Oracle filenames encode preset, rate and repeat flag; the committed
+cases record these explicitly. Reacquiring or replacing an oracle requires the
+pinned original renderer and an explicitly reviewed migration-baseline update.
+
+At the initial extraction checkpoint, the 22 inherited native DSP tests and 66
+Python tests passed on Windows/MinGW.
 Tests include deterministic repeated rendering, arbitrary block partitioning,
 more than four simultaneous voices, parallel independent voices, exact JSON
 round-trip, rejected malformed patches and known-parameter fitting recovery.
 Cross-platform execution is delegated to CI; do not claim it passed until it runs.
+
+### Boundary review corrections
+
+- Partial patches expand missing values into explicit stored C++ defaults;
+  supplied values and fit/reference metadata are preserved.
+- Decimal bounds use float-precision comparison, including fitter bounds. Enum
+  values remain exact integers; Ring character is now correctly a choice.
+- Native error state is updated consistently, with bounded storage and safe
+  Unicode decoding in Python. Valid audio calls do not allocate error strings.
+- WaveSpin is commit-pinned in the optional perceptual dependency group. Both
+  published losses have separate executable smoke tests, including the renderer's
+  floating-point sample-rate representation. Loss formulas are unchanged.
+- Migration signatures and read-only full-PCM comparisons are now source-controlled.
+
+These changes do not retune presets or modify DSP mathematics. Future preset
+editing tools and host/UI lifecycle work remain separate migration stages.
 
 ## Reference design documents
 

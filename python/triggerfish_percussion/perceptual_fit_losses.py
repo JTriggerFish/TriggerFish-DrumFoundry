@@ -73,6 +73,9 @@ class JtfsLoss(ScalarAudioLoss):
         import torch
         from wavespin import TimeFrequencyScattering1D
 
+        if not math.isfinite(rate) or rate <= 0 or int(rate) != rate:
+            raise ValueError("Scattering loss requires an integer sample rate")
+        rate = int(rate)  # Renderer.sample_rate is a float, even for e.g. 48000 Hz.
         self.torch, self.rate, self.device = torch, rate, device
         self.length = len(reference)
         self.analysis_rate = 16000

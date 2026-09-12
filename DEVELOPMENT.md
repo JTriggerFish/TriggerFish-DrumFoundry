@@ -26,6 +26,7 @@ Git configuration or install system tools. Configure your own Git identity.
 | `./dev.ps1 setup` | Locked Python environment and local Git hooks |
 | `./dev.ps1 python-test` | Native binding, fitting and analysis tests |
 | `./dev.ps1 test-fitting-tools` | Alias for the development tests |
+| `./dev.ps1 perceptual-test` | Opt-in published-loss smoke tests; install the `perceptual-fit` group first |
 | `./dev.ps1 check` | Run all formatting/notebook hooks |
 | `./dev.ps1 dist` | Package an engine preview, not a CLAP plugin |
 
