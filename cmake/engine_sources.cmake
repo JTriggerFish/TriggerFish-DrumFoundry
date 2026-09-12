@@ -1,0 +1,25 @@
+# Explicit inventory: new source files require a deliberate build change.
+set(DRUMFOUNDRY_ENGINE_SOURCES
+  engine/tfdsp/percussion/compact_kick_parameters.cpp
+  engine/tfdsp/percussion/compact_kick.cpp
+  engine/tfdsp/percussion/crash_cymbal_parameters.cpp
+  engine/tfdsp/percussion/crash_cymbal.cpp
+  engine/tfdsp/percussion/kick_voice_parameters.cpp
+  engine/tfdsp/percussion/membrane_drum_parameters.cpp
+  engine/tfdsp/percussion/membrane_drum.cpp
+  engine/tfdsp/percussion/snare_drum.cpp
+  engine/tfdsp/percussion/wire_rack.cpp
+  engine/tfdsp/sampleRate.cpp
+  engine/parameters/crash_macros.cpp
+  engine/parameters/kick_macros.cpp
+  engine/parameters/kick_mode_macros.cpp
+  engine/parameters/membrane_macros.cpp
+  engine/parameters/snare_macros.cpp
+  engine/runtime/session.cpp
+  engine/runtime/voice.cpp
+  engine/patch/document.cpp
+  engine/patch/topology.cpp
+  engine/patch/ownership.cpp
+  engine/patch/validation.cpp
+  engine/parameters/access.cpp
+)

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "triggerfish-drumfoundry"
+version = "0.1.0"
+description = "Optional native DrumFoundry rendering, testing and fitting tools"
+requires-python = ">=3.11"
+dependencies = ["numpy>=2.0"]
+
+[project.optional-dependencies]
+analysis = ["scipy>=1.14", "plotly>=6.0"]
+test = ["pytest>=8", "scipy>=1.14"]
+
+[dependency-groups]
+dev = ["pytest>=8.0", "scipy>=1.14", "plotly>=6.0", "black[jupyter]>=26.5.1", "pre-commit>=4.0", "nbstripout>=0.9.1"]
+perceptual-fit = ["torch>=2.8", "auraloss==0.4.0", "librosa==0.11.0"]
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/python"]
+
+[tool.black]
+target-version = ["py313"]

@@ -1,0 +1,8 @@
+# Same source line-ending policy as TriggerFish-VCV.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary
+*.wav binary
+*.flac binary

@@ -1,0 +1,62 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Native engine (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Install MinGW64 toolchain
+        if: runner.os == 'Windows'
+        id: msys
+        uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884
+        with:
+          msystem: MINGW64
+          update: true
+          install: mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
+      - name: Select MinGW installation
+        if: runner.os == 'Windows'
+        env:
+          MSYS_LOCATION: ${{ steps.msys.outputs.msys2-location }}
+        run: Add-Content -LiteralPath $env:GITHUB_ENV -Value "MSYS2_ROOT=$env:MSYS_LOCATION"
+      - name: Install Linux tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update; sudo apt-get install -y ninja-build
+      - name: Install macOS tools
+        if: runner.os == 'macOS'
+        run: brew list ninja || brew install ninja
+      - name: Native build and DSP tests (no Python)
+        run: ./dev.ps1 test
+      - name: Package engine preview
+        run: ./dev.ps1 dist
+      - name: Upload engine preview
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: engine-${{ matrix.os }}
+          path: dist/*.zip
+          if-no-files-found: error
+      - name: Install optional development Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          enable-cache: true
+          python-version: '3.13'
+      - name: Optional analysis and rendering tests
+        run: |
+          ./dev.ps1 setup
+          ./dev.ps1 python-test
+      - name: Formatting hooks
+        if: runner.os == 'Linux'
+        run: ./dev.ps1 check

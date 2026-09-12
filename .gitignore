@@ -1,0 +1,13 @@
+/build/
+/.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+/data/
+/renders/
+*.wav
+*.flac
+/dist/
+.DS_Store
+.cache/
+.idea/

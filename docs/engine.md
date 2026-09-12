@@ -1,0 +1,49 @@
+# Native engine boundary
+
+`engine/tfdsp/` contains reusable DSP and the compiled instrument recipes.
+`engine/parameters/` contains named controls and their mapping into DSP settings.
+`engine/patch/` owns JSON parsing, recipe topology and parameter ownership.
+`engine/runtime/` owns independently allocated voices. There is no process-global
+four-session registry, and independent renderers can run on separate threads.
+
+```text
+JSON fit/patch --> validate + prepare --> owned native Voice
+                                            |
+                       timed strike ------> process --> mono PCM
+                                            ^
+                              C API / future CLAP adapter
+```
+
+The DSP source is unchanged except for extracting shared utilities. Parameter
+mapping namespace names are changed, not their math. Fit and patch schema IDs
+are retained so existing current snapshots load without conversion. There is
+no implicit gain matching, limiter, sample-rate conversion or output EQ beyond
+the controls explicitly present in the patch. EQ can be disabled in the patch.
+
+Preparation allocates and must run off the audio thread. A failed JSON load
+leaves the existing voice intact. Loading a valid replacement resets its state;
+this stage does not yet promise smooth live structural editing. `Reset`, typed
+`Trigger` and `Process` preserve the original energy/restrike semantics. One
+voice must not be called concurrently. C ABI strings are library-owned and copied
+immediately by the Python wrapper; NumPy owns each output buffer.
+
+Topology is a fixed compiled recipe, not a general graph interpreter. The JSON
+contract rejects wrong owners, invalid values, duplicate keys/IDs/routes, unknown
+types/versions, missing/disabled required connections and disconnected outputs.
+Preparation-time validation and host automation will be expanded together when
+the CLAP adapter is added. This C API is a development interface, not a released
+binary compatibility promise.
+
+## Remaining work before plugin/UI
+
+- Port the UI's model-editing helpers (series generation, Size meta, bloom timing
+  and hold-decay tools), with equivalence tests. Existing expanded presets do not
+  require them to render; do not reimplement them independently in Visage/Python.
+- Prepare safe audio-thread publication of structural changes, retirement of old
+  state, parameter smoothing and sample-accurate host events.
+- CLAP state/automation and multiple-editor lifecycle; Visage editor and native
+  standalone audio/MIDI device management. Monitoring safety belongs there.
+
+The current runtime still embeds storage for each available recipe inside an
+owned session. This is not a global instance limit, but can be reduced to active
+recipe storage before polyphonic/multi-instrument host integration.

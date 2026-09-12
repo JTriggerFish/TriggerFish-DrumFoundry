@@ -1,0 +1,883 @@
+{
+  "sourceRepository": "https://github.com/JTriggerFish/TriggerFish-VCV",
+  "sourceCommit": "9f0d2e2ce0be3d51ff5e4ff45b0da5c2d7aaa621",
+  "note": "Text line endings normalized. Parameter/session namespaces and session ownership adapted; DSP mathematical code unchanged.",
+  "files": [
+    {
+      "source": "src/tfdsp/percussion/biquad_design.hpp",
+      "target": "engine/tfdsp/percussion/biquad_design.hpp",
+      "sourceSha256": "7d68ce2445c8b3c286a6bb1073badaa8d5b321545e5102c334e0a4c099857467",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/biquad.hpp",
+      "target": "engine/tfdsp/percussion/biquad.hpp",
+      "sourceSha256": "d7af8c2c8d513bf92283b1eb635d28ae2f1dddca2813181c2c02f20cb4990f60",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/bounded_modal_motion.hpp",
+      "target": "engine/tfdsp/percussion/bounded_modal_motion.hpp",
+      "sourceSha256": "946ef4549f44b9cb32f8f1740b58111cd8ee7a0fef3a301cd2506cf17193a9f0",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/breakpoint_trajectory.hpp",
+      "target": "engine/tfdsp/percussion/breakpoint_trajectory.hpp",
+      "sourceSha256": "32126960e1df06aef5bde7f07bf3854473e76454c8da8f42905bf19e3ff5c08e",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/compact_kick_parameters.cpp",
+      "target": "engine/tfdsp/percussion/compact_kick_parameters.cpp",
+      "sourceSha256": "2bf95428bf7a18ef85621daf418693733c54f4d95de549839025a9c4c9988d3a",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/compact_kick_parameters.hpp",
+      "target": "engine/tfdsp/percussion/compact_kick_parameters.hpp",
+      "sourceSha256": "d739312295c61178722fe321b204f93a5f60659574735cd7a57165bdfdbb1066",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/compact_kick.cpp",
+      "target": "engine/tfdsp/percussion/compact_kick.cpp",
+      "sourceSha256": "9b00e4622812bb5278ed19ad9962ff9511ddfd40884f0e143d3a7e609d0b191b",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/compact_kick.hpp",
+      "target": "engine/tfdsp/percussion/compact_kick.hpp",
+      "sourceSha256": "56e1efab9d43d0966d54b63804688924ed2de2fc681265de9c1b1ec345383c7c",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/contact_exciter.hpp",
+      "target": "engine/tfdsp/percussion/contact_exciter.hpp",
+      "sourceSha256": "21ad434ba7cde17fe6f88174c686f3d83864c76980c4f14eea966a8ca821f7d9",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/contact_normalization.hpp",
+      "target": "engine/tfdsp/percussion/contact_normalization.hpp",
+      "sourceSha256": "9540c022cc8500b27c92670a7ad0a3e666e01558781f9db6b6282f412b95ebc4",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/correlated_fm_burst.hpp",
+      "target": "engine/tfdsp/percussion/correlated_fm_burst.hpp",
+      "sourceSha256": "2c60b06524eeafe9eba8a6a1dd40bce177f2ec0da38e6e94ff4c6c53080c0f25",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/coupled_resonator_network.hpp",
+      "target": "engine/tfdsp/percussion/coupled_resonator_network.hpp",
+      "sourceSha256": "ec149fdb88849da411207e62b5d8f3a6f5e4560e3c9cd0166f8ab9c771f718af",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/crash_cymbal_parameters.cpp",
+      "target": "engine/tfdsp/percussion/crash_cymbal_parameters.cpp",
+      "sourceSha256": "ac6a14edfe2b234c1daea37a072285c41e6798ee4deda58b96bfc0ac12291a3f",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/crash_cymbal_parameters.hpp",
+      "target": "engine/tfdsp/percussion/crash_cymbal_parameters.hpp",
+      "sourceSha256": "bf00f3776f7e2fd9453b1ff63f9977582480e0d159fe19cc18429c2b18750765",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/crash_cymbal.cpp",
+      "target": "engine/tfdsp/percussion/crash_cymbal.cpp",
+      "sourceSha256": "5639182d33595b6738c3c0dd6d64fd4bc1d81dc9154b4b2aec728823a7089532",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/crash_cymbal.hpp",
+      "target": "engine/tfdsp/percussion/crash_cymbal.hpp",
+      "sourceSha256": "bc5445a4a51a361284e859b8b08c14cd1b3b1235e53d20dfac91f63067b943f8",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/deterministic_random.hpp",
+      "target": "engine/tfdsp/percussion/deterministic_random.hpp",
+      "sourceSha256": "167931ff09b763c30919f8200c46abc9d4245e2760e3f394916363f7f34590b1",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/dispersion_loop.hpp",
+      "target": "engine/tfdsp/percussion/dispersion_loop.hpp",
+      "sourceSha256": "78eca7e3942bff33712dffa806a36c2fd02eb42e616407e87f04f05d028ae2eb",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/enveloped_noise_burst.hpp",
+      "target": "engine/tfdsp/percussion/enveloped_noise_burst.hpp",
+      "sourceSha256": "6c02316a6940b819b4addeb421246c437f0c3bdef9faac4794cdcec472a8b31b",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/erb_scale.hpp",
+      "target": "engine/tfdsp/percussion/erb_scale.hpp",
+      "sourceSha256": "7902832678199e468c8da50799f5b29d8660edefeeb9eed29595597826475df5",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/finite_force_pulse.hpp",
+      "target": "engine/tfdsp/percussion/finite_force_pulse.hpp",
+      "sourceSha256": "5cd87fc04ed76c861f495f8542d053f0df3b3e5bd41d1efa3e2676c957ce4b32",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/fir_hilbert_transform.hpp",
+      "target": "engine/tfdsp/percussion/fir_hilbert_transform.hpp",
+      "sourceSha256": "dbf6fd6db7961f4937160ed735155845ddf864fb955c38c1468efb751fa52f93",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/fixed_mixer.hpp",
+      "target": "engine/tfdsp/percussion/fixed_mixer.hpp",
+      "sourceSha256": "60d46e42f234ee3db8aeaf2b7eced63e6c71322f5254d95958165e943e61a858",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/fixed_oversampling.hpp",
+      "target": "engine/tfdsp/percussion/fixed_oversampling.hpp",
+      "sourceSha256": "aba79189c6782b32dd8eb83c6492a25fd4f2350dd9d494a7ba8bdb6a8b41141a",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/fractional_delay_line.hpp",
+      "target": "engine/tfdsp/percussion/fractional_delay_line.hpp",
+      "sourceSha256": "a9c126667992eb18480574aa939c776f934c14aef9e399793142a530a2942e14",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/frequency_shifter.hpp",
+      "target": "engine/tfdsp/percussion/frequency_shifter.hpp",
+      "sourceSha256": "fd82bb8065e9af261fb00fcf29492862eea78d662b3706febd9e477e6265e010",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/kick_thump_envelope.hpp",
+      "target": "engine/tfdsp/percussion/kick_thump_envelope.hpp",
+      "sourceSha256": "89d898a74d36145821f6b5fd95996b1b6a58c33ff0a1b7761d365e92197f6077",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/kick_voice_parameters.cpp",
+      "target": "engine/tfdsp/percussion/kick_voice_parameters.cpp",
+      "sourceSha256": "b541153de759aebd338148094bca303636b2d15e7364387ff809231ffc41f542",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/kick_voice_parameters.hpp",
+      "target": "engine/tfdsp/percussion/kick_voice_parameters.hpp",
+      "sourceSha256": "09852f7d727df2e4acb44291348d5d8c2efe6e083919377c076e76b373b5c3dc",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/membrane_drum_parameters.cpp",
+      "target": "engine/tfdsp/percussion/membrane_drum_parameters.cpp",
+      "sourceSha256": "e4c341bd1b3b4b3d5800909b42727a6db9b52c6c4a1864684991e86970126710",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/membrane_drum_parameters.hpp",
+      "target": "engine/tfdsp/percussion/membrane_drum_parameters.hpp",
+      "sourceSha256": "cc3504eacc7f2db2f58e0c2c1ce7bd7b23e521588d17f58379ba538d30740755",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/membrane_drum.cpp",
+      "target": "engine/tfdsp/percussion/membrane_drum.cpp",
+      "sourceSha256": "8a3418af73bf537709e2994fda6e4569e6b803b89fea0e4f416e693d86d675b2",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/membrane_drum.hpp",
+      "target": "engine/tfdsp/percussion/membrane_drum.hpp",
+      "sourceSha256": "ca5fe9686f7818437461aae61dcdbe094be047a076bdbeae88fc57f0dab59c9e",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/membrane_resonator.hpp",
+      "target": "engine/tfdsp/percussion/membrane_resonator.hpp",
+      "sourceSha256": "5ea14b10a34d4067928d6f71a258314a80336598dcbbdc3b647b901c425aa500",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/metallic_plate_routing.hpp",
+      "target": "engine/tfdsp/percussion/metallic_plate_routing.hpp",
+      "sourceSha256": "d3cfbf1479c75bd93e55c2d1c949056a2c92b21fe1a858440c96ab5186f4bd2c",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/micro_contact_burst.hpp",
+      "target": "engine/tfdsp/percussion/micro_contact_burst.hpp",
+      "sourceSha256": "f33b34cf13eb5fb209f3a8134e5f37ae30cfe513d031a84ccda9c1db6849d598",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/micro_contact_process.hpp",
+      "target": "engine/tfdsp/percussion/micro_contact_process.hpp",
+      "sourceSha256": "f02ea2464796061a1142b154fd064add4bb336a5f01ef076e53a75ec96595c86",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/modal_bank.hpp",
+      "target": "engine/tfdsp/percussion/modal_bank.hpp",
+      "sourceSha256": "705f0f3d38e42aeaab07048e1a847a70dc3d979633823446989be23b780291ce",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/modal_constraint.hpp",
+      "target": "engine/tfdsp/percussion/modal_constraint.hpp",
+      "sourceSha256": "48f33a5b1857cad056951a6ad87e8f8f8ad8bd4b6d8b3715d5c05be528edb315",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/modal_energy_cascade.hpp",
+      "target": "engine/tfdsp/percussion/modal_energy_cascade.hpp",
+      "sourceSha256": "f34ac7937f3307048fd43101b59e778361675ca19f36725169dfa8c8e50a4690",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/modal_packet_allocator.hpp",
+      "target": "engine/tfdsp/percussion/modal_packet_allocator.hpp",
+      "sourceSha256": "1fc3a823c071cdc6ee949b67893b2f8c832149fb6293de77f05fe85ea25ab71c",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/modal_packet_distribution.hpp",
+      "target": "engine/tfdsp/percussion/modal_packet_distribution.hpp",
+      "sourceSha256": "b1f0f47a697aa1290468ddf44de486144de6505018ec855c6b21120c6e062ba3",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/modal_spectral_diffusion.hpp",
+      "target": "engine/tfdsp/percussion/modal_spectral_diffusion.hpp",
+      "sourceSha256": "9437b748a3f2c6f5d6957e1e52fe03d372659efb3d19681b57d3ab0df22f7d76",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/modulated_fractional_delay.hpp",
+      "target": "engine/tfdsp/percussion/modulated_fractional_delay.hpp",
+      "sourceSha256": "1e5e703b31f2fd93b931fbf32b92242176926e4a977dc3cdb630d760aea8c5a2",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/observation_delay.hpp",
+      "target": "engine/tfdsp/percussion/observation_delay.hpp",
+      "sourceSha256": "128e397c1212bd70515b755dfb67cae85706055a3c18e04321592a8c92752e12",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/observation_equalizer.hpp",
+      "target": "engine/tfdsp/percussion/observation_equalizer.hpp",
+      "sourceSha256": "d3a9594022e835e1d7840d40d1e78536da56f5c918a444b7c8d8c6deef79b002",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/observation_model.hpp",
+      "target": "engine/tfdsp/percussion/observation_model.hpp",
+      "sourceSha256": "0e32040c8b709f7f8dcc0c1eee29b3d1798402c66429110ceb785950990b8488",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/orthogonal_mixer.hpp",
+      "target": "engine/tfdsp/percussion/orthogonal_mixer.hpp",
+      "sourceSha256": "7bfb05f853661d307e60f20ac17cf4be23a8a3e553b636a49f53aa7c7a878815",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/passive_constraint.hpp",
+      "target": "engine/tfdsp/percussion/passive_constraint.hpp",
+      "sourceSha256": "f3af8501749a155975301d8415b4954982493a9a04bad42394b3ec085fbd3cf5",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/quadrature_oscillator.hpp",
+      "target": "engine/tfdsp/percussion/quadrature_oscillator.hpp",
+      "sourceSha256": "087ba787bab434b924470f4a4d24e35011e6d0c48091a582db5a20fad7d49c39",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/radiation_filter.hpp",
+      "target": "engine/tfdsp/percussion/radiation_filter.hpp",
+      "sourceSha256": "41c934920b37ceb8caa9a58f86872f5faa768ce7f4fc9a4ee2207e2b3405c5ca",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/resonator_submix.hpp",
+      "target": "engine/tfdsp/percussion/resonator_submix.hpp",
+      "sourceSha256": "381c324e880bfdae5595efe174570a551408ac9f121c7ab048331d60240bb5b8",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/schroeder_allpass.hpp",
+      "target": "engine/tfdsp/percussion/schroeder_allpass.hpp",
+      "sourceSha256": "9cf07f7c7a5c72e05095b91272b13ca11c4a309dc2a61af31c4382782a5144cf",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/self_phase_delay_core.hpp",
+      "target": "engine/tfdsp/percussion/self_phase_delay_core.hpp",
+      "sourceSha256": "d8049dfdab3291bfcf884b6fd98a793e36f970f798d9544bbfce3267ea7b06f5",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/self_phase_delay.hpp",
+      "target": "engine/tfdsp/percussion/self_phase_delay.hpp",
+      "sourceSha256": "b8dfec3023df22d8079a7983cc6f69343cdab88850c6d44579c1b19dad3f1c7b",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/slow_modulated_delay.hpp",
+      "target": "engine/tfdsp/percussion/slow_modulated_delay.hpp",
+      "sourceSha256": "0fad35521881c1b6fab24728067daf6714df9f383a6f7183bf3c54ca531762e9",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/smooth_modal_drift.hpp",
+      "target": "engine/tfdsp/percussion/smooth_modal_drift.hpp",
+      "sourceSha256": "02f66a2394672ef2509800fcce84923dd1e5653120d15e97b7bafc93ae742d35",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/snare_drum.cpp",
+      "target": "engine/tfdsp/percussion/snare_drum.cpp",
+      "sourceSha256": "de6a8d7b055c34b1ca62395428884aff821ac0bca5cc2b5e2e22f97da87e08cc",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/snare_drum.hpp",
+      "target": "engine/tfdsp/percussion/snare_drum.hpp",
+      "sourceSha256": "0d821c7c00722d32f8ab18605c2d7b7bdb73c42a8429c5c0a06453caa0467fdb",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/spectral_tilt_filter.hpp",
+      "target": "engine/tfdsp/percussion/spectral_tilt_filter.hpp",
+      "sourceSha256": "70745bb482de4f5a4b398cec7a6fe55e5eccd8e7769b1bccf9a84946735177ce",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/static_fractional_delay.hpp",
+      "target": "engine/tfdsp/percussion/static_fractional_delay.hpp",
+      "sourceSha256": "5f37fe46a79129f4a424eb72c2a477a427bdf2a216b3a693feb4235a830a2bcd",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/statistical_modal_cloud.hpp",
+      "target": "engine/tfdsp/percussion/statistical_modal_cloud.hpp",
+      "sourceSha256": "5653a8f016bf5eda0d35ba601502a0b3f9061057e547a1edf3d52fb0af4e1f84",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/stochastic_event_scheduler.hpp",
+      "target": "engine/tfdsp/percussion/stochastic_event_scheduler.hpp",
+      "sourceSha256": "24d43fb73dabd48aa0c2bce1a30f9814d1a9d06c1ee3c1c02002f773da7b07ff",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/stochastic_modal_field_parameters.hpp",
+      "target": "engine/tfdsp/percussion/stochastic_modal_field_parameters.hpp",
+      "sourceSha256": "68787d862be1a5a21794fe7e091dc57fa4b899b977a732cb6a9a709d293e3464",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/stochastic_modal_field.hpp",
+      "target": "engine/tfdsp/percussion/stochastic_modal_field.hpp",
+      "sourceSha256": "75f9adb719f3a7e023388ece69bc7b3751791ec4ca65b412964b553fc0538139",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/strike_energy_envelope.hpp",
+      "target": "engine/tfdsp/percussion/strike_energy_envelope.hpp",
+      "sourceSha256": "9ac9090ce2c5c2bb0cb04c0fdc9b24fccbbc849d02e078685115bf4c8bf0ee65",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/three_band_decay_filter.hpp",
+      "target": "engine/tfdsp/percussion/three_band_decay_filter.hpp",
+      "sourceSha256": "2edcae7521ed5e65595250545209fe1f1a26751eeb5fff6270ce043e40881979",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/tonal_contact_chirp.hpp",
+      "target": "engine/tfdsp/percussion/tonal_contact_chirp.hpp",
+      "sourceSha256": "92df023bd5437a6a5e322b7f2807a3795c435609026d4066b5152fb3e2098aa2",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/trajectory_impulse_scale.hpp",
+      "target": "engine/tfdsp/percussion/trajectory_impulse_scale.hpp",
+      "sourceSha256": "a4b8e5d758d55a98f472ba19b25838e0126993bde9227a0f7454c929b06224a0",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/translation_band_limiter.hpp",
+      "target": "engine/tfdsp/percussion/translation_band_limiter.hpp",
+      "sourceSha256": "f241eb35de0b8f757a1b838194683848d14e01d6466b92803d504771e4e351b2",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/turbulence_profile.hpp",
+      "target": "engine/tfdsp/percussion/turbulence_profile.hpp",
+      "sourceSha256": "86252e8e12f352145d4cfc03ae36f795e8b1deac8ef589c78a0e1851bdc5881c",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/turbulent_residual.hpp",
+      "target": "engine/tfdsp/percussion/turbulent_residual.hpp",
+      "sourceSha256": "c30a5071440d2f6636f3899dad0e151f33715665dd82d86bf7eef52de5ca3f12",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/wire_rack.cpp",
+      "target": "engine/tfdsp/percussion/wire_rack.cpp",
+      "sourceSha256": "482bfe88ef4a780300d84e41166f2fbfa9a48a031bb1c1182d488bfd68508c3b",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/percussion/wire_rack.hpp",
+      "target": "engine/tfdsp/percussion/wire_rack.hpp",
+      "sourceSha256": "fb4576ebed83fe28a1ac8bd4665e907a77c4e6f2346e631237814c4c0f62a61c",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/finite_audio.hpp",
+      "target": "engine/tfdsp/finite_audio.hpp",
+      "sourceSha256": "18feaf168814d059d59969b931ff83a0c6032d79fcccfc553ff85a49db368dcd",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/sampleRate.hpp",
+      "target": "engine/tfdsp/sampleRate.hpp",
+      "sourceSha256": "affbfcc0eb7187efccb2f8403374c8d19d508145dea7e5a8203bb8fa581e0ec8",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/sampleRate.cpp",
+      "target": "engine/tfdsp/sampleRate.cpp",
+      "sourceSha256": "30b403db05910ec120cf46db785c52a25ed26180c0fe97ec583f657c7b3ae8e5",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/util.hpp",
+      "target": "engine/tfdsp/util.hpp",
+      "sourceSha256": "d709ca4179f07e8ea1abf7d2dcad3e7b2ba236361c9e8844656accdcc58dab28",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/smooth_random_modulator.hpp",
+      "target": "engine/tfdsp/smooth_random_modulator.hpp",
+      "sourceSha256": "89efcbee8886d183441ad4c7a4fd925ed37e1c9cea9f0dbab90bb758b77235e6",
+      "modified": false
+    },
+    {
+      "source": "workbench/wasm/crash_macros.cpp",
+      "target": "engine/parameters/crash_macros.cpp",
+      "sourceSha256": "ea3ae9d98777989e43c298dd378f86cacb68efc31f2f6de94fad0294c284d509",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/crash_macros.hpp",
+      "target": "engine/parameters/crash_macros.hpp",
+      "sourceSha256": "02b3bce08140e980bd31d016b21da07c67dc98391ce174d1dfe13701addd5887",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/kick_macros.cpp",
+      "target": "engine/parameters/kick_macros.cpp",
+      "sourceSha256": "253b1be333e6f746568d3fc7325c85af0b602903271a89f6019d0c10edaa290b",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/kick_macros.hpp",
+      "target": "engine/parameters/kick_macros.hpp",
+      "sourceSha256": "efb2cecd548a8d8cfb24c3cb4216fcab2a9d7d77e1590dfa3c14988d168038c2",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/kick_mode_macros.cpp",
+      "target": "engine/parameters/kick_mode_macros.cpp",
+      "sourceSha256": "c857bfd9d801744a99a99db3a14526981cd76f3f4cd0a4bd8de8933504117e52",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/kick_mode_macros.hpp",
+      "target": "engine/parameters/kick_mode_macros.hpp",
+      "sourceSha256": "62616d561666b4c3b9b9084609091f39929b78364eafb21c49a5c447c8108816",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/membrane_macros.cpp",
+      "target": "engine/parameters/membrane_macros.cpp",
+      "sourceSha256": "a79bb10606b344456ac8cb3c7258ac7e548becc56740922be7c4c0f00f381caa",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/membrane_macros.hpp",
+      "target": "engine/parameters/membrane_macros.hpp",
+      "sourceSha256": "36f1b176853350708d80ed1ea2dacd7d7d767692773435d87b4e6bf560b233b0",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/parameter_descriptor.hpp",
+      "target": "engine/parameters/parameter_descriptor.hpp",
+      "sourceSha256": "6f8a3c487a057b33a37f4105e2b98286f1b3a8aa0b74f392afe0f5820a522ab0",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/snare_macros.cpp",
+      "target": "engine/parameters/snare_macros.cpp",
+      "sourceSha256": "e969bced9ea99c539e86fd2479a55235b054d45fff41014c2be3e7e2d63d4a57",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/snare_macros.hpp",
+      "target": "engine/parameters/snare_macros.hpp",
+      "sourceSha256": "ae7ffd181376ae6a3ff8d3e62d6167beb12380ae2b941e9e7f9fd4a464cefe85",
+      "modified": true
+    },
+    {
+      "source": "tests/percussion_contact_tests.cpp",
+      "target": "tests/dsp/percussion_contact_tests.cpp",
+      "sourceSha256": "2f1e1a7c457d9485db75f1a501aec1ee467e898c6ca326bfb94f0a29fd49ede2",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_control_tests.cpp",
+      "target": "tests/dsp/percussion_control_tests.cpp",
+      "sourceSha256": "de9c6934f57ac1ec3b5d0184affa6eeff052c4dcf6b21c8842c447023824fe02",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_crash_tests.cpp",
+      "target": "tests/dsp/percussion_crash_tests.cpp",
+      "sourceSha256": "acfe12da3c26ec315f29cce82b64800ae0d7f8906dd84b3c98fe17407ad69356",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_delay_tests.cpp",
+      "target": "tests/dsp/percussion_delay_tests.cpp",
+      "sourceSha256": "5a70bd054bb35caa4c7645bb7596f614ac8f73c4d48ebfbda5acf73e9e172095",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_dispersion_tests.cpp",
+      "target": "tests/dsp/percussion_dispersion_tests.cpp",
+      "sourceSha256": "d9dbedb62a78147bb5c8777cb3d12b81721fc5cfffef18772cd2c1dc31812f9c",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_fm_tests.cpp",
+      "target": "tests/dsp/percussion_fm_tests.cpp",
+      "sourceSha256": "322a9bd9c9f987b715b90144566328047421cd99305495c39db070b907c817fb",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_frequency_shift_tests.cpp",
+      "target": "tests/dsp/percussion_frequency_shift_tests.cpp",
+      "sourceSha256": "d70391e2ea03685dce6784206a1c19568a90d0257a3df52b0843ac95675bd0f9",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_gain_tests.cpp",
+      "target": "tests/dsp/percussion_gain_tests.cpp",
+      "sourceSha256": "5e97e1ccd00e5b8447afc0e0d1f22c058268c22c4875c97d17eeb9aa4a41dd14",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_kick_tests.cpp",
+      "target": "tests/dsp/percussion_kick_tests.cpp",
+      "sourceSha256": "27ad5d09c2de613ab37544e10a9a870bfa305fb61d71bbae358e704bb4f1d26d",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_membrane_tests.cpp",
+      "target": "tests/dsp/percussion_membrane_tests.cpp",
+      "sourceSha256": "fe4e72b1c8cc11eb7d163ad1ba3bb642d5453e10dfcbb0b590f827fdd05ee10b",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_micro_contact_tests.cpp",
+      "target": "tests/dsp/percussion_micro_contact_tests.cpp",
+      "sourceSha256": "f1fb93bb6e1c2d45821a0c270b061034d6c03d6ba901c8b7300d2ce744c01a3a",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_modal_drift_tests.cpp",
+      "target": "tests/dsp/percussion_modal_drift_tests.cpp",
+      "sourceSha256": "2416e55dbaac421625183c21005f5424e72657a772cf1afea5b5233b6d33a815",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_modal_motion_tests.cpp",
+      "target": "tests/dsp/percussion_modal_motion_tests.cpp",
+      "sourceSha256": "f261dd419d407acc1270ac43a4641cb51462ad425d5a2995fb8028914903f317",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_modal_tests.cpp",
+      "target": "tests/dsp/percussion_modal_tests.cpp",
+      "sourceSha256": "59587ff0b2f9d2f28b76e60c8b05f8f607d211cef014e1a7c24462e6100803e1",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_observation_tests.cpp",
+      "target": "tests/dsp/percussion_observation_tests.cpp",
+      "sourceSha256": "6186dfa6001f2380489354d78ed36921f1fcc6974b1a202cb3d0dafc18eccee9",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_packet_coordinates_tests.cpp",
+      "target": "tests/dsp/percussion_packet_coordinates_tests.cpp",
+      "sourceSha256": "d6de9fe523ee0f7f52b12a5c141057659ebb75604dca37e9a6ca860f1f1df1cd",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_radiation_tests.cpp",
+      "target": "tests/dsp/percussion_radiation_tests.cpp",
+      "sourceSha256": "a45bbf34574ef5fc8cdc7e649cfe346da9cd5cf1d40c2fada59175c9a345c2bb",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_resonator_tests.cpp",
+      "target": "tests/dsp/percussion_resonator_tests.cpp",
+      "sourceSha256": "1be141a3e8146edd2ef665475930eedcb299ef928788957c17a68b3f286ba77e",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_snare_tests.cpp",
+      "target": "tests/dsp/percussion_snare_tests.cpp",
+      "sourceSha256": "77760301be0957291f0abe0802fabe3a2ef4967ad86f020531213da74438f782",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_spectral_diffusion_tests.cpp",
+      "target": "tests/dsp/percussion_spectral_diffusion_tests.cpp",
+      "sourceSha256": "d8f37912f859afffee8178a2c131b9656d396a6e64567096eee41bb2f184c3f7",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_test_support.hpp",
+      "target": "tests/dsp/percussion_test_support.hpp",
+      "sourceSha256": "922bd8f1afc1f3237a1b22fb0c88f53d6c83ab476b50fe14fe95ef412f025129",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_turbulence_tests.cpp",
+      "target": "tests/dsp/percussion_turbulence_tests.cpp",
+      "sourceSha256": "a8661eac3f0668991491d2d7eed18f4fcfd5ccffd912dbe3c698de7ee8421756",
+      "modified": false
+    },
+    {
+      "source": "tests/percussion_wire_tests.cpp",
+      "target": "tests/dsp/percussion_wire_tests.cpp",
+      "sourceSha256": "6ec17c718241cfb0c929446fe3b5d3ff2c90faede73311ef9a79d9b279654f89",
+      "modified": false
+    },
+    {
+      "source": "tests/reference_bounded_modal_motion.hpp",
+      "target": "tests/dsp/reference_bounded_modal_motion.hpp",
+      "sourceSha256": "d4ffdcfe79e08a3982bf990a358b0056e14f5909271e609abac79110e27865d4",
+      "modified": false
+    },
+    {
+      "source": "workbench/web/crash_calibration.fit.json",
+      "target": "presets/crash_calibration.fit.json",
+      "sourceSha256": "cc81a7dd155567d9159d53ffc50eaf28b3c2e34273caad438b46ba9211a52b07",
+      "modified": false
+    },
+    {
+      "source": "workbench/web/gong_calibration.fit.json",
+      "target": "presets/gong_calibration.fit.json",
+      "sourceSha256": "8738331499aad59ee91b4d351fc38af5bfac93be0051e33f541c5f18af7bfbe8",
+      "modified": false
+    },
+    {
+      "source": "workbench/web/hihat_calibration.fit.json",
+      "target": "presets/hihat_calibration.fit.json",
+      "sourceSha256": "ea596de81aaa5040749606ef9dd69b3df6052057b3f470396a1bb52ed2db4dcb",
+      "modified": false
+    },
+    {
+      "source": "workbench/web/kick_calibration.fit.json",
+      "target": "presets/kick_calibration.fit.json",
+      "sourceSha256": "17e2c4c443bc191fbb50c7e3a0f6e80e8282a11ed75cd6c080bb1d16b4758ed6",
+      "modified": false
+    },
+    {
+      "source": "workbench/web/ride_calibration.fit.json",
+      "target": "presets/ride_calibration.fit.json",
+      "sourceSha256": "725f0e8fc31f4a0a598aa867514a9b024b60b619e3828568ec5d97df2ddfa5c7",
+      "modified": false
+    },
+    {
+      "source": "workbench/web/snare_calibration.fit.json",
+      "target": "presets/snare_calibration.fit.json",
+      "sourceSha256": "335868eebac3419b7f35cecccd883a1c9c19ace122da9c89519f507f1f329d49",
+      "modified": false
+    },
+    {
+      "source": "LICENSE.txt",
+      "target": "LICENSE.txt",
+      "sourceSha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/metallic_balance_loss.py",
+      "target": "python/triggerfish_percussion/metallic_balance_loss.py",
+      "sourceSha256": "2d9e92bb418070f7537f365a344d4a3422fe1346da9bb0e28506c60804652ccc",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/metallic_balance_features.py",
+      "target": "python/triggerfish_percussion/metallic_balance_features.py",
+      "sourceSha256": "a396d205163498e56c68d2cf98ac46a65996db315f7205fb8549bf56e2a8a293",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/power_envelope.py",
+      "target": "python/triggerfish_percussion/power_envelope.py",
+      "sourceSha256": "ebbecfc6ac04f8b6f6006172c60ead4c4170eaa37c4357cd4eb4d7a26efcdba7",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/transforms.py",
+      "target": "python/triggerfish_percussion/transforms.py",
+      "sourceSha256": "20ddfb9c60f406e81c9e8a1c0ed23bc956c189487837a80b3db9affeaa4a5493",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/trajectory_fit_loss.py",
+      "target": "python/triggerfish_percussion/trajectory_fit_loss.py",
+      "sourceSha256": "53c9c50f6172d6e02a177b4f43f17b1562f509c8fbf29a65c248a3cea389ae0b",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/metallic_fit_loss.py",
+      "target": "python/triggerfish_percussion/metallic_fit_loss.py",
+      "sourceSha256": "25d2f4ecfd36823f265bc4fd7b859951b7c6ee6ac9a90bafd61192a9e447c012",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/band_decay_shape_loss.py",
+      "target": "python/triggerfish_percussion/band_decay_shape_loss.py",
+      "sourceSha256": "aa94374e8cf5358ee8fc0580b290a481f2e303971db3bc04d7535e909c3377da",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/short_drum_fit_loss.py",
+      "target": "python/triggerfish_percussion/short_drum_fit_loss.py",
+      "sourceSha256": "fd296890efc00a3c8390d6f45154852543743c941107d2a4d3453cdfa4637baa",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/drum_balance_loss.py",
+      "target": "python/triggerfish_percussion/drum_balance_loss.py",
+      "sourceSha256": "647b3ab064bda828d52c0ab24aaebe66f1de2f16bf40827feb6b4b260a6fbf39",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/scalar_fit_search.py",
+      "target": "python/triggerfish_percussion/scalar_fit_search.py",
+      "sourceSha256": "387826ea623cc298fa16b6459633857278b0b6dbf76aa36abdb259cd299caaf0",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/fit_parameter_box.py",
+      "target": "python/triggerfish_percussion/fit_parameter_box.py",
+      "sourceSha256": "f5ed639235c85da872cbbdc37a23420da40dd311e17bbcf1849d6e6ecac9023e",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/fit_reference.py",
+      "target": "python/triggerfish_percussion/fit_reference.py",
+      "sourceSha256": "7746b409323807e10fe2fd703de3980aa5e253c4503559cea01e3b36f36d7471",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/modal_texture_loss.py",
+      "target": "python/triggerfish_percussion/modal_texture_loss.py",
+      "sourceSha256": "a0390d37ff25e2fd39edd47b3a8e11b24c99cb4d24735f5593f7bd43cac4cfa6",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/perceptual_fit_losses.py",
+      "target": "python/triggerfish_percussion/perceptual_fit_losses.py",
+      "sourceSha256": "aef2e1e31560aa2a536b683eecfa41c31b664c9814c42e503997e7dd8eecfe8d",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/instrument_fit_stages.py",
+      "target": "python/triggerfish_percussion/instrument_fit_stages.py",
+      "sourceSha256": "a2a427d2560ff1a8fb4564bae0915d8cc0ca80ce9d344273c6c184de70f26dd3",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/audio_io.py",
+      "target": "python/triggerfish_percussion/audio_io.py",
+      "sourceSha256": "4564b3e9b6fa0c5126f1a67558a2968b4f97b7a1f0d3f1276acaac29ae28e43a",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/comparison.py",
+      "target": "python/triggerfish_percussion/comparison.py",
+      "sourceSha256": "797a6513d6e1403e09e060acdbbde70274642c7afea1a8f5c5de3dac17d3262b",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/erb.py",
+      "target": "python/triggerfish_percussion/erb.py",
+      "sourceSha256": "918d713bcfd8e06f607230ef9ea4c6033897f60a9182176adc7f4e8926b4c643",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/transform_cache.py",
+      "target": "python/triggerfish_percussion/transform_cache.py",
+      "sourceSha256": "55e0999065d37a5d426ecab925cb4fca3491ed43047fe557c2c798c5daac5219",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/alignment.py",
+      "target": "python/triggerfish_percussion/alignment.py",
+      "sourceSha256": "28fba08323e5113ae2c8ebbbe083928cd74bc8ac831d76adb38623965831a601",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/distances.py",
+      "target": "python/triggerfish_percussion/distances.py",
+      "sourceSha256": "1266f47b3a764603a7110a202209d110f958599ee856abdb54ea8440e06285e0",
+      "modified": false
+    },
+    {
+      "source": "python/triggerfish_percussion/modes.py",
+      "target": "python/triggerfish_percussion/modes.py",
+      "sourceSha256": "116a56319ec78654bfc3f9bbeeeed72b33e74b69e0b9e1fd41d0829bdf646e77",
+      "modified": false
+    },
+    {
+      "source": "src/tfdsp/fixed_radix2_fft.hpp",
+      "target": "engine/tfdsp/fixed_radix2_fft.hpp",
+      "sourceSha256": "61c1f14d06c97a107aba737f35a865f900ea9b0ff3d51b2f02c77c974c497f34",
+      "modified": false
+    },
+    {
+      "source": "workbench/wasm/percussion_session.cpp",
+      "target": "engine/runtime/session.cpp",
+      "sourceSha256": "32b0ef4b3b6064c19bc1dd4c984d29f12ff2db266b34a15276f10c4026369dcd",
+      "modified": true
+    },
+    {
+      "source": "workbench/wasm/percussion_session.hpp",
+      "target": "engine/runtime/session.hpp",
+      "sourceSha256": "9423a2a3ba383fe65fb841426533ebda789e120f67ffb7fc05e8cb0fc40b6746",
+      "modified": true
+    }
+  ]
+}

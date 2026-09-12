@@ -1,0 +1,8 @@
+#pragma once
+#include "parameter_descriptor.hpp"
+#include <cstddef>
+
+namespace drumfoundry {
+inline constexpr std::size_t KickModeParameterCount = 16 * 2;
+const ParameterDescriptor &KickModeDescription(std::size_t index) noexcept;
+}

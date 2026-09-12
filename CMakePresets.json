@@ -1,0 +1,20 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "native",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/native",
+      "cacheVariables": {"CMAKE_BUILD_TYPE": "Release", "BUILD_TESTING": "ON"},
+      "condition": {"type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows"}
+    },
+    {
+      "name": "mingw",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/native",
+      "toolchainFile": "${sourceDir}/cmake/mingw.cmake",
+      "cacheVariables": {"CMAKE_BUILD_TYPE": "Release", "BUILD_TESTING": "ON"},
+      "condition": {"type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows"}
+    }
+  ]
+}
