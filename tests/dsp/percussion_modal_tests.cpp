@@ -332,16 +332,26 @@ void TestStochasticPhaseBroadeningPreservesEnergy() {
   first.Prepare(48000.f, coherent, {}, 700.f, 6500.f);
   second.Prepare(48000.f, diffused, {}, 700.f, 6500.f);
   double outputDifference = 0.0;
-  for (int sample = 0; sample < 4096; ++sample) {
+  constexpr int frames = 4096;
+  constexpr double floatEpsilon = 1.1920928955078125e-7;
+  const double expectedEnergyRatio = std::exp(2 * std::log(.001) / (2 * 48000));
+  for (int sample = 0; sample < frames; ++sample) {
+    const double before = second.StoredEnergy();
     const float input = sample == 0 ? 1.f : 0.f;
     const double coherentOutput = first.ProcessExcitedPair(input, 0.f);
     const double diffusedOutput = second.ProcessExcitedPair(input, 0.f);
     const double difference = coherentOutput - diffusedOutput;
     outputDifference += difference * difference;
+    if (sample > 0)
+      CheckNear(second.StoredEnergy() / before, expectedEnergyRatio,
+                8 * floatEpsilon, "phase rotation preserves each step's damping");
   }
   Check(outputDifference > 1.0,
         "phase bandwidth audibly decorrelates a modal ridge");
-  CheckNear(second.StoredEnergy() / first.StoredEnergy(), 1.0, 1.5e-4,
+  // Float rotations accumulate rounding differently with ARM fused arithmetic.
+  // Bound the long-run difference by one float epsilon per step, alongside the
+  // tighter local damping check above; do not change the synthesis to fit a CPU.
+  CheckNear(second.StoredEnergy() / first.StoredEnergy(), 1.0, frames * floatEpsilon,
             "phase broadening changes coherence without changing energy");
 }
 
