@@ -40,6 +40,11 @@ Preparation-time validation and host automation will be expanded together when
 the CLAP adapter is added. This C API is a development interface, not a released
 binary compatibility promise.
 
+Optional native host-output protection is implemented separately in
+`drumfoundry_output`; see [output-limiter.md](output-limiter.md). It adds a fixed
+1 ms only when explicitly used by a host. Raw rendering and fitting remain
+unlimited, and the future UI must expose bypass, latency and gain reduction.
+
 ## Remaining work before plugin/UI
 
 - Port the UI's model-editing helpers (series generation, Size meta, bloom timing
