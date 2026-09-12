@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('setup','doctor','build','test','python-test','test-fitting-tools','perceptual-test','check','dist')]
+    [ValidateSet('setup','doctor','build','test','clap','clap-test','clap-dist','python-test','test-fitting-tools','perceptual-test','check','dist')]
     [string]$Command = 'build',
     [ValidateRange(1,64)][int]$Jobs = 4,
     [string]$Python = ''
@@ -17,6 +17,12 @@ try {
         'setup' { Initialize-Development }
         'doctor' { Show-DevelopmentEnvironment }
         'build' { Build-Native }
+        'clap' { Build-Native $true }
+        'clap-test' { Build-Native $true; Invoke-Checked ctest @('--test-dir','build/native','--output-on-failure') }
+        'clap-dist' {
+            Build-Native $true
+            Invoke-Checked cpack @('--config','build/native/CPackConfig.cmake','-B','dist/clap')
+        }
         'test' { Build-Native; Invoke-Checked ctest @('--test-dir', 'build/native', '--output-on-failure') }
         'python-test' { Invoke-PythonTests }
         'test-fitting-tools' { Invoke-PythonTests }

@@ -64,6 +64,16 @@ jobs:
           name: engine-${{ matrix.os }}
           path: dist/*.zip
           if-no-files-found: error
+      - name: CLAP build and dynamic host tests (no Python)
+        run: ./dev.ps1 clap-test
+      - name: Package CLAP preview
+        run: ./dev.ps1 clap-dist
+      - name: Upload CLAP preview
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: clap-${{ matrix.os }}
+          path: dist/clap/*.zip
+          if-no-files-found: error
       - name: Install optional development Python
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
         with:

@@ -23,6 +23,9 @@ Git configuration or install system tools. Configure your own Git identity.
 | `./dev.ps1 doctor` | Inspect native tools and Git state |
 | `./dev.ps1 build` | Compile engine and C interface, without Python |
 | `./dev.ps1 test` | Native DSP tests |
+| `./dev.ps1 clap` | Build the optional headless CLAP preview |
+| `./dev.ps1 clap-test` | DSP tests plus dynamic plugin/host integration tests |
+| `./dev.ps1 clap-dist` | Package CLAP preview under `dist/clap` |
 | `./dev.ps1 setup` | Locked Python environment and local Git hooks |
 | `./dev.ps1 python-test` | Native binding, fitting and analysis tests |
 | `./dev.ps1 test-fitting-tools` | Alias for the development tests |
@@ -36,8 +39,8 @@ test interpreter override. No command deletes build directories or user presets.
 Git development branch: `dev`. CI builds and tests Windows/MinGW, Linux,
 macOS ARM64 and macOS x64. Each native build/package precedes the optional Python
 job steps, demonstrating that Python is not required to build the engine.
-Engine-preview artifacts are uploaded per runner; public release automation for
-CLAP/application bundles belongs to stage two. The original VCV repo only had a
+Engine and CLAP preview artifacts are uploaded per runner; tagged public release
+automation and application bundles remain future work. The original VCV repo only had a
 CI workflow, not a separate tagged-release workflow.
 
 ## Code boundaries

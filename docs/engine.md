@@ -11,7 +11,7 @@ JSON fit/patch --> validate + prepare --> owned native Voice
                                             |
                        timed strike ------> process --> mono PCM
                                             ^
-                              C API / future CLAP adapter
+                              C API / optional CLAP adapter
 ```
 
 The DSP source is unchanged except for extracting shared utilities. Parameter
@@ -52,8 +52,9 @@ unlimited, and the future UI must expose bypass, latency and gain reduction.
   require them to render; do not reimplement them independently in Visage/Python.
 - Prepare safe audio-thread publication of structural changes, retirement of old
   state, parameter smoothing and sample-accurate host events.
-- CLAP state/automation and multiple-editor lifecycle; Visage editor and native
-  standalone audio/MIDI device management. Monitoring safety belongs there.
+- Full CLAP parameter editing and multiple-editor lifecycle; Visage editor and
+  native standalone audio/MIDI device management. The initial headless CLAP
+  state/gesture/limiter integration is documented in [clap.md](clap.md).
 
 The current runtime still embeds storage for each available recipe inside an
 owned session. This is not a global instance limit, but can be reduced to active

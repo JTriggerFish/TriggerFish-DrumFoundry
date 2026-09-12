@@ -3,9 +3,9 @@
 A constructive modular percussion synthesizer: cymbals, gongs, kicks, membranes
 and snares built from reusable native DSP components.
 
-This repository currently contains the **native engine and offline development
-tools**. CLAP, the standalone application and the Visage editor are the next stage;
-they are not implemented or advertised as available binaries yet.
+This repository contains the **native engine, offline development tools and an
+optional headless CLAP preview**. The standalone application and Visage editor
+are not implemented yet.
 
 ## Build
 
@@ -18,6 +18,19 @@ Windows uses the same MSYS2 **MinGW64 GCC** and Ninja toolchain as TriggerFish-V
 Linux uses GCC/Clang, macOS Apple Clang. PowerShell 7 drives the same commands on
 all three. Normal native builds need neither Python nor Node/Wasm/Rack/Visage.
 Pinned, hash-checked Eigen and JSON headers are downloaded on first configure.
+
+## Optional CLAP preview
+
+```powershell
+./dev.ps1 clap-test
+./dev.ps1 clap-dist
+```
+
+Builds `TriggerFishDrumFoundry.clap` with six embedded presets, MIDI strikes,
+host controls and project-state saving. The optional output limiter defaults to
+on with 1 ms latency, reported to the host. No GUI or standalone wrapper yet;
+use a host's generic parameter editor. See [CLAP integration](docs/clap.md).
+The CLAP SDK is fetched only for this build; Python remains unnecessary.
 
 ## Optional Python rendering and fitting
 
