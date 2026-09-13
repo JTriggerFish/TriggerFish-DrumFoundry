@@ -1,4 +1,5 @@
 #include "ui/controls.hpp"
+#include "ui/settings.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -41,5 +42,15 @@ int main() {
   event.position = {50, 25};
   pad.mouseDown(event);
   Require(velocity == .75f && location == .25f);
+  unsigned applies = 0, errors = 0;
+  SettingsBridge settings;
+  settings.apply = [&](const DeviceConfiguration &) { ++applies; };
+  SettingsPanel invalid(settings, {"test", "", "all", 48000, 128});
+  invalid.error = [&](const std::string &) { ++errors; };
+  invalid.Apply();
+  Require(applies == 0 && errors == 1);
+  SettingsPanel valid(settings, {"test", "device", "all", 48000, 128});
+  valid.Apply();
+  Require(applies == 1);
   return 0;
 }

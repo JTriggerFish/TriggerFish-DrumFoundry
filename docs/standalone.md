@@ -2,6 +2,9 @@
 
 The first standalone is a **console-controlled audio/MIDI application**, not yet
 the Visage editor. It exercises the actual CLAP adapter with real device callbacks.
+An optional `./dev.ps1 ui` build now adds the staged native workbench and
+audio/MIDI settings panel; see [native-ui.md](native-ui.md). That build opens
+the window with no arguments, while console commands remain available.
 The plugin and executable link the same compiled adapter objects; no synthesis,
 preset or limiter implementation is duplicated. Python is not involved.
 

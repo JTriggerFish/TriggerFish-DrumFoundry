@@ -97,11 +97,19 @@ int main(int argc, char **argv) {
   // launcher.
   std::cout << std::unitbuf;
   try {
-    if (argc == 1 || std::string(argv[1]) == "--help") {
+    if ((argc > 1 && std::string(argv[1]) == "--help")
+#ifndef DRUMFOUNDRY_UI
+        || argc == 1
+#endif
+    ) {
       Help();
       return 0;
     }
-    const auto options = Parse(argc, argv);
+    auto options = Parse(argc, argv);
+#ifdef DRUMFOUNDRY_UI
+    if (argc == 1)
+      options.gui = true;
+#endif
     if (options.smoke) {
       SmokeTest();
       return 0;
@@ -116,8 +124,12 @@ int main(int argc, char **argv) {
       PluginGuiSmoke(host);
       return 0;
     }
-    if (options.uiSmoke || (options.gui && options.audio.device.empty())) {
-      RunGui(host, nullptr, options.uiSmoke);
+    if (options.uiSmoke || options.gui) {
+      host.SetStopped(100, PresetIndex(options.preset));
+      RunGui(host,
+             {options.audio.api, options.audio.device, options.midi,
+              options.audio.sampleRate, options.audio.buffer},
+             options.uiSmoke);
       return 0;
     }
 #else
@@ -136,11 +148,7 @@ int main(int argc, char **argv) {
     MidiInputs midi(host, options.midi);
     audio.Start();
     std::cout << audio.Status() << '\n' << host.Status() << '\n';
-    if (options.gui) {
-#ifdef DRUMFOUNDRY_UI
-      RunGui(host, &audio);
-#endif
-    } else if (!options.seconds)
+    if (!options.seconds)
       Console(host, audio);
     else {
       const auto started = std::chrono::steady_clock::now();

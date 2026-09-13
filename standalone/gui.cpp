@@ -1,61 +1,70 @@
 #include "gui.hpp"
+#include "gui_session.hpp"
 #include "ui/workbench.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <visage/app.h>
 
 namespace drumfoundry::standalone {
-void RunGui(PluginHost &host, AudioDevice *audio, bool smoke) {
-  ui::Bridge bridge;
-  bridge.value = [&host](unsigned id) { return host.Value(id); };
-  bridge.change = [&host, audio](unsigned id, double value) {
-    if (id == 100 || id == 106 || !audio) {
-      if (audio)
-        audio->Stop();
-      host.SetStopped(id, value);
-      if (audio)
-        audio->Start();
-    } else if (!host.controls.Push({false, id, value, {}}))
-      throw std::runtime_error("Control queue full");
+void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
+            bool smoke) {
+  GuiSession session(host);
+  ui::SettingsPanel settings(session.Settings(), config);
+  visage::Frame shade;
+  shade.onDraw() = [&](visage::Canvas &c) {
+    c.setColor(0x9905090f);
+    c.fill(0, 0, shade.width(), shade.height());
   };
-  bridge.strike = [&host, audio](float velocity, float location) {
-    if (!audio)
-      throw std::runtime_error("No audio device open in UI inspection mode");
-    if (!host.controls.Push(
-            {false, host.Value(100) == 0 ? 101u : 103u, location, {}}) ||
-        !host.controls.Push(
-            {true,
-             0,
-             0,
-             {0x90, 60, uint8_t(std::clamp(int(velocity * 127), 1, 127))}}))
-      throw std::runtime_error("Strike queue full");
-  };
-  bridge.stop = [&host] { host.controls.Push({true, 0, 0, {0xb0, 120, 0}}); };
-  bridge.service = [&host, audio] {
-    host.Service();
-    if (audio && host.restart.exchange(false))
-      audio->Start();
-  };
-  bridge.status = [&host, audio] {
-    return audio ? audio->Status() : "UI inspection — audio device not opened";
+  auto bridge = session.Connect();
+  bridge.settings = [&] {
+    shade.setVisible(true);
+    settings.setVisible(true);
   };
   visage::ApplicationWindow window;
   window.setTitle("TriggerFish DrumFoundry");
   window.setMinimumDimensions(1000, 640);
   ui::Workbench editor(std::move(bridge));
+  settings.error = [&](const std::string &error) { editor.Error(error); };
   window.addChild(&editor);
-  window.onResize() = [&] { editor.setBounds(window.localBounds()); };
+  window.addChild(&shade, false);
+  shade.addChild(&settings);
+  settings.onVisibilityChange() = [&] {
+    if (!settings.isVisible())
+      shade.setVisible(false);
+  };
+  settings.setOnTop(true);
+  window.onResize() = [&] {
+    editor.setBounds(window.localBounds());
+    shade.setBounds(window.localBounds());
+    settings.setBounds((window.width() - 640) / 2, (window.height() - 440) / 2,
+                       640, 440);
+  };
+  if (!smoke && !config.device.empty()) {
+    try {
+      session.Apply(config);
+    } catch (const std::exception &e) {
+      editor.Error(e.what());
+    }
+  }
   visage::EventTimer finish;
   bool captured = false;
   int attempts = 0;
+  int captureStage = 0;
   if (smoke) {
     finish.onTimerCallback() = [&] {
       const auto &shot = window.takeScreenshot();
       if (shot.width() > 0 && shot.height() > 0) {
-        shot.save("build/ui-smoke.png");
-        captured = true;
+        if (captureStage == 0) {
+          shot.save("build/ui-smoke.png");
+          shade.setVisible(true);
+          settings.setVisible(true);
+        } else if (captureStage == 2) {
+          shot.save("build/ui-settings-smoke.png");
+          captured = true;
+        }
+        ++captureStage;
       }
-      if (captured || ++attempts == 5) {
+      if (captured || ++attempts == 8) {
         finish.stopTimer();
         window.window()->close();
       }

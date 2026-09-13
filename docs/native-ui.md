@@ -50,7 +50,14 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
 - `cmake/visage-compat.cmake` fixes the pinned Windows parent-procedure lookup
   when a Visage editor is embedded in a Visage host. Generated source only; no
   upstream checkout mutation. The real embedding test caught this dispatch bug.
-- Native device settings, full patch editing and analysis editors remain next.
+- Standalone settings: in-window modal panel with API/device/MIDI/rate/buffer
+  menus, explicit Apply/start and release. UI builds open this workbench on
+  double-click; they do not open an audio device until selected. ASIO discovery
+  reads driver registration names, never probes unrelated vendor DLLs.
+  Hardware-free smoke captures include the settings overlay; validation uses
+  fake device callbacks in native tests. Real device handling is the tested
+  RtAudio/RtMidi host, not a second implementation.
+- Full patch editing and analysis editors remain next.
 
 ## References
 
