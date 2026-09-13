@@ -49,6 +49,11 @@ private:
   void PublishState();
   void Menus();
   void ReferenceMenu();
+  void ReferenceDimensionMenu(const char *key, visage::UiButton &);
+  void RefreshReferenceControls();
+  void RefreshTransformLabels();
+  void OverlapMenu();
+  void RenderMenu();
   void SelectReference(const analysis::ReferenceCell &);
   analysis::Catalog catalog_;
   analysis::Worker worker_;
@@ -66,6 +71,8 @@ private:
   visage::UiButton referenceButton_{"Reference WAV"}, fft_{"FFT 4096"},
       window_{"Hann"}, comparison_{"Mirror"}, reset_{"Reset zoom"},
       channel_{"Mono average"};
+  visage::UiButton articulation_{"Articulation"}, layer_{"Velocity"},
+      take_{"Take"}, overlap_{"Overlap"}, render_{"Render"};
   Slider duration_{"Render length", .25, 60, 8, " s"};
   Slider range_{"Colour range", 30, 120, 80, " dB"};
   Slider referenceGain_{"Reference gain", -60, 48, 0, " dB"};

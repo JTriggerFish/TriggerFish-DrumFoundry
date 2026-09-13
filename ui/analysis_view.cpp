@@ -58,10 +58,13 @@ void AnalysisView::ResetZoom() {
 AnalysisView::Coordinate AnalysisView::At(float x, float y) const {
   const double u =
       std::clamp(double((x - 42) / std::max(1.f, width() - 54)), 0., 1.);
-  double v =
-      std::clamp(double((y - 62) / std::max(1.f, height() - 91)), 0., 1.);
+  double v = std::clamp(
+      double((y - PlotTop) / std::max(1.f, height() - PlotTop - 29)), 0., 1.);
   bool reference = comparison == Comparison::Reference;
   double time = pan + span * u;
+  if (y < PlotTop)
+    return {false, time,
+            frequencyHigh}; // Forward-time waveform, not a mirrored pane.
   if (comparison == Comparison::Mirror ||
       comparison == Comparison::SideBySide) {
     reference = u < split;
@@ -79,12 +82,12 @@ AnalysisView::Coordinate AnalysisView::At(float x, float y) const {
   return {reference, time, maximum * std::pow(frequencyLow / maximum, v)};
 }
 void AnalysisView::Refresh() {
-  if (!result_ || width() < 55 || height() < 92) {
+  if (!result_ || width() < 55 || height() < PlotTop + 30) {
     redraw();
     return;
   }
   const int columns = std::clamp(int(width() - 54), 64, 2048),
-            rows = std::clamp(int(height() - 91), 64, 768);
+            rows = std::clamp(int(height() - PlotTop - 29), 64, 768);
   heatmap_.setDimensions(columns, rows);
   // One reference-anchored ceiling for BOTH sides. Never adapt to model edits.
   const float ceiling =
@@ -96,9 +99,11 @@ void AnalysisView::Refresh() {
   std::vector<Coordinate> horizontal;
   horizontal.reserve(columns);
   for (int x = 0; x < columns; ++x)
-    horizontal.push_back(At(42 + (width() - 54) * (x + .5f) / columns, 62));
+    horizontal.push_back(
+        At(42 + (width() - 54) * (x + .5f) / columns, PlotTop));
   for (int y = 0; y < rows; ++y) {
-    const auto vertical = At(42, 62 + (height() - 91) * (y + .5f) / rows);
+    const auto vertical =
+        At(42, PlotTop + (height() - PlotTop - 29) * (y + .5f) / rows);
     const double verticalShare = comparison == Comparison::Stacked
                                      ? (vertical.reference ? split : 1 - split)
                                      : 1;
@@ -153,7 +158,7 @@ void AnalysisView::draw(visage::Canvas &c) {
         visage::Gradient(0xff65dce8, 0xff000000, 0xffffb458)));
   else
     c.setColor(visage::Brush::horizontal(visage::Gradient::kMagma));
-  c.heatMap(heatmap_, 42, 62, width() - 54, height() - 91);
+  c.heatMap(heatmap_, 42, PlotTop, width() - 54, height() - PlotTop - 29);
   Waveform(c);
   Axes(c);
   Readout(c);
@@ -161,10 +166,12 @@ void AnalysisView::draw(visage::Canvas &c) {
   if (comparison == Comparison::Mirror ||
       comparison == Comparison::SideBySide) {
     c.setColor(0xff8e9ead);
-    c.fill(42 + float(split) * (width() - 54), 62, 1, height() - 91);
+    c.fill(42 + float(split) * (width() - 54), PlotTop, 1,
+           height() - PlotTop - 29);
   } else if (comparison == Comparison::Stacked) {
     c.setColor(0xff8e9ead);
-    c.fill(42, 62 + float(split) * (height() - 91), width() - 54, 1);
+    c.fill(42, PlotTop + float(split) * (height() - PlotTop - 29), width() - 54,
+           1);
   }
 }
 void AnalysisView::WriteEdge(visage::Canvas &c) {
@@ -176,8 +183,8 @@ void AnalysisView::WriteEdge(visage::Canvas &c) {
   if (comparison == Comparison::Mirror || comparison == Comparison::SideBySide)
     x = split + (1 - split) * x;
   const float top = comparison == Comparison::Stacked
-                        ? 62 + float(split) * (height() - 91)
-                        : 62;
+                        ? PlotTop + float(split) * (height() - PlotTop - 29)
+                        : PlotTop;
   c.setColor(0xffa6adb5);
   c.fill(42 + float(x) * (width() - 54), top, 2, height() - 29 - top);
 }

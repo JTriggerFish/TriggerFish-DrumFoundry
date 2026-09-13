@@ -63,6 +63,7 @@ void ReferenceTests(const drumfoundry::Json &fit) {
       {"corpora",
        {{{"id", "fixture"},
          {"name", "Fixture"},
+         {"reference_gain_db", 24.},
          {"cells",
           {{{"path", "test.wav"}, {"sha256", hash}, {"label", "Test"}}}}}}}};
   {
@@ -72,6 +73,7 @@ void ReferenceTests(const drumfoundry::Json &fit) {
   Catalog loaded;
   loaded.Load(catalogPath);
   Check(loaded.Find({{"sha256", hash}}) != nullptr);
+  Check(loaded.Cells().at(0).gainDb == 24.);
   Check(loaded.Find({{"cell", drumfoundry::Json::object()}}) == nullptr);
   catalog["corpora"][0]["cells"][0]["path"] = "../escape.wav";
   {

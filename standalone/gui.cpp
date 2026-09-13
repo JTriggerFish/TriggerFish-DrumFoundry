@@ -45,6 +45,7 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &cli, bool smoke,
   unsigned smokeFrames = 0;
   if (smoke) {
     host.Prepare(48000, 512);
+    bridge.audioRunning = [] { return true; };
     bridge.status = [] {
       return "Device-free UI test — generated audio is discarded";
     };
@@ -94,7 +95,7 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &cli, bool smoke,
   std::unique_ptr<GuiCapture> capture;
   if (smoke)
     capture = std::make_unique<GuiCapture>(window, editor, shade, settings);
-  window.show(1440, 900);
+  window.show(smoke ? 2400 : 1440, smoke ? 1200 : 900);
   window.runEventLoop();
   smokeAudio.stopTimer();
   if (smoke)

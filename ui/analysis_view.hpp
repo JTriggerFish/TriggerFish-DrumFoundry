@@ -35,6 +35,8 @@ public:
   double frequencyLow{20}, frequencyHigh{20000};
 
 private:
+  static constexpr float PlotTop =
+      120; // Two waveform lanes, time axis, legend.
   struct Coordinate {
     bool reference;
     double time, frequency;
@@ -53,7 +55,7 @@ private:
   std::shared_ptr<const analysis::Result> previousResult_;
   double writtenSeconds_{-1};
   visage::HeatMapData heatmap_;
-  bool dragging_{}, divider_{}, dragReference_{};
+  bool dragging_{}, divider_{}, dragReference_{}, dragWaveform_{};
   visage::Point previous_;
   visage::Point pointer_;
   bool hover_{};

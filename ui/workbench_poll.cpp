@@ -1,9 +1,16 @@
 #include "workbench.hpp"
+#include <algorithm>
 #include <cmath>
 #include <exception>
 namespace drumfoundry::ui {
 void Workbench::PollPerformance() {
-  preset_.setText("Factory presets…");
+  static const char *names[]{"Kick",  "Snare", "Hi-hat",
+                             "Crash", "Ride",  "Gong"};
+  const int preset = std::clamp(int(bridge_.value(100)), 0, 5);
+  preset_.setText(std::string("Preset: ") + names[preset] + " ▾");
+  audioRunning_ = !bridge_.audioRunning || bridge_.audioRunning();
+  settings_.setText(audioRunning_ ? "Settings" : "Start audio…");
+  settings_.setActionButton(!audioRunning_);
   master_.Set(bridge_.value(105));
   hardness_.Set(bridge_.value(101));
   spread_.Set(bridge_.value(109));

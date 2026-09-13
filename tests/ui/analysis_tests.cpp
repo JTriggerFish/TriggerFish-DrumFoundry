@@ -50,6 +50,15 @@ int main(int argc, char **argv) {
   e.precise_wheel_delta_y = -1;
   view.mouseWheel(e);
   Require(std::abs(view.pan) < 1e-10);
+  e.button_id = visage::kMouseButtonLeft;
+  e.position = {
+      200, 20}; // The waveform must pan in forward time, even in mirror view.
+  view.mouseDown(e);
+  e.position.x += 30;
+  view.mouseDrag(e);
+  view.mouseUp(e);
+  Require(std::abs(view.pan + view.span * 30 / (800 - 54)) < 1e-10);
+  view.pan = 0;
   analysis::Worker worker;
   analysis::Request request;
   request.document = editing::ReadFit(argv[1]);

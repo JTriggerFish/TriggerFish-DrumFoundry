@@ -19,6 +19,8 @@ struct Bridge {
   std::function<void()> stop;
   std::function<void()> service;
   std::function<void()> settings;
+  std::function<bool()>
+      audioRunning; // Standalone device state, not render state.
   std::function<std::string()> status;
   std::function<nlohmann::json()> document;
   std::function<void(const nlohmann::json &)> applyDocument;

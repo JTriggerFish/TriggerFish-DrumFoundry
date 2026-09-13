@@ -3,6 +3,14 @@
 #include <cmath>
 #include <exception>
 namespace drumfoundry::ui {
+bool Workbench::EnsureAudio() {
+  if (!bridge_.audioRunning || bridge_.audioRunning())
+    return true;
+  Error("Audio stopped. Select your device and press Apply & start.");
+  if (bridge_.settings)
+    bridge_.settings();
+  return false;
+}
 void Workbench::SetupPerformance() {
   for (unsigned i = 0; i < implements_.size(); ++i) {
     right_.addScrolledChild(&implements_[i]);
@@ -41,6 +49,8 @@ void Workbench::SetupPerformance() {
   mute_.changed = [this](double v) { Change(104, v); };
   strike_.strike = [this](float v, float x) {
     try {
+      if (!EnsureAudio())
+        return;
       bridge_.strike(v, x);
     } catch (const std::exception &e) {
       Error(e.what());

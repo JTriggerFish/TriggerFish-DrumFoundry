@@ -1,14 +1,27 @@
 #include "analysis_panel.hpp"
 #include "analysis_validation.hpp"
 #include "editing/files.hpp"
+#include "toolbar_layout.hpp"
 #include <cmath>
 namespace drumfoundry::ui {
 AnalysisPanel::AnalysisPanel() {
   for (auto *frame : std::initializer_list<visage::Frame *>{
            &view_, &referenceButton_, &fft_, &window_, &comparison_, &reset_,
-           &channel_, &duration_, &range_, &referenceGain_})
+           &channel_, &duration_, &range_, &referenceGain_, &articulation_,
+           &layer_, &take_, &overlap_, &render_})
     addChild(frame);
   referenceButton_.onToggle() = [this](auto *, bool) { ReferenceMenu(); };
+  articulation_.onToggle() = [this](auto *, bool) {
+    ReferenceDimensionMenu("articulation", articulation_);
+  };
+  layer_.onToggle() = [this](auto *, bool) {
+    ReferenceDimensionMenu("velocity", layer_);
+  };
+  take_.onToggle() = [this](auto *, bool) {
+    ReferenceDimensionMenu("repeat", take_);
+  };
+  overlap_.onToggle() = [this](auto *, bool) { OverlapMenu(); };
+  render_.onToggle() = [this](auto *, bool) { RenderMenu(); };
   reset_.onToggle() = [this](auto *, bool) { view_.ResetZoom(); };
   duration_.committed = [this] {
     matchLength_ = false;
@@ -87,6 +100,8 @@ void AnalysisPanel::SetDocument(const editing::Json &document) {
             : 0;
   }
   LoadView(a);
+  RefreshReferenceControls();
+  RefreshTransformLabels();
   Queue();
 }
 void AnalysisPanel::SetReference(const std::filesystem::path &path) {
@@ -101,6 +116,7 @@ void AnalysisPanel::SetReference(const std::filesystem::path &path) {
                 {"localPath", request_.reference.u8string()},
                 {"referenceGainDb", referenceGain_.Value()}};
   view_.referenceOffset = 0;
+  RefreshReferenceControls();
   Queue();
 }
 editing::Json AnalysisPanel::Reference() const {
@@ -145,21 +161,39 @@ void AnalysisPanel::Queue() {
   request_.duration = matchLength_ ? 0 : duration_.Value();
   view_.renderDuration = duration_.Value();
   worker_.Submit(request_);
+  RefreshTransformLabels();
   status_ = "Rendering — previous plot retained";
   redraw();
 }
 void AnalysisPanel::resized() {
-  const float col = (width() - 24) / 3;
-  referenceButton_.setBounds(0, 0, col, 28);
-  comparison_.setBounds(col + 12, 0, col, 28);
-  fft_.setBounds(2 * (col + 12), 0, col, 28);
-  window_.setBounds(0, 34, col, 28);
-  reset_.setBounds(col + 12, 34, col, 28);
-  channel_.setBounds(2 * (col + 12), 34, col, 28);
-  duration_.setBounds(0, 68, col, 44);
-  range_.setBounds(col + 12, 68, col, 44);
-  referenceGain_.setBounds(2 * (col + 12), 68, col, 44);
-  view_.setBounds(0, 120, width(), height() - 147);
+  ToolbarLayout reference(width(), 0, 46);
+  reference.Place(referenceButton_, 184);
+  if (catalog_.Find(reference_)) {
+    reference.Place(articulation_, 104);
+    reference.Place(layer_, 94);
+    reference.Place(take_, 64);
+  }
+  reference.Place(referenceGain_, 146, 44);
+  reference.Place(channel_, 100);
+  // Measure wrapped tool rows first; the waveform and plot precede them.
+  auto tools = [this](float y) {
+    ToolbarLayout row(width(), y, 34);
+    row.Place(comparison_, 110);
+    row.Place(window_, 158);
+    row.Place(fft_, 90);
+    row.Place(overlap_, 110);
+    row.Place(render_, 135);
+    row.Place(reset_, 90);
+    ToolbarLayout scales(width(), row.Bottom(), 44);
+    scales.Place(range_, 210, 44);
+    scales.Place(duration_, 180, 44);
+    return scales.Bottom();
+  };
+  const float controlsHeight = tools(0);
+  const float bottom =
+      std::max(reference.Bottom() + 180, height() - 26 - controlsHeight);
+  view_.setBounds(0, reference.Bottom(), width(), bottom - reference.Bottom());
+  tools(bottom);
 }
 void AnalysisPanel::draw(visage::Canvas &c) {
   Label(c, status_, 0, height() - 26, width(), 24, 0xff8799ae);

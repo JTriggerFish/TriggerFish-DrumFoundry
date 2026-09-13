@@ -24,7 +24,8 @@ void Catalog::Load(const std::filesystem::path &path) {
       if (within.empty() || *within.begin() == "..")
         throw std::runtime_error("Reference path escapes its catalogue folder");
       cells.push_back({corpus.at("id"), corpus.at("name"), cell, resolved,
-                       corpus.value("audition_trim_db", 0.)});
+                       corpus.value("reference_gain_db",
+                                    corpus.value("audition_trim_db", 0.))});
     }
   cells_ = std::move(cells);
 }

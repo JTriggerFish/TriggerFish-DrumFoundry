@@ -23,6 +23,22 @@ no stock audio slider: a small conventional horizontal Frame-based control is
 needed. Custom DSP editors and graphs use Visage drawing, not browser widgets.
 Do not redesign the control surface or change presets during this port.
 
+The analysis toolbar uses compact wrapping controls below the plot, matching
+the web workbench ordering. Above it, reference corpus/articulation/velocity/take
+selection stays separate from the instrument's strike controls. Catalogue
+`reference_gain_db` is preserved when selecting a different recorded layer.
+Waveforms have labelled, forward-time lanes and a shared reference amplitude
+scale; mirroring applies only to the spectrogram, including its pan gestures.
+The strike pad sits beside implement/character controls, not above full-width
+sliders. Layout regression checks cover 1000, 1440 and 3200 pixel windows.
+
+Standalone device selections are restored without acquiring an exclusive audio
+device. A stopped engine is explicitly labelled beside playback with a
+**Start audio** button. Striking or auditioning while stopped opens Settings,
+where **Apply & start** activates the selected device. Offline preview rendering
+does not imply that a device is running. The click-to-CLAP audio path is tested
+at 128 samples with hardware-free output capture; this does not test a driver.
+
 ## Iterative delivery
 
 1. Optional pinned Visage build, shared editor foundation, native performance

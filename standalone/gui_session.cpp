@@ -51,6 +51,7 @@ ui::SettingsBridge GuiSession::Settings() {
 }
 ui::Bridge GuiSession::Connect() {
   ui::Bridge bridge;
+  bridge.audioRunning = [this] { return audio_ && audio_->Running(); };
   auto &plugin = clap_adapter::Plugin::Get(host_.Api());
   bridge.velocity = [&plugin] { return plugin.PreviewStrength(); };
   bridge.setVelocity = [&plugin](double v) { plugin.SetPreviewStrength(v); };
@@ -104,7 +105,7 @@ ui::Bridge GuiSession::Connect() {
       throw std::runtime_error("Control queue full");
   };
   bridge.strike = [this, &plugin](float velocity, float x) {
-    if (!audio_)
+    if (!audio_ || !audio_->Running())
       throw std::runtime_error(
           "Choose an audio device in Settings, then Apply & start");
     if (!plugin.QueueStrike(velocity, x))
@@ -121,7 +122,8 @@ ui::Bridge GuiSession::Connect() {
       audio_->Start();
   };
   bridge.status = [this] {
-    return audio_ ? audio_->Status() + midiStatus_
+    return audio_ ? audio_->Status() + midiStatus_ + " | process errors " +
+                        std::to_string(host_.failures.load())
                   : "Audio stopped — select a device in Settings";
   };
   return bridge;

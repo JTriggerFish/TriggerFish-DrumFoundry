@@ -8,25 +8,14 @@ void AnalysisPanel::Menus() {
     for (unsigned size = 256; size <= 32768; size *= 2)
       menu.addOption(int(size), "FFT " + std::to_string(size))
           .select(size == request_.transform.size);
-    visage::PopupMenu overlap("Overlap");
-    for (int divisor : {2, 4, 8, 16})
-      overlap
-          .addOption(100000 + divisor,
-                     std::to_string(100. - 100. / divisor) + " %")
-          .select(request_.transform.hop * divisor == request_.transform.size);
-    menu.addSubMenu(std::move(overlap));
     menu.onSelection() = [this](int size) {
-      if (size >= 100000)
-        request_.transform.hop =
-            request_.transform.size / unsigned(size - 100000);
-      else {
-        const double fraction =
-            double(request_.transform.hop) / request_.transform.size;
-        request_.transform.size = unsigned(size);
-        request_.transform.hop = std::clamp(
-            unsigned(std::lround(size * fraction)), 1u, unsigned(size));
-      }
+      const double fraction =
+          double(request_.transform.hop) / request_.transform.size;
+      request_.transform.size = unsigned(size);
+      request_.transform.hop = std::clamp(
+          unsigned(std::lround(size * fraction)), 1u, unsigned(size));
       fft_.setText("FFT " + std::to_string(request_.transform.size));
+      RefreshTransformLabels();
       Queue();
     };
     menu.show(&fft_);
@@ -41,6 +30,7 @@ void AnalysisPanel::Menus() {
                                   : i == 1 ? "blackman-harris"
                                            : "rectangular";
       window_.setText(request_.transform.window);
+      RefreshTransformLabels();
       Queue();
     };
     menu.show(&window_);

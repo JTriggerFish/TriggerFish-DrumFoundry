@@ -38,6 +38,7 @@ private:
   void SetupMetas();
   void SetupFiles();
   void SetupPerformance();
+  bool EnsureAudio();
   void SetupRouting();
   float LeftControlsTop() const { return 144 + (routingOpen_ ? 156.f : 0.f); }
   void RefreshDocument();
@@ -88,5 +89,6 @@ private:
   PreviewTracker preview_;
   std::string error_, status_;
   double reduction_{}, latency_{};
+  bool audioRunning_{true};
 };
 } // namespace drumfoundry::ui

@@ -35,7 +35,7 @@ void Workbench::SetupAnalysis() {
   analysis_.chooseReference = [this] { OpenReferenceFile(); };
   analysisSplit_.started = [this] { splitStart_ = analysis_.height(); };
   analysisSplit_.dragged = [this](float delta) {
-    const double flexible = std::max(1350.f, right_.height()) - 250;
+    const double flexible = std::max(1350.f, right_.height()) - 210;
     analysis_.analysisShare =
         std::clamp((splitStart_ + delta) / flexible, .1, .9);
     LayoutRight();
@@ -43,8 +43,14 @@ void Workbench::SetupAnalysis() {
   analysis_.error = [this](const auto &message) { Error(message); };
   analysis_.play = bridge_.play;
   analysis_.presentation = bridge_.presentation;
-  referencePlay_.onToggle() = [this](auto *, bool) { analysis_.Play(true); };
-  modelPlay_.onToggle() = [this](auto *, bool) { analysis_.Play(false); };
+  referencePlay_.onToggle() = [this](auto *, bool) {
+    if (EnsureAudio())
+      analysis_.Play(true);
+  };
+  modelPlay_.onToggle() = [this](auto *, bool) {
+    if (EnsureAudio())
+      analysis_.Play(false);
+  };
   modal_.committed = [this] { ApplyDocument(); };
   modal_.error = [this](const auto &text) { Error(text); };
 }

@@ -55,6 +55,7 @@ void AnalysisPanel::SelectReference(const analysis::ReferenceCell &cell) {
   view_.referenceGainDb = cell.gainDb;
   view_.referenceOffset = cell.metadata.value("onset_seconds", 0.);
   referenceButton_.setText(cell.metadata.at("label").get<std::string>());
+  RefreshReferenceControls();
   Queue();
 }
 } // namespace drumfoundry::ui

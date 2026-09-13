@@ -12,6 +12,8 @@ void Require(bool result) {
 int main(int argc, char **argv) {
   extern void DocumentHostTests();
   DocumentHostTests();
+  extern void WorkbenchTests();
+  WorkbenchTests();
   Require(argc == 2);
   std::ifstream source(argv[1]);
   NativeStrikeParity(drumfoundry::Json::parse(source));

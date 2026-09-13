@@ -19,6 +19,7 @@ public:
   void Stop() noexcept;
   void Reconfigure(unsigned rate, unsigned buffer);
   std::string Status() const;
+  bool Running() const { return running_ && audio_->isStreamRunning(); }
   std::atomic<unsigned> xruns{}, deviceErrors{};
 
 private:
