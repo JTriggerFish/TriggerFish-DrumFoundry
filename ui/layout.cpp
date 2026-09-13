@@ -13,18 +13,18 @@ void Workbench::resized() {
   const float col = (left - 48) / 2;
   right_.setBounds(left + 16, 110, width() - left - 32, height() - 221);
   const float contentWidth = right_.width() - 14;
-  analysis_.setBounds(0, 0, contentWidth, 230);
-  strike_.setBounds(0, 240, contentWidth, 90);
-  hardness_.setBounds(0, 374, contentWidth, 44);
+  analysis_.setBounds(0, 0, contentWidth, 450);
+  strike_.setBounds(0, 460, contentWidth, 90);
+  hardness_.setBounds(0, 594, contentWidth, 44);
   const float buttonWidth = (contentWidth - 16) / 3;
   for (unsigned i = 0; i < implements_.size(); ++i)
-    implements_[i].setBounds(i * (buttonWidth + 8), 338, buttonWidth, 28);
+    implements_[i].setBounds(i * (buttonWidth + 8), 558, buttonWidth, 28);
   location_.setBounds(16, 134, col, 44);
   mute_.setBounds(32 + col, 134, col, 44);
   excitation_.setBounds(16, 188, col, height() - 299);
   resonance_.setBounds(32 + col, 188, col, height() - 299);
-  modal_.setBounds(0, 430, contentWidth, 650);
-  right_.setScrollableHeight(1080);
+  modal_.setBounds(0, 650, contentWidth, 650);
+  right_.setScrollableHeight(1300);
   history_.setBounds(16, height() - 100, width() - 32, 34);
   fileShade_.setBounds(localBounds());
   files_.setBounds((width() - 640) / 2, (height() - 300) / 2, 640, 300);

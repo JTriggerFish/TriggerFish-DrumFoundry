@@ -1,4 +1,5 @@
 #pragma once
+#include "analysis_panel.hpp"
 #include "bridge.hpp"
 #include "controls.hpp"
 #include "file_panel.hpp"
@@ -27,6 +28,7 @@ private:
   void ApplyDocument();
   editing::Json CaptureDocument() const;
   void OpenFitFile(bool save, const editing::Json &);
+  void OpenReferenceFile();
   Bridge bridge_;
   visage::EventTimer timer_;
   visage::UiButton preset_{"Kick"}, settings_{"Settings"}, stop_{"Stop"},
@@ -42,7 +44,7 @@ private:
   editing::Document document_;
   ParameterPanel excitation_, resonance_;
   visage::ScrollableFrame right_;
-  visage::Frame analysis_;
+  AnalysisPanel analysis_;
   ModalPanel modal_;
   HistoryBar history_;
   visage::Frame fileShade_;
@@ -50,6 +52,8 @@ private:
   int documentPreset_{-1};
   unsigned documentRevision_{};
   bool reloadDocument_{};
+  editing::Json renderedEvent_;
+  unsigned eventDebounce_{};
   std::string error_, status_;
   double reduction_{}, latency_{};
 };

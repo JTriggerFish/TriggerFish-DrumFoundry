@@ -1,4 +1,5 @@
 # Optional native UI. Core/render/fitting builds do not fetch graphics libraries.
+include(cmake/analysis.cmake)
 set(VISAGE_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(VISAGE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(VISAGE_ENABLE_BACKGROUND_GRAPHICS_THREAD ON CACHE BOOL "" FORCE)
@@ -15,8 +16,10 @@ target_sources(drumfoundry_ui PRIVATE ui/decay_editor.cpp ui/decay_gestures.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/modal_plot.cpp ui/modal_gestures.cpp ui/modal_paint.cpp
   ui/modal_panel.cpp ui/modal_layout.cpp ui/series_panel.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/file_panel.cpp ui/history_bar.cpp ui/workbench_files.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/analysis_view.cpp ui/analysis_axes.cpp ui/analysis_gestures.cpp ui/analysis_panel.cpp ui/analysis_menus.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/reference_menu.cpp)
 target_include_directories(drumfoundry_ui PUBLIC ${PROJECT_SOURCE_DIR})
-target_link_libraries(drumfoundry_ui PUBLIC visage drumfoundry_editing PRIVATE VisageEmbeddedFonts)
+target_link_libraries(drumfoundry_ui PUBLIC visage drumfoundry_editing drumfoundry_analysis PRIVATE VisageEmbeddedFonts)
 install(FILES ${visage_SOURCE_DIR}/LICENSE DESTINATION licenses/visage)
 install(FILES ${visage_SOURCE_DIR}/visage_graphics/fonts/LICENSE DESTINATION licenses/visage/fonts)
 foreach(library bgfx bx bimg)

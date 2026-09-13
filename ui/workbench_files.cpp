@@ -3,7 +3,14 @@ namespace drumfoundry::ui {
 editing::Json Workbench::CaptureDocument() const {
   auto next = document_.JsonValue();
   next["controls"]["event"] = bridge_.document().at("controls").at("event");
+  next["reference"] = analysis_.Reference();
+  next["controls"]["analysis"] = analysis_.Settings();
   return next;
+}
+void Workbench::OpenReferenceFile() {
+  files_.chosen = [this](const auto &path) { analysis_.SetReference(path); };
+  files_.Open(std::filesystem::current_path(), false, ".wav");
+  fileShade_.setVisible(true);
 }
 void Workbench::OpenFitFile(bool save, const editing::Json &document) {
   try {

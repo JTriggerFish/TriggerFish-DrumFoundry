@@ -83,9 +83,38 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   Writes validate first and exclusively create a new file, never overwriting a
   previous fit. Native tests check round-trip persistence and overwrite rejection.
 
-## References
+## Native analysis preview
+
+The optional UI target includes WAV decoding, reference SHA256 verification,
+offline native Voice rendering and centred STFT analysis on a cancellable worker.
+It never reads the live voice. Reference decode/hash/STFT results are cached by
+file identity, channel and transform. Performance edits are briefly debounced;
+the last completed plot stays visible until a replacement is ready.
+
+Visage GPU heatmaps show mirror (default), side-by-side, stacked, individual or
+difference views. The colour ceiling comes only from the reference; without a
+reference it stays at 0 dBFS. No PCM normalization occurs. Difference is model
+minus reference in dB, black at zero, amber for excess and cyan for missing energy.
+Both sides use the same reference floor. Wheel pans both sides reversibly;
+Ctrl-wheel zooms, Shift-drag aligns either side, and the divider is draggable.
+FFT size, window, render duration, colour range, explicit reference gain and mono/
+left/right channel selection are native controls. Saved fits retain the channel.
+Reference playback and full view-state persistence are the next integration step.
+
+The optional, one-time `tools/import_workbench_references.py` helper copies the
+old workbench's curated allow-list into the user's application-data
+`TriggerFish/DrumFoundry/references` folder. It refuses conflicting existing files.
+The native UI reads `catalog.json` and WAV files directly; Python and the old
+repository are not runtime dependencies. Recordings are never packaged or
+committed. A native hierarchical menu offers the curated instrument/cell grid,
+and Other WAV opens the native picker. Selecting a reference does not secretly
+alter synthesis settings or normalize gain.
+
+## Dependency references
 
 - [Visage](https://github.com/VitalAudio/visage/tree/828037000d0893647ab29b66ae9c4a241c90f671):
   MIT, GPU graphics, native windows, standard widgets and plugin embedding.
 - [CLAP GUI contract](https://github.com/free-audio/clap/blob/195b42a004144fab0b3cf95e9c067187d15365b7/include/clap/ext/gui.h):
   lifecycle, parent embedding, scale and resizing.
+- [dr_wav](https://github.com/mackron/dr_libs): pinned native WAV decoder.
+- [PicoSHA2](https://github.com/okdshin/PicoSHA2): pinned native file hashing.

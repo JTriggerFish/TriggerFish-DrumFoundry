@@ -28,11 +28,8 @@ void Workbench::SetupPanels() {
   for (auto *frame : std::initializer_list<visage::Frame *>{
            &analysis_, &modal_, &strike_, &hardness_})
     right_.addScrolledChild(frame);
-  analysis_.onDraw() = [this](visage::Canvas &c) {
-    Label(c, "WAVEFORM / SPECTROGRAM", 0, 0, analysis_.width(), 24);
-    Label(c, "Native analysis port in progress", 0, 40, analysis_.width(), 24,
-          0xff8799ae);
-  };
+  analysis_.chooseReference = [this] { OpenReferenceFile(); };
+  analysis_.error = [this](const auto &message) { Error(message); };
   modal_.committed = [this] { ApplyDocument(); };
   modal_.error = [this](const auto &text) { Error(text); };
 }
@@ -117,10 +114,23 @@ void Workbench::Poll() {
   try {
     if (bridge_.service)
       bridge_.service();
+    analysis_.Poll();
     if (bridge_.document &&
         (reloadDocument_ || documentPreset_ != int(bridge_.value(100)) ||
          (bridge_.revision && documentRevision_ != bridge_.revision())))
       RefreshDocument();
+    // Host automation and UI performance changes use the same analysis path.
+    // Briefly debounce drags; don't cancel a render on every timer tick.
+    if (bridge_.document) {
+      auto latest = bridge_.document();
+      const auto &event = latest.at("controls").at("event");
+      if (event != renderedEvent_) {
+        renderedEvent_ = event;
+        eventDebounce_ = 4;
+      } else if (eventDebounce_ && --eventDebounce_ == 0) {
+        analysis_.UpdateModel(latest);
+      }
+    }
     preset_.setText(names[std::clamp(int(bridge_.value(100)), 0, 5)]);
     master_.Set(bridge_.value(105));
     hardness_.Set(bridge_.value(101));
@@ -154,6 +164,9 @@ void Workbench::RefreshDocument() {
   excitation_.Load(document_, false);
   resonance_.Load(document_, true);
   modal_.Load(document_);
+  analysis_.SetDocument(document_.JsonValue());
+  renderedEvent_ = document_.JsonValue().at("controls").at("event");
+  eventDebounce_ = 0;
 }
 void Workbench::ApplyDocument() {
   try {
@@ -162,6 +175,9 @@ void Workbench::ApplyDocument() {
     // gesture that happened to be active when the panel was populated.
     next["controls"]["event"] = bridge_.document().at("controls").at("event");
     bridge_.applyDocument(next);
+    analysis_.UpdateModel(next);
+    renderedEvent_ = next.at("controls").at("event");
+    eventDebounce_ = 0;
     modal_.Refresh();
     documentRevision_ = bridge_.revision ? bridge_.revision() : 0;
   } catch (const std::exception &e) {
