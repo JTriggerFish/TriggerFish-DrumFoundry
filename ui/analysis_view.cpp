@@ -58,21 +58,35 @@ void AnalysisView::Refresh() {
   std::vector<Coordinate> horizontal;
   horizontal.reserve(columns);
   for (int x = 0; x < columns; ++x)
-    horizontal.push_back(
-        At(42 + (width() - 54) * x / std::max(1, columns - 1), 62));
+    horizontal.push_back(At(42 + (width() - 54) * (x + .5f) / columns, 62));
   for (int y = 0; y < rows; ++y) {
-    const auto vertical =
-        At(42, 62 + (height() - 91) * y / std::max(1, rows - 1));
+    const auto vertical = At(42, 62 + (height() - 91) * (y + .5f) / rows);
+    const double verticalShare = comparison == Comparison::Stacked
+                                     ? (vertical.reference ? split : 1 - split)
+                                     : 1;
+    const double halfBand = std::pow(
+        std::min(frequencyHigh, result_->model.sampleRate * .5) / frequencyLow,
+        .5 / (rows * verticalShare));
+    const double frequencyLo = vertical.frequency / halfBand,
+                 frequencyHi = vertical.frequency * halfBand;
     for (int x = 0; x < columns; ++x) {
       auto p = horizontal[x];
       p.frequency = vertical.frequency;
       if (comparison == Comparison::Stacked)
         p.reference = vertical.reference;
+      const bool splitTime = comparison == Comparison::Mirror ||
+                             comparison == Comparison::SideBySide;
+      const double halfTime =
+          .5 * span /
+          (columns * (splitTime ? (p.reference ? split : 1 - split) : 1));
       const double ref =
-          result_->referenceSpectrum.At(p.time + referenceOffset, p.frequency) +
+          result_->referenceSpectrum.Peak(p.time + referenceOffset - halfTime,
+                                          p.time + referenceOffset + halfTime,
+                                          frequencyLo, frequencyHi) +
           referenceGainDb;
-      const double model =
-          result_->modelSpectrum.At(p.time + modelOffset, p.frequency);
+      const double model = result_->modelSpectrum.Peak(
+          p.time + modelOffset - halfTime, p.time + modelOffset + halfTime,
+          frequencyLo, frequencyHi);
       const double value =
           comparison == Comparison::Difference
               ? .5 + .5 * (std::max(model, floor) - std::max(ref, floor)) /

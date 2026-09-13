@@ -20,6 +20,14 @@ int main(int argc, char **argv) {
   const auto spectrum = analysis::Analyze(tone, {4096, 512, "hann"});
   Require(std::abs(spectrum.At(.5, 750) + 6.0206) < .001);
   Require(spectrum.At(.5, 3000) < -100 && spectrum.At(-1, 750) == -180);
+  Require(std::abs(spectrum.Peak(.45, .55, 700, 800) + 6.0206) < .001);
+  Require(spectrum.Peak(-.1, -.01, 700, 800) == -180);
+  Require(spectrum.Peak(1.2, 1.3, 700, 800) == -180);
+  analysis::Spectrogram sparse{48000, 2048, 512,
+                               8,     1025, std::vector<float>(8 * 1025, -180)};
+  sparse.db[4 * 1025 + 777] = -12;
+  Require(sparse.At(.04, 18000) == -180);
+  Require(sparse.Peak(.02, .06, 17000, 19000) == -12);
   Require(analysis::Analyze(tone, {4096, 512, "hann"}, [] {
             return true;
           }).frames == 0);
@@ -61,6 +69,16 @@ int main(int argc, char **argv) {
     panel.SetDocument(document);
     Require(panel.Settings().at("view") ==
             document.at("controls").at("analysis").at("view"));
+    const auto previous = panel.Settings();
+    document["controls"]["analysis"]["view"]["span"] = 12;
+    document["controls"]["analysis"]["view"]["frequencyHigh"] = 25;
+    bool rejected = false;
+    try {
+      panel.SetDocument(document);
+    } catch (const std::exception &) {
+      rejected = true;
+    }
+    Require(rejected && panel.Settings() == previous);
   }
   ReferenceTests(request.document);
   extern void LiveSpectrumTests();

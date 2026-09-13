@@ -29,6 +29,19 @@ void Wave(const std::filesystem::path &path) {
   Little(out, 16384, 2);
   Little(out, 49152, 2);
 }
+std::shared_ptr<const drumfoundry::analysis::Result>
+Render(drumfoundry::analysis::Worker &worker,
+       const drumfoundry::analysis::Request &request) {
+  worker.Submit(request);
+  const auto deadline =
+      std::chrono::steady_clock::now() + std::chrono::seconds(5);
+  while (std::chrono::steady_clock::now() < deadline) {
+    if (auto result = worker.Take())
+      return result;
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+  }
+  throw std::runtime_error("Reference render timed out");
+}
 } // namespace
 void ReferenceTests(const drumfoundry::Json &fit) {
   using namespace drumfoundry::analysis;
@@ -87,6 +100,19 @@ void ReferenceTests(const drumfoundry::Json &fit) {
            std::chrono::steady_clock::now() < deadline)
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     Check(result && result->error.find("SHA256") != std::string::npos);
+    request.expectedHash = hash;
+    for (auto channel : {Channel::Left, Channel::Right}) {
+      request.channel = channel;
+      for (unsigned rate : {48000u, 96000u}) {
+        request.auditionRate = rate;
+        const auto first = Render(worker, request),
+                   cached = Render(worker, request);
+        const auto expected = Resample(ReadWave(wav, channel), rate);
+        Check(first->error.empty() && cached->error.empty());
+        Check(first->referencePlayback == expected &&
+              cached->referencePlayback == expected);
+      }
+    }
   }
   std::filesystem::remove(wav);
   std::filesystem::remove(catalogPath);

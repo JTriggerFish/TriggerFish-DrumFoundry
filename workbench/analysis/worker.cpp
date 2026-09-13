@@ -97,8 +97,16 @@ Result Worker::Execute(const Request &request, unsigned revision) {
   result.modelPlayback = Resample(result.model, request.auditionRate);
   if (cancelled())
     return {};
-  if (!result.reference.samples.empty())
-    result.referencePlayback = Resample(result.reference, request.auditionRate);
+  if (!result.reference.samples.empty()) {
+    if (cachedPlaybackRate_ != request.auditionRate) {
+      auto playback = Resample(result.reference, request.auditionRate);
+      if (cancelled())
+        return {};
+      cachedReferencePlayback_ = std::move(playback);
+      cachedPlaybackRate_ = request.auditionRate;
+    }
+    result.referencePlayback = cachedReferencePlayback_;
+  }
   result.elapsedMs = std::chrono::duration<double, std::milli>(
                          std::chrono::steady_clock::now() - start)
                          .count();

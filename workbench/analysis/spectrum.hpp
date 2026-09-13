@@ -12,6 +12,10 @@ struct Spectrogram {
   std::vector<float> db; // time-major, centred frames, peak-amplitude dBFS/bin
   float maximumDb{-180};
   float At(double seconds, double frequency) const;
+  // Display downsampling: retain narrow ridges/transients within a pixel.
+  // This is a maximum of existing dBFS bins, never a normalization or a loss.
+  float Peak(double timeLow, double timeHigh, double frequencyLow,
+             double frequencyHigh) const;
 };
 Spectrogram Analyze(const Audio &, const Transform &,
                     const std::function<bool()> &cancel = {});

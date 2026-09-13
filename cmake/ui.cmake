@@ -26,6 +26,7 @@ target_sources(drumfoundry_ui PRIVATE ui/reference_menu.cpp ui/analysis_playback
 target_sources(drumfoundry_ui PRIVATE ui/meta_panel.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/decay_hold_panel.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/analysis_state.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/analysis_validation.cpp)
 target_include_directories(drumfoundry_ui PUBLIC ${PROJECT_SOURCE_DIR})
 target_link_libraries(drumfoundry_ui PUBLIC visage drumfoundry_editing drumfoundry_analysis PRIVATE VisageEmbeddedFonts)
 install(FILES ${visage_SOURCE_DIR}/LICENSE DESTINATION licenses/visage)

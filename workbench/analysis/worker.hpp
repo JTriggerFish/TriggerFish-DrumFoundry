@@ -49,6 +49,8 @@ private:
   Audio cachedAudio_;
   Spectrogram cachedSpectrum_;
   std::string cachedHash_;
+  std::vector<float> cachedReferencePlayback_;
+  unsigned cachedPlaybackRate_{};
   void Run();
   Result Execute(const Request &, unsigned revision);
   std::mutex mutex_;

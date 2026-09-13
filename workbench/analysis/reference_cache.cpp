@@ -19,6 +19,8 @@ void Worker::ReadReference(const Request &request, Result &result,
     cachedAudio_ = std::move(audio);
     cachedHash_ = std::move(hash);
     cachedSpectrum_ = {};
+    cachedReferencePlayback_.clear();
+    cachedPlaybackRate_ = 0;
     cachedPath_ = request.reference;
     cachedTime_ = modified;
     cachedSize_ = size;

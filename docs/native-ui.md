@@ -120,7 +120,8 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
 The optional UI target includes WAV decoding, reference SHA256 verification,
 offline native Voice rendering and centred STFT analysis on a cancellable worker.
 It never reads the live voice. Reference decode/hash/STFT results are cached by
-file identity, channel and transform. Performance edits are briefly debounced;
+file identity, channel and transform. Reference audition resampling is cached
+separately by the decoded source and device rate. Performance edits are briefly debounced;
 the last completed plot stays visible until a replacement is ready.
 
 Visage GPU heatmaps show mirror (default), side-by-side, stacked, individual or
@@ -185,6 +186,12 @@ strike/mute behavior follows the document, not the factory slot it originated
 from. Raw patches gain explicit default strike and analysis metadata on import;
 their parameters and rendered sound are preserved. State saves capture the
 selected document and host controls together, including during rapid selection.
+
+Zoomed-out heatmaps retain the strongest bin/frame within each pixel instead of
+skipping narrow ridges or attacks between sample points. The hover readout stays
+an individual STFT-bin measurement. Pooling is identical on both sides and does
+not change colour scaling, PCM or fitting losses. Invalid saved views are checked
+before mutating the existing analysis display.
 
 ## Hold decay
 

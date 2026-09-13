@@ -1,4 +1,5 @@
 #include "analysis_panel.hpp"
+#include "analysis_validation.hpp"
 #include "editing/files.hpp"
 #include <cmath>
 namespace drumfoundry::ui {
@@ -27,6 +28,7 @@ AnalysisPanel::AnalysisPanel() {
   Menus();
 }
 void AnalysisPanel::SetDocument(const editing::Json &document) {
+  ValidateAnalysisDocument(document);
   matchLength_ = false;
   const bool first = request_.document.is_null();
   const bool different =
