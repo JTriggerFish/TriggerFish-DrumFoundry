@@ -68,15 +68,18 @@ SettingsPanel::SettingsPanel(SettingsBridge bridge, DeviceConfiguration config)
   };
   Refresh();
 }
-void SettingsPanel::Apply() {
+bool SettingsPanel::Apply() {
+  bool applied = false;
   Guard([&] {
     ValidateDeviceConfiguration(config_);
     message_ = bridge_.apply(config_);
+    applied = true;
     if (message_.empty())
       message_ = "Audio started. Selections remembered for next session.";
     else if (error)
       error(message_);
   });
+  return applied;
 }
 void SettingsPanel::Guard(const std::function<void()> &action) {
   try {
@@ -143,7 +146,7 @@ void SettingsPanel::draw(visage::Canvas &c) {
   for (const auto *label : {"Audio API", "Output device", "MIDI input",
                             "Sample rate", "Buffer size"})
     Label(c, label, 24, 62 + 46 * row++, 118, 32);
-  Label(c, "Selections are saved on Apply. Devices stay closed on next launch.",
+  Label(c, "Saved audio and MIDI devices start automatically on next launch.",
         24, 354, width() - 48, 24);
 }
 } // namespace drumfoundry::ui

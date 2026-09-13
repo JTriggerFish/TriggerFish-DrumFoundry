@@ -82,15 +82,12 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &cli, bool smoke,
     settings.setBounds((window.width() - 640) / 2, (window.height() - 520) / 2,
                        640, 520);
   };
-  // Restored choices do not implicitly acquire an exclusive device.
-  if (!smoke && (overrides & Device) && !config.device.empty()) {
-    try {
-      const auto warning = session.Apply(config);
-      if (!warning.empty())
-        editor.Error(warning);
-    } catch (const std::exception &e) {
-      editor.Error(e.what());
-    }
+  // Saved selections and --device both start on launch. Use the same guarded
+  // path as Apply so driver errors are visible inside Settings as well.
+  const bool started = ShouldStartDevices(config, smoke) && settings.Apply();
+  if (!smoke && !started) {
+    shade.setVisible(true);
+    settings.setVisible(true);
   }
   std::unique_ptr<GuiCapture> capture;
   if (smoke)

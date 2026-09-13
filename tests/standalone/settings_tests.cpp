@@ -34,6 +34,13 @@ int main() {
   Require(restored.api == config.api && restored.device == config.device &&
           restored.midi == config.midi && restored.rate == 48000 &&
           restored.buffer == 128);
+  Require(
+      ShouldStartDevices(restored, false)); // No --device override required.
+  Require(!ShouldStartDevices(
+      restored, true)); // Even saved devices stay closed in smoke tests.
+  auto unselected = restored;
+  unselected.device.clear();
+  Require(!ShouldStartDevices(unselected, false));
   config.buffer = 512;
   config.midi = "none";
   WriteSettings(path, config); // Replacement, not just first-run creation.
@@ -48,6 +55,7 @@ int main() {
   Require(merged.api == "asio" && merged.device == restored.device &&
           merged.midi == "all" && merged.rate == 96000 && merged.buffer == 128);
   Require(MergeSettings(restored, cli, Api).device.empty());
+  Require(!ShouldStartDevices(MergeSettings(restored, cli, Api), false));
   Require(MergeSettings(restored, cli, Api | Device).device == "other");
   {
     std::ofstream stream(path);

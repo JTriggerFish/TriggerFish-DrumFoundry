@@ -38,6 +38,10 @@ struct Temporary {
   }
 };
 } // namespace
+bool ShouldStartDevices(const ui::DeviceConfiguration &config,
+                        bool deviceFree) {
+  return !deviceFree && !config.device.empty();
+}
 std::filesystem::path SettingsPath() {
   const auto fits = editing::FitDirectory();
   const auto directory = fits.filename() == "fits"

@@ -103,10 +103,10 @@ int main() {
   };
   SettingsPanel invalid(settings, {"test", "", "all", 48000, 128});
   invalid.error = [&](const std::string &) { ++errors; };
-  invalid.Apply();
+  Require(!invalid.Apply());
   Require(applies == 0 && errors == 1);
   SettingsPanel valid(settings, {"test", "device", "all", 48000, 128});
-  valid.Apply();
+  Require(valid.Apply());
   Require(applies == 1);
   settings.apply = [&](const DeviceConfiguration &) {
     ++applies;
@@ -117,7 +117,16 @@ int main() {
     Require(text == "Audio running. MIDI unavailable");
     ++errors;
   };
-  partial.Apply();
+  Require(partial.Apply());
   Require(applies == 2 && errors == 2);
+  settings.apply = [&](const DeviceConfiguration &) -> std::string {
+    throw std::runtime_error("Device busy");
+  };
+  SettingsPanel busy(settings, {"test", "device", "all", 48000, 128});
+  busy.error = [&](const std::string &text) {
+    Require(text == "Device busy");
+    ++errors;
+  };
+  Require(!busy.Apply() && errors == 3);
   return 0;
 }

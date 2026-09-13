@@ -12,6 +12,9 @@ enum DeviceOverride : unsigned {
   Buffer = 16
 };
 std::filesystem::path SettingsPath();
+// Saved and explicit selections start identically; smoke tests never open
+// devices.
+bool ShouldStartDevices(const ui::DeviceConfiguration &, bool deviceFree);
 std::optional<ui::DeviceConfiguration>
 ReadSettings(const std::filesystem::path &);
 // Atomic replacement: failure leaves an existing settings file intact.

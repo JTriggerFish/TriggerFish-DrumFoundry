@@ -32,8 +32,9 @@ scale; mirroring applies only to the spectrogram, including its pan gestures.
 The strike pad sits beside implement/character controls, not above full-width
 sliders. Layout regression checks cover 1000, 1440 and 3200 pixel windows.
 
-Standalone device selections are restored without acquiring an exclusive audio
-device. A stopped engine is explicitly labelled beside playback with a
+Standalone launches automatically start the saved audio/MIDI configuration.
+First launch or a device-open failure opens Settings; there is no silent fallback
+to another device. A stopped engine is explicitly labelled beside playback with a
 **Start audio** button. Striking or auditioning while stopped opens Settings,
 where **Apply & start** activates the selected device. Offline preview rendering
 does not imply that a device is running. The click-to-CLAP audio path is tested
@@ -77,10 +78,11 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   upstream checkout mutation. The real embedding test caught this dispatch bug.
 - Standalone settings: in-window modal panel with API/device/MIDI/rate/buffer
   menus, explicit Apply/start and release. UI builds open this workbench on
-  double-click; they do not open an audio device until selected. ASIO discovery
+  double-click; the saved device starts automatically (first launch asks for a
+  selection). ASIO discovery
   reads driver registration names, never probes unrelated vendor DLLs.
-  Apply remembers API/device/MIDI/rate/buffer between sessions, without opening
-  devices on next launch. MIDI failures leave audio available and display the
+  Apply remembers API/device/MIDI/rate/buffer between sessions and next launch
+  attempts that same configuration. MIDI failures leave audio available and display the
   named port plus backend error in a wrapped, scrollable message. Details and
   the preference-file location are in [standalone.md](standalone.md).
   Hardware-free smoke captures include the settings overlay; validation uses

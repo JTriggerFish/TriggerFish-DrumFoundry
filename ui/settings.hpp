@@ -19,7 +19,8 @@ public:
   void draw(visage::Canvas &) override;
   void resized() override;
   std::function<void(const std::string &)> error;
-  void Apply();
+  bool
+  Apply(); // False on failure; errors remain visible in the panel and banner.
 
 private:
   void Choose(visage::UiButton &, std::vector<std::string>,

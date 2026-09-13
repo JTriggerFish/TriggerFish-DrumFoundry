@@ -144,11 +144,13 @@ DSP renderer. See [native-ui.md](native-ui.md) for interaction and testing detai
 
 The GUI saves the requested audio API, output device, MIDI input, sample rate and
 buffer on **Apply & start**, including when a disconnected device needs retrying.
-On the next launch these selections return, but devices remain closed until
-Apply: restoring preferences must not seize an exclusive ASIO/MIDI device from
-a DAW. Explicit GUI command-line device options override remembered fields;
-`--device` also requests immediate start. Smoke/console tests neither restore
-nor write preferences. Release device does not erase them.
+On the next launch the GUI automatically opens that audio/MIDI configuration.
+Explicit GUI command-line options override remembered fields before starting.
+First launch (no selected device) or a device-open failure opens Settings; errors
+are shown in the panel and banner, with no fallback to another device/API. A MIDI
+failure does not stop working audio. Close other exclusive ASIO/MIDI users first.
+Smoke/console tests neither restore nor write preferences; UI smoke tests never
+open devices. Release device stops this session without erasing the saved choices.
 
 Settings use a separate `audio-midi.json` beside the application-data `fits`
 directory (Windows: `%LOCALAPPDATA%/TriggerFish/DrumFoundry/audio-midi.json`).
