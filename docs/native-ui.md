@@ -75,6 +75,13 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   Series/taper/document and headless pointer-gesture tests accompany the port.
 - Right-hand content scrolls as one column; analysis, strike and modal design
   keep their ordering. Reference analysis, persistence and meta gestures follow.
+- Named snapshots persist as independent fit JSON documents under the user's
+  application-data `TriggerFish/DrumFoundry/fits` folder. Each records its parent
+  ID and retains reference identity and analysis settings. Saved snapshots can
+  be restored after restarting. Save/load uses a small in-window Visage path/
+  folder picker; no shell command or browser filesystem permission is involved.
+  Writes validate first and exclusively create a new file, never overwriting a
+  previous fit. Native tests check round-trip persistence and overwrite rejection.
 
 ## References
 

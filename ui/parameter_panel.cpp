@@ -19,6 +19,7 @@ private:
 };
 } // namespace
 void ParameterPanel::Load(editing::Document &document, bool right) {
+  generation_ = std::make_shared<int>(0);
   for (auto &row : rows_)
     removeScrolledChild(row.frame.get());
   rows_.clear();
@@ -71,13 +72,17 @@ void ParameterPanel::AddParameter(editing::Document &document,
     auto *widget = button.get();
     const auto label = editing::ControlName(p) + ": ";
     widget->setText(label + editing::ChoiceName(p, int(document.Value(p.key))));
-    widget->onToggle() = [this, &document, p, widget, label, change](auto *,
-                                                                     bool) {
+    const std::weak_ptr<int> generation = generation_;
+    widget->onToggle() = [this, &document, p, widget, label, change,
+                          generation](auto *, bool) {
       visage::PopupMenu menu;
       for (int value = int(p.minimum); value <= int(p.maximum); ++value)
         menu.addOption(value, editing::ChoiceName(p, value))
             .select(value == document.Value(p.key));
-      menu.onSelection() = [this, p, widget, label, change](int value) {
+      menu.onSelection() = [this, p, widget, label, change,
+                            generation](int value) {
+        if (generation.expired())
+          return; // Preset changed while the menu was open.
         change(value);
         widget->setText(label + editing::ChoiceName(p, value));
         if (committed)

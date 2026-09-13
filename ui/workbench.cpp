@@ -12,6 +12,14 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
            &preset_, &settings_, &stop_, &limiter_, &master_, &location_,
            &mute_, &excitation_, &resonance_})
     addChild(frame);
+  SetupPanels();
+  SetupFiles();
+  SetupPerformance();
+  timer_.onTimerCallback() = [this] { Poll(); };
+  timer_.startTimer(33);
+  Poll();
+}
+void Workbench::SetupPanels() {
   for (auto *panel : {&excitation_, &resonance_}) {
     panel->committed = [this] { ApplyDocument(); };
     panel->error = [this](const auto &text) { Error(text); };
@@ -27,6 +35,31 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   };
   modal_.committed = [this] { ApplyDocument(); };
   modal_.error = [this](const auto &text) { Error(text); };
+}
+void Workbench::SetupFiles() {
+  addChild(&history_);
+  history_.capture = [this] { return CaptureDocument(); };
+  history_.restore = [this](const auto &document) {
+    bridge_.applyDocument(document);
+    reloadDocument_ = true;
+  };
+  history_.file = [this](bool save, const auto &document) {
+    OpenFitFile(save, document);
+  };
+  history_.error = files_.error = [this](const auto &text) { Error(text); };
+  addChild(&fileShade_, false);
+  fileShade_.setOnTop(true);
+  fileShade_.addChild(&files_);
+  fileShade_.onDraw() = [this](visage::Canvas &c) {
+    c.setColor(0xa005090f);
+    c.fill(0, 0, width(), height());
+  };
+  files_.onVisibilityChange() = [this] {
+    if (!files_.isVisible())
+      fileShade_.setVisible(false);
+  };
+}
+void Workbench::SetupPerformance() {
   for (unsigned i = 0; i < implements_.size(); ++i) {
     right_.addScrolledChild(&implements_[i]);
     implements_[i].onToggle() = [this, i](auto *, bool) {
@@ -60,9 +93,6 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
       Error(e.what());
     }
   };
-  timer_.onTimerCallback() = [this] { Poll(); };
-  timer_.startTimer(33);
-  Poll();
 }
 Workbench::~Workbench() { timer_.stopTimer(); }
 void Workbench::Error(const std::string &message) {

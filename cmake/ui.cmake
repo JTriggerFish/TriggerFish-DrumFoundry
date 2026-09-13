@@ -14,6 +14,7 @@ add_library(drumfoundry_ui STATIC ui/controls.cpp ui/workbench.cpp ui/layout.cpp
 target_sources(drumfoundry_ui PRIVATE ui/decay_editor.cpp ui/decay_gestures.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/modal_plot.cpp ui/modal_gestures.cpp ui/modal_paint.cpp
   ui/modal_panel.cpp ui/modal_layout.cpp ui/series_panel.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/file_panel.cpp ui/history_bar.cpp ui/workbench_files.cpp)
 target_include_directories(drumfoundry_ui PUBLIC ${PROJECT_SOURCE_DIR})
 target_link_libraries(drumfoundry_ui PUBLIC visage drumfoundry_editing PRIVATE VisageEmbeddedFonts)
 install(FILES ${visage_SOURCE_DIR}/LICENSE DESTINATION licenses/visage)

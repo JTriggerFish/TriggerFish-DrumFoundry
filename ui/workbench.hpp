@@ -1,6 +1,8 @@
 #pragma once
 #include "bridge.hpp"
 #include "controls.hpp"
+#include "file_panel.hpp"
+#include "history_bar.hpp"
 #include "modal_panel.hpp"
 #include "parameter_panel.hpp"
 
@@ -18,8 +20,13 @@ private:
   void Poll();
   void SelectPreset();
   void Change(unsigned, double);
+  void SetupPanels();
+  void SetupFiles();
+  void SetupPerformance();
   void RefreshDocument();
   void ApplyDocument();
+  editing::Json CaptureDocument() const;
+  void OpenFitFile(bool save, const editing::Json &);
   Bridge bridge_;
   visage::EventTimer timer_;
   visage::UiButton preset_{"Kick"}, settings_{"Settings"}, stop_{"Stop"},
@@ -37,6 +44,9 @@ private:
   visage::ScrollableFrame right_;
   visage::Frame analysis_;
   ModalPanel modal_;
+  HistoryBar history_;
+  visage::Frame fileShade_;
+  FilePanel files_;
   int documentPreset_{-1};
   unsigned documentRevision_{};
   bool reloadDocument_{};

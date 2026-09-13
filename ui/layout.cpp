@@ -11,7 +11,7 @@ void Workbench::resized() {
   settings_.setBounds(width() - 130, 10, 114, 28);
   master_.setBounds(width() - 510, 42, 220, 44);
   const float col = (left - 48) / 2;
-  right_.setBounds(left + 16, 110, width() - left - 32, height() - 177);
+  right_.setBounds(left + 16, 110, width() - left - 32, height() - 221);
   const float contentWidth = right_.width() - 14;
   analysis_.setBounds(0, 0, contentWidth, 230);
   strike_.setBounds(0, 240, contentWidth, 90);
@@ -21,10 +21,13 @@ void Workbench::resized() {
     implements_[i].setBounds(i * (buttonWidth + 8), 338, buttonWidth, 28);
   location_.setBounds(16, 134, col, 44);
   mute_.setBounds(32 + col, 134, col, 44);
-  excitation_.setBounds(16, 188, col, height() - 255);
-  resonance_.setBounds(32 + col, 188, col, height() - 255);
+  excitation_.setBounds(16, 188, col, height() - 299);
+  resonance_.setBounds(32 + col, 188, col, height() - 299);
   modal_.setBounds(0, 430, contentWidth, 650);
   right_.setScrollableHeight(1080);
+  history_.setBounds(16, height() - 100, width() - 32, 34);
+  fileShade_.setBounds(localBounds());
+  files_.setBounds((width() - 640) / 2, (height() - 300) / 2, 640, 300);
 }
 void Workbench::draw(visage::Canvas &c) {
   const float left = std::min(640.f, width() * .46f);

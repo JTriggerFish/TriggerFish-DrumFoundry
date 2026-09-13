@@ -20,5 +20,6 @@ private:
     int height;
   };
   std::vector<Row> rows_;
+  std::shared_ptr<int> generation_;
 };
 } // namespace drumfoundry::ui
