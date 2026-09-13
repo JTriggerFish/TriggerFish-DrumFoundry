@@ -28,5 +28,9 @@ target_include_directories(drumfoundry_analysis PUBLIC ${PROJECT_SOURCE_DIR})
 target_include_directories(drumfoundry_analysis SYSTEM PRIVATE ${dr_libs_SOURCE_DIR} ${picosha_SOURCE_DIR})
 target_link_libraries(drumfoundry_analysis PUBLIC drumfoundry_engine Threads::Threads)
 target_link_libraries(drumfoundry_analysis PRIVATE samplerate)
+target_sources(drumfoundry_analysis PRIVATE
+  workbench/decay_hold/measurement.cpp workbench/decay_hold/coordinates.cpp
+  workbench/decay_hold/solver.cpp workbench/decay_hold/worker.cpp)
+target_link_libraries(drumfoundry_analysis PUBLIC drumfoundry_editing)
 install(FILES ${dr_libs_SOURCE_DIR}/LICENSE DESTINATION licenses/dr_libs)
 install(FILES ${picosha_SOURCE_DIR}/LICENSE DESTINATION licenses/picosha)

@@ -45,17 +45,19 @@ Optional native host-output protection is implemented separately in
 1 ms only when explicitly used by a host. Raw rendering and fitting remain
 unlimited, and the future UI must expose bypass, latency and gain reduction.
 
-## Remaining work before plugin/UI
+## Remaining runtime work
 
-- Port the remaining hold-decay tool with equivalence tests. Series generation,
-  Size meta and bloom timing now share native helpers in `engine/editing`.
-  Existing expanded presets do not require these design-time tools to render;
-  do not reimplement them independently in Visage/Python.
+- Series generation, Size meta and bloom timing share helpers in `engine/editing`.
+  Hold-decay compensation now runs natively in `workbench/decay_hold`, with known
+  envelope, calibration, rejection and cancellation tests. Expanded presets do
+  not require these design-time tools to render; do not reimplement them
+  independently in Visage/Python.
 - Prepare safe audio-thread publication of structural changes, retirement of old
   state, parameter smoothing and sample-accurate host events.
-- Full CLAP parameter editing and multiple-editor lifecycle; Visage editor and
-  graphical device management. The headless CLAP state/gesture/limiter integration
-  is documented in [clap.md](clap.md), and the implemented console audio/MIDI host
+- Extend host automation beyond performance controls, and finish native UI
+  migration review. The shared Visage editor, reference analysis, fit storage,
+  routing and graphical device management are described in [native-ui.md](native-ui.md).
+  CLAP integration is documented in [clap.md](clap.md), and the audio/MIDI host
   in [standalone.md](standalone.md).
 
 The current runtime still embeds storage for each available recipe inside an

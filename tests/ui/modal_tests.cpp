@@ -16,6 +16,8 @@ int main(int argc, char **argv) {
   EqTests(d);
   extern void RoutingGestures(editing::Document);
   RoutingGestures(d);
+  extern void DecayHoldPolicy(editing::Document);
+  DecayHoldPolicy(d);
   editing::ReplaceModes(d, {});
   ui::ModalPlot plot;
   plot.setBounds(0, 0, 800, 300);

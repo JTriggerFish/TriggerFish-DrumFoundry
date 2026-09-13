@@ -56,6 +56,10 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
       addScrolledChild(tool.get());
       rows_.push_back({std::move(tool), 38});
     }
+    if (section == "Bloom / energy travel" && holdDecay) {
+      addScrolledChild(holdDecay);
+      rows_.emplace_back(*holdDecay, 94);
+    }
     if (section == "Modal T60") {
       auto editor = std::make_unique<DecayEditor>(document);
       editor->committed = [this] {

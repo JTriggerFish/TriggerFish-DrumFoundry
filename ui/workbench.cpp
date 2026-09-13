@@ -25,6 +25,15 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   Poll();
 }
 void Workbench::SetupPanels() {
+  resonance_.holdDecay = &holdDecay_;
+  holdDecay_.error = [this](const auto &text) { Error(text); };
+  holdDecay_.apply = [this](const auto &result) {
+    document_.SetMany(result.values);
+    applyingHold_ = true;
+    ApplyDocument();
+    applyingHold_ = false;
+    reloadDocument_ = true; // Rebuild the visible T60 curve and scalar values.
+  };
   excitation_.outputSpectrum = &liveSpectrum_;
   excitation_.previewRate = [this] { return analysis_.RenderRate(); };
   for (auto *panel : {&excitation_, &resonance_}) {
@@ -183,6 +192,9 @@ void Workbench::Poll() {
     if (bridge_.sampleRate)
       analysis_.SetAuditionRate(bridge_.sampleRate());
     analysis_.Poll();
+    if (holdDecay_.NeedsPoll() && bridge_.document &&
+        !document_.JsonValue().is_null())
+      holdDecay_.Poll(CaptureDocument());
     // Host automation and UI performance changes use the same analysis path.
     // Briefly debounce drags; don't cancel a render on every timer tick.
     if (bridge_.document) {
@@ -225,6 +237,7 @@ void Workbench::Poll() {
   }
 }
 void Workbench::RefreshDocument() {
+  holdDecay_.Cancel();
   help_.Hide();
   metaShade_.setVisible(false);
   document_.Load(bridge_.document());
@@ -266,6 +279,8 @@ void Workbench::ApplyDocument() {
     eventDebounce_ = 0;
     modal_.Refresh();
     documentRevision_ = bridge_.revision ? bridge_.revision() : 0;
+    if (!applyingHold_)
+      holdDecay_.Edited(current, next, analysis_.RenderRate());
   } catch (const std::exception &e) {
     Error(e.what());
     reloadDocument_ = true;

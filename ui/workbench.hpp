@@ -2,6 +2,7 @@
 #include "analysis_panel.hpp"
 #include "bridge.hpp"
 #include "controls.hpp"
+#include "decay_hold_panel.hpp"
 #include "file_panel.hpp"
 #include "help_bubble.hpp"
 #include "history_bar.hpp"
@@ -57,6 +58,8 @@ private:
   StrikePad strike_;
   editing::Document document_;
   LiveSpectrum liveSpectrum_; // Outlives the panel that borrows its Frame.
+  DecayHoldPanel holdDecay_;
+  bool applyingHold_{};
   ParameterPanel excitation_, resonance_;
   visage::ScrollableFrame right_;
   AnalysisPanel analysis_;

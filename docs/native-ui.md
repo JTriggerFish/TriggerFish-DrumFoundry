@@ -179,6 +179,27 @@ preview-render rate). Tests compare it with the actual filter's impulse response
 at four sample rates and exercise graph-to-JSON editing. The curve axis is EQ dB;
 the background retains its separate fixed 0 to -96 dBFS/bin scale.
 
+## Hold decay
+
+The bloom section retains the optional **Hold decay** switch (on initially),
+with Cancel, elapsed time and render count. After a bloom/excitation gesture,
+an independent native worker attempts to preserve the prior 1–6 second tail
+while protecting the edited 0–450 ms attack/bloom. A new sound or performance
+edit cancels it; changing zoom or moving routing boxes does not. Accepted changes
+update the visible T60 knots and, only if it was not edited, concentration
+dependence. A rejection leaves the user's edit intact. No new knots, hidden
+envelopes, level matching or runtime solver state are introduced.
+
+The migrated bounded least-squares method uses the actual C++ Voice, six-second
+renders, a 4096-point symmetric Hann, 30 ms hops and 24 log bands from 80 Hz to
+16 kHz (limited below Nyquist). It has three iterations, finite differences,
+bounded T60 changes (at most ×2/÷2), attack constraints and an independent-seed
+check. This is a design aid, **not a claim of perceptual fit quality**. Tests cover
+known damping recovery, FFT power calibration, unreachable targets, independent
+seed rejection, unchanged caller documents and render-block cancellation.
+The implementation is in `workbench/decay_hold`; it has no browser/Python runtime
+dependency and is excluded from headless engine builds.
+
 ## Dependency references
 
 - [Visage](https://github.com/VitalAudio/visage/tree/828037000d0893647ab29b66ae9c4a241c90f671):

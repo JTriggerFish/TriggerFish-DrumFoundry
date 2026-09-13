@@ -14,6 +14,7 @@ public:
   std::function<void()> committed;
   std::function<void(const std::string &)> error;
   std::function<void(bool size)> meta;
+  visage::Frame *holdDecay{}; // Borrowed design-time tool in the bloom section.
   LiveSpectrum
       *outputSpectrum{}; // Borrowed from the workbench, never DSP-owned.
   std::function<unsigned()> previewRate;
