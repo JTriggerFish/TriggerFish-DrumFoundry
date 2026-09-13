@@ -16,11 +16,7 @@ bool Plugin::QueueStrike(float velocity, float location) noexcept {
   if (!std::isfinite(velocity) || !std::isfinite(location) || velocity <= 0 ||
       velocity > 1 || location < 0 || location > 1)
     return false;
-  if (!editorNotes_.Push(
-          {true,
-           0,
-           location,
-           {0x90, 60, uint8_t(std::clamp(int(velocity * 127), 1, 127))}}))
+  if (!editorNotes_.Push({true, 0, location, {0x90, 60, 1}, velocity}))
     return false;
   if (host_->request_process)
     host_->request_process(host_);
@@ -63,6 +59,10 @@ void Plugin::DrainEditor(const clap_output_events_t *out, bool notes) noexcept {
     if ((event.bytes[0] & 0xf0) == 0x90)
       SetParameter(audioValues_[Preset - Preset] == 0 ? Hardness : Location,
                    event.value);
+    if (event.strikeVelocity > 0) {
+      StrikeVoice(event.strikeVelocity);
+      continue;
+    }
     clap_event_midi_t midi{};
     midi.header = {sizeof(midi), 0, CLAP_CORE_EVENT_SPACE_ID, CLAP_EVENT_MIDI,
                    0};

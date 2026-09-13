@@ -7,6 +7,8 @@ namespace {
 ui::Bridge Connect(Plugin &plugin) {
   ui::Bridge bridge;
   bridge.value = [&plugin](unsigned id) { return plugin.Value(id); };
+  bridge.velocity = [&plugin] { return plugin.PreviewStrength(); };
+  bridge.setVelocity = [&plugin](double v) { plugin.SetPreviewStrength(v); };
   bridge.sampleRate = [&plugin] { return plugin.AuditionRate(); };
   bridge.play = [&plugin](auto pcm, unsigned rate, double gain) {
     if (!plugin.Audition(std::move(pcm), rate, gain))

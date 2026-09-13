@@ -3,9 +3,9 @@
 
 namespace clap_test {
 void TestState(Host &h) {
-  Require(h.params->count(h.plugin) == 9,
+  Require(h.params->count(h.plugin) == 10,
           "small explicit host control surface");
-  for (uint32_t i = 0; i < 9; ++i) {
+  for (uint32_t i = 0; i < 10; ++i) {
     clap_param_info_t info{};
     Require(h.params->get_info(h.plugin, i, &info), "parameter metadata");
     char text[256]{};

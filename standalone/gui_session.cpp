@@ -30,6 +30,8 @@ ui::SettingsBridge GuiSession::Settings() {
 ui::Bridge GuiSession::Connect() {
   ui::Bridge bridge;
   auto &plugin = clap_adapter::Plugin::Get(host_.Api());
+  bridge.velocity = [&plugin] { return plugin.PreviewStrength(); };
+  bridge.setVelocity = [&plugin](double v) { plugin.SetPreviewStrength(v); };
   bridge.sampleRate = [&plugin] { return plugin.AuditionRate(); };
   bridge.play = [&plugin](auto pcm, unsigned rate, double gain) {
     if (!plugin.Audition(std::move(pcm), rate, gain))
@@ -61,17 +63,11 @@ ui::Bridge GuiSession::Connect() {
     } else if (!host_.controls.Push({false, id, value, {}}))
       throw std::runtime_error("Control queue full");
   };
-  bridge.strike = [this](float velocity, float x) {
+  bridge.strike = [this, &plugin](float velocity, float x) {
     if (!audio_)
       throw std::runtime_error(
           "Choose an audio device in Settings, then Apply & start");
-    if (!host_.controls.Push(
-            {false, host_.Value(100) == 0 ? 101u : 103u, x, {}}) ||
-        !host_.controls.Push(
-            {true,
-             0,
-             0,
-             {0x90, 60, uint8_t(std::clamp(int(velocity * 127), 1, 127))}}))
+    if (!plugin.QueueStrike(velocity, x))
       throw std::runtime_error("Strike queue full");
   };
   bridge.stop = [this] {

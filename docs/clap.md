@@ -34,15 +34,20 @@ dialect, pitched/polyphonic voices and MIDI mapping are not claimed yet.
 
 The instrument selector embeds the existing kick, snare, hi-hat, crash, ride and
 gong JSON fits at build time. Selecting an instrument restores its saved strike
-hardness, implement, location and mute. Master/protection remain unchanged.
-MIDI velocity supplies strength. The saved seed and contact spread remain in
-the instrument document. No preset fitting values are changed by this adapter.
+hardness, implement, location, mute and gesture spread, including the initially
+loaded kick. Master/protection remain unchanged. MIDI velocity supplies strength;
+native pad gestures retain their unquantized floating-point velocity. The saved
+seed remains in the instrument document. No fitting values are changed.
 
-The host's generic editor exposes the selector, four strike controls, master
+The host's generic editor exposes the selector, five strike controls, master
 level, limiter, gain reduction and actual latency. These are an initial host
 surface, **not** the complete future modal editor. Kick ignores location as in
 the core. Mute currently affects metallic voices only. Full JSON plus these
 explicit performance overrides are stored in CLAP project state.
+Gesture spread is appended at ID109; IDs100–108 remain unchanged. Earlier preview
+states without ID109 restore its explicit value from their saved document.
+The workbench's audition-velocity control is not a MIDI velocity multiplier:
+it sets the fixed render gesture, and actual pad/MIDI notes update that gesture.
 
 The mono voice feeds an explicit master gain (default -12 dB, 5 ms smoothing),
 then the optional linked stereo limiter. Both output channels carry the same

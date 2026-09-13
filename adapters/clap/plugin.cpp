@@ -12,6 +12,14 @@ bool Plugin::Init() {
     values_[i].store(Controls[i].initial);
   Voice initial(48000, ParseJson(PresetJson[0]));
   document_ = initial.Document();
+  const auto &strike = initial.Event();
+  values_[Hardness - Preset] = strike.hardness;
+  values_[Implement - Preset] = strike.implement;
+  values_[Location - Preset] = strike.location;
+  values_[Mute - Preset] = strike.constraint;
+  values_[ContactSpread - Preset] = strike.contactSpread;
+  previewStrength_ =
+      document_.at("controls").at("event").at("strength").get<double>();
   if (host_->get_extension) {
     hostParams_ = static_cast<const clap_host_params_t *>(
         host_->get_extension(host_, CLAP_EXT_PARAMS));
@@ -24,9 +32,9 @@ Json Plugin::DesiredDocument() const {
   const int index = static_cast<int>(Value(Preset));
   return index == documentPreset_ ? document_ : ParseJson(PresetJson.at(index));
 }
-std::array<double, Reduction - Preset> Plugin::DesiredControls() const {
-  std::array<double, Reduction - Preset> result{};
-  for (clap_id id = Preset; id < Reduction; ++id)
+std::array<double, ParameterCount> Plugin::DesiredControls() const {
+  std::array<double, ParameterCount> result{};
+  for (clap_id id = Preset; id < ParameterEnd; ++id)
     result[id - Preset] = Value(id);
   if (static_cast<int>(result[0]) != documentPreset_) {
     // Selecting an instrument restores its saved gesture, not a generic stick
@@ -38,6 +46,7 @@ std::array<double, Reduction - Preset> Plugin::DesiredControls() const {
     result[Implement - Preset] = strike.implement;
     result[Location - Preset] = strike.location;
     result[Mute - Preset] = strike.constraint;
+    result[ContactSpread - Preset] = strike.contactSpread;
   }
   return result;
 }
@@ -50,6 +59,9 @@ bool Plugin::Activate(double rate, uint32_t minimum, uint32_t maximum) {
   output::Limiter protection;
   protection.Prepare(rate, 2, Value(Protection) >= .5);
   auto stored = next->Document();
+  if (int(Value(Preset)) != documentPreset_)
+    previewStrength_ =
+        stored.at("controls").at("event").at("strength").get<double>();
   document_ = std::move(stored);
   documentPreset_ = static_cast<int>(Value(Preset));
   voice_ = std::move(next);

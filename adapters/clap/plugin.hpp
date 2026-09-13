@@ -30,6 +30,7 @@ enum Parameter : clap_id {
   Protection,
   Reduction,
   Latency,
+  ContactSpread,
   ParameterEnd
 };
 constexpr std::size_t ParameterCount = ParameterEnd - Preset;
@@ -74,6 +75,8 @@ public:
   void PrepareEditorPreset();
   void EditDocument(Json);
   void EditPresentation(const Json &reference, const Json &analysis);
+  double PreviewStrength() const { return previewStrength_.load(); }
+  void SetPreviewStrength(double);
   unsigned DocumentRevision() const { return documentRevision_; }
   const void *Extension(const char *) const noexcept;
   bool QueueEdit(clap_id, double) noexcept;
@@ -96,14 +99,16 @@ public:
   bool active{}; // CLAP lifecycle synchronization guards accesses.
 private:
   void Render(float *left, float *right, uint32_t frames) noexcept;
+  void StrikeVoice(float velocity) noexcept;
   void RequestRestart() noexcept;
   Json DesiredDocument() const;
-  std::array<double, Reduction - Preset> DesiredControls() const;
+  std::array<double, ParameterCount> DesiredControls() const;
   const clap_host_t *host_{};
   const clap_host_params_t *hostParams_{};
   const clap_host_latency_t *hostLatency_{};
   std::array<std::atomic<double>, ParameterCount> values_{};
   std::array<double, ParameterCount> audioValues_{};
+  std::atomic<double> previewStrength_{.8};
   std::unique_ptr<Voice> voice_;
   output::Limiter limiter_;
   Json

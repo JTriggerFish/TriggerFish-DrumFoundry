@@ -1,6 +1,25 @@
 #include "plugin.hpp"
+#include <cmath>
+#include <stdexcept>
 
 namespace drumfoundry::clap_adapter {
+namespace {
+void Dirty(const clap_host_t *host) {
+  const auto *state = host->get_extension
+                          ? static_cast<const clap_host_state_t *>(
+                                host->get_extension(host, CLAP_EXT_STATE))
+                          : nullptr;
+  if (state && state->mark_dirty)
+    state->mark_dirty(host);
+}
+} // namespace
+void Plugin::SetPreviewStrength(double velocity) {
+  if (!std::isfinite(velocity) || velocity < 0 || velocity > 1)
+    throw std::invalid_argument(
+        "Audition velocity must be between zero and one");
+  previewStrength_ = velocity;
+  Dirty(host_);
+}
 void Plugin::EditPresentation(const Json &reference, const Json &analysis) {
   PrepareEditorPreset();
   auto next = DesiredDocument();
@@ -13,12 +32,7 @@ void Plugin::EditPresentation(const Json &reference, const Json &analysis) {
     return;
   document_ = std::move(next);
   documentPreset_ = int(Value(Preset));
-  const auto *state = host_->get_extension
-                          ? static_cast<const clap_host_state_t *>(
-                                host_->get_extension(host_, CLAP_EXT_STATE))
-                          : nullptr;
-  if (state && state->mark_dirty)
-    state->mark_dirty(host_);
+  Dirty(host_);
 }
 void Plugin::PrepareEditorPreset() {
   if (static_cast<int>(Value(Preset)) == documentPreset_)
@@ -29,6 +43,9 @@ void Plugin::PrepareEditorPreset() {
   documentPreset_ = static_cast<int>(controls[0]);
   for (clap_id id = Hardness; id <= Mute; ++id)
     values_[id - Preset].store(controls[id - Preset]);
+  values_[ContactSpread - Preset] = controls[ContactSpread - Preset];
+  previewStrength_ =
+      document_.at("controls").at("event").at("strength").get<double>();
   ++documentRevision_;
 }
 Json Plugin::EditableDocument() const {
@@ -38,6 +55,9 @@ Json Plugin::EditableDocument() const {
   event["hardness"] = controls[Hardness - Preset];
   event["implement"] = controls[Implement - Preset];
   event["constraint"] = controls[Mute - Preset];
+  event["contactSpread"] = controls[ContactSpread - Preset];
+  if (int(controls[0]) == documentPreset_)
+    event["strength"] = previewStrength_.load();
   if (controls[0] != 0)
     event["location"] = controls[Location - Preset];
   return document;
@@ -58,16 +78,14 @@ void Plugin::EditDocument(Json document) {
   values_[Implement - Preset].store(strike.implement);
   values_[Location - Preset].store(strike.location);
   values_[Mute - Preset].store(strike.constraint);
+  values_[ContactSpread - Preset].store(strike.contactSpread);
+  previewStrength_ =
+      document_.at("controls").at("event").at("strength").get<double>();
   ++documentRevision_;
   if (active)
     RequestRestart();
   if (hostParams_ && hostParams_->rescan)
     hostParams_->rescan(host_, CLAP_PARAM_RESCAN_VALUES);
-  const auto *state = host_->get_extension
-                          ? static_cast<const clap_host_state_t *>(
-                                host_->get_extension(host_, CLAP_EXT_STATE))
-                          : nullptr;
-  if (state && state->mark_dirty)
-    state->mark_dirty(host_);
+  Dirty(host_);
 }
 } // namespace drumfoundry::clap_adapter

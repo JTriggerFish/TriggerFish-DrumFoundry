@@ -90,6 +90,11 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   neutral is the authoritative descriptor defaults for its affected controls.
   Endpoints and interpolation live in `engine/editing`, with validation tests.
   Neither tool adds voice parameters. The hold-decay optimizer remains to port.
+- Gesture spread and fixed audition velocity are beside the strike controls.
+  Native pad strikes retain continuous velocity; MIDI remains velocity/127,
+  with no compression. The latest strike updates the offline-render gesture.
+  Performance defaults come from the loaded fit. Tests compare initial and
+  repeated native pad output against an independent direct Voice render.
 
 ## Native analysis preview
 

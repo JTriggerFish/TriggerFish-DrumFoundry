@@ -38,6 +38,8 @@ private:
       modelPlay_{"Play render"};
   Slider master_{"Master", -60, 0, -12, " dB"};
   Slider hardness_{"Tip hardness", 0, 1, .5};
+  Slider velocity_{"Audition velocity", 0, 1, .8};
+  Slider spread_{"Gesture spread", 0, 1, .2};
   std::array<visage::UiButton, 3> implements_{{visage::UiButton("Brush"),
                                                visage::UiButton("Mallet"),
                                                visage::UiButton("Stick")}};

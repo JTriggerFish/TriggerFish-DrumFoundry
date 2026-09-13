@@ -17,6 +17,7 @@ public:
   Slider(std::string label, double low, double high, double initial,
          std::string unit = "");
   void Set(double value);
+  void SetDefault(double value);
   double Value() const { return value_; }
   void SetLabel(std::string label) {
     if (label_ != label) {

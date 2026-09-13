@@ -1,13 +1,18 @@
 #include "adapters/clap/plugin.hpp"
 #include <cmath>
+#include <fstream>
 #include <stdexcept>
 
 using namespace drumfoundry::clap_adapter;
+void NativeStrikeParity(const drumfoundry::Json &);
 void Require(bool result) {
   if (!result)
     throw std::runtime_error("CLAP editor event regression");
 }
-int main() {
+int main(int argc, char **argv) {
+  Require(argc == 2);
+  std::ifstream source(argv[1]);
+  NativeStrikeParity(drumfoundry::Json::parse(source));
   clap_host_t host{CLAP_VERSION, nullptr, "Test", "TriggerFish", "", "1"};
   Plugin plugin(&host);
   Require(plugin.Init());

@@ -12,6 +12,8 @@ struct Bridge {
   std::function<double(unsigned)> value;
   std::function<void(unsigned, double)> change;
   std::function<void(float, float)> strike;
+  std::function<double()> velocity;
+  std::function<void(double)> setVelocity;
   std::function<void()> stop;
   std::function<void()> service;
   std::function<void()> settings;

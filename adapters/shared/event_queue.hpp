@@ -12,6 +12,7 @@ struct Event {
   clap_id parameter{};
   double value{};
   std::array<uint8_t, 3> bytes{};
+  float strikeVelocity{}; // Native pad gestures retain continuous strength.
 };
 template <std::size_t Size = 256> class EventQueue {
 public:

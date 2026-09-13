@@ -8,11 +8,12 @@ bool Plugin::Save(const clap_ostream_t *stream) {
     return false;
   Json parameters = Json::object();
   const auto controls = DesiredControls();
-  for (clap_id id = Preset; id < Reduction; ++id)
-    parameters[std::to_string(id)] = controls[id - Preset];
+  for (clap_id id = Preset; id < ParameterEnd; ++id)
+    if (!Controls[id - Preset].readonly)
+      parameters[std::to_string(id)] = controls[id - Preset];
   const auto data = Json{
       {"schema", "triggerfish.drumfoundry.clap-state/v1"},
-      {"document", DesiredDocument()},
+      {"document", EditableDocument()},
       {"parameters",
        parameters}}.dump();
   std::size_t offset = 0;
@@ -44,10 +45,14 @@ bool Plugin::Load(const clap_istream_t *stream) {
   if (state.at("schema") != "triggerfish.drumfoundry.clap-state/v1")
     return false;
   const auto &parameters = state.at("parameters");
-  if (!parameters.is_object() || parameters.size() != Reduction - Preset)
+  const bool hasSpread = parameters.contains(std::to_string(ContactSpread));
+  if (!parameters.is_object() ||
+      parameters.size() != ParameterCount - 2 - !hasSpread)
     return false;
-  std::array<double, Reduction - Preset> next{};
-  for (clap_id id = Preset; id < Reduction; ++id) {
+  std::array<double, ParameterCount> next{};
+  for (clap_id id = Preset; id < ParameterEnd; ++id) {
+    if (Controls[id - Preset].readonly || (id == ContactSpread && !hasSpread))
+      continue;
     const auto &value = parameters.at(std::to_string(id));
     if (!value.is_number() || !ValidValue(id, value.get<double>()))
       return false;
@@ -58,11 +63,16 @@ bool Plugin::Load(const clap_istream_t *stream) {
   // configuration.
   Voice validated(static_cast<float>(sampleRate_), state.at("document"));
   auto document = validated.Document();
+  if (!hasSpread)
+    next[ContactSpread - Preset] = validated.Event().contactSpread;
+  const double strength = document.at("controls").at("event").at("strength");
   document_ = std::move(document);
   ++documentRevision_;
   documentPreset_ = static_cast<int>(next[0]);
   for (std::size_t i = 0; i < next.size(); ++i)
-    values_[i].store(next[i]);
+    if (!Controls[i].readonly)
+      values_[i].store(next[i]);
+  previewStrength_ = strength;
   if (active)
     RequestRestart();
   if (hostParams_ && hostParams_->rescan)

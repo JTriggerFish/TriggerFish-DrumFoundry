@@ -31,7 +31,7 @@ void Workbench::SetupPanels() {
   }
   addChild(&right_);
   for (auto *frame : std::initializer_list<visage::Frame *>{
-           &analysis_, &modal_, &strike_, &hardness_})
+           &analysis_, &modal_, &strike_, &hardness_, &velocity_, &spread_})
     right_.addScrolledChild(frame);
   analysis_.chooseReference = [this] { OpenReferenceFile(); };
   analysis_.error = [this](const auto &message) { Error(message); };
@@ -108,6 +108,15 @@ void Workbench::SetupPerformance() {
   };
   master_.changed = [this](double v) { Change(105, v); };
   hardness_.changed = [this](double v) { Change(101, v); };
+  spread_.changed = [this](double v) { Change(109, v); };
+  velocity_.changed = [this](double v) {
+    try {
+      if (bridge_.setVelocity)
+        bridge_.setVelocity(v);
+    } catch (const std::exception &e) {
+      Error(e.what());
+    }
+  };
   location_.changed = [this](double v) { Change(103, v); };
   mute_.changed = [this](double v) { Change(104, v); };
   strike_.strike = [this](float v, float x) {
@@ -163,6 +172,9 @@ void Workbench::Poll() {
     preset_.setText(names[std::clamp(int(bridge_.value(100)), 0, 5)]);
     master_.Set(bridge_.value(105));
     hardness_.Set(bridge_.value(101));
+    spread_.Set(bridge_.value(109));
+    if (bridge_.velocity)
+      velocity_.Set(bridge_.velocity());
     const double implement = bridge_.value(102);
     for (unsigned i = 0; i < implements_.size(); ++i)
       implements_[i].setActionButton(std::abs(implement - i * .5) < .01);
@@ -189,6 +201,12 @@ void Workbench::Poll() {
 void Workbench::RefreshDocument() {
   metaShade_.setVisible(false);
   document_.Load(bridge_.document());
+  const auto &event = document_.JsonValue().at("controls").at("event");
+  velocity_.SetDefault(event.at("strength"));
+  hardness_.SetDefault(event.at("hardness"));
+  spread_.SetDefault(event.at("contactSpread"));
+  location_.SetDefault(event.at("location"));
+  mute_.SetDefault(event.at("constraint"));
   documentPreset_ = int(bridge_.value(100));
   documentRevision_ = bridge_.revision ? bridge_.revision() : 0;
   reloadDocument_ = false;

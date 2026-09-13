@@ -25,6 +25,22 @@ bool ValidEvents(const clap_input_events_t *events, uint32_t frames) noexcept {
   return true;
 }
 } // namespace
+void Plugin::StrikeVoice(float velocity) noexcept {
+  if (!voice_)
+    return;
+#ifdef DRUMFOUNDRY_UI
+  audition_.Stop();
+#endif
+  auto strike = voice_->Event();
+  strike.strength = velocity;
+  strike.hardness = float(audioValues_[Hardness - Preset]);
+  strike.implement = float(audioValues_[Implement - Preset]);
+  strike.location = float(audioValues_[Location - Preset]);
+  strike.constraint = float(audioValues_[Mute - Preset]);
+  strike.contactSpread = float(audioValues_[ContactSpread - Preset]);
+  previewStrength_ = velocity;
+  voice_->Trigger(strike);
+}
 void Plugin::Event(const clap_event_header_t *header) noexcept {
   if (!header || header->space_id != CLAP_CORE_EVENT_SPACE_ID)
     return;
@@ -40,17 +56,7 @@ void Plugin::Event(const clap_event_header_t *header) noexcept {
       return;
     const auto kind = e.data[0] & 0xf0;
     if (kind == 0x90 && e.data[2]) {
-#ifdef DRUMFOUNDRY_UI
-      audition_
-          .Stop(); // Live strikes interrupt one-shot reference/render audition.
-#endif
-      auto strike = voice_->Event();
-      strike.strength = e.data[2] / 127.f;
-      strike.hardness = static_cast<float>(audioValues_[Hardness - Preset]);
-      strike.implement = static_cast<float>(audioValues_[Implement - Preset]);
-      strike.location = static_cast<float>(audioValues_[Location - Preset]);
-      strike.constraint = static_cast<float>(audioValues_[Mute - Preset]);
-      voice_->Trigger(strike);
+      StrikeVoice(e.data[2] / 127.f);
     } else if (kind == 0xb0 && (e.data[1] == 120 || e.data[1] == 123))
       Reset();
   }

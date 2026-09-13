@@ -32,6 +32,10 @@ void Slider::Set(double value) {
     redraw();
   }
 }
+void Slider::SetDefault(double value) {
+  if (std::isfinite(value))
+    initial_ = std::clamp(value, low_, high_);
+}
 void Slider::Edit(double value) {
   Set(value);
   if (changed)

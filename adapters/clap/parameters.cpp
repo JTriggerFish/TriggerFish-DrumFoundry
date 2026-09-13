@@ -22,6 +22,7 @@ const std::array<Control, ParameterCount> Controls{{
     {"Limiter", "Output", 0, 1, 1, true, false},
     {"Gain reduction", "Output", 0, 1000, 0, false, true},
     {"Latency (ms)", "Output", 0, 2, 0, false, true},
+    {"Gesture spread", "Strike", 0, 1, .2, false, false},
 }};
 bool ValidValue(clap_id id, double value) noexcept {
   if (id < Preset || id >= ParameterEnd || !std::isfinite(value))
