@@ -36,11 +36,26 @@ def signature(audio, rate):
     return {"temporal_rms": temporal, "spectral_rms": spectral}
 
 
+def sound_identity(document):
+    """Hash the DSP patch and strike defaults, not reference/view metadata."""
+    sound = {
+        "instrument": document["instrument"],
+        "event": document["controls"]["event"],
+    }
+    encoded = json.dumps(sound, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return hashlib.sha256(encoded.encode("utf8")).hexdigest()
+
+
 def render_case(presets, case):
     """Enforce the original patch identity before comparing a saved baseline."""
     preset = Path(presets) / f"{case['preset']}_calibration.fit.json"
     content = preset.read_bytes().replace(b"\r\n", b"\n")
-    if hashlib.sha256(content).hexdigest() != case["preset_sha256_lf"]:
+    identity = (
+        sound_identity(json.loads(content))
+        if "sound_sha256" in case
+        else hashlib.sha256(content).hexdigest()
+    )
+    if identity != case.get("sound_sha256", case["preset_sha256_lf"]):
         raise ValueError(f"Migration preset changed: {preset.name}")
     events = [{"time": t} for t in (0, 0.5, 1, 1.5, 2)] if case["repeated"] else None
     with Renderer(preset, case["rate"]) as renderer:

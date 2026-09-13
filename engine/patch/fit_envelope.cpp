@@ -5,8 +5,11 @@ Json WithFitEnvelope(Json document) {
   for (const char *key : {"id", "name"})
     if (document.contains(key) && !document.at(key).is_string())
       throw std::invalid_argument(std::string("Invalid document ") + key);
-  if (document.at("schema") == "triggerfish.percussion.fit/v1")
+  if (document.at("schema") == "triggerfish.percussion.fit/v1") {
+    if (!document.contains("reference"))
+      document["reference"] = nullptr;
     return document;
+  }
   if (document.at("schema") != "triggerfish.percussion.patch/v1")
     throw std::invalid_argument("Unsupported editable document schema");
   const Strike event;

@@ -21,7 +21,7 @@ void AnalysisView::Axes(visage::Canvas &c) {
       Label(c, text, 2, y - 8, 37, 16);
     }
   };
-  if (comparison == Comparison::Stacked) {
+  if (Mode() == Comparison::Stacked) {
     grid(PlotTop, float(split) * (height() - PlotTop - 29));
     grid(PlotTop + float(split) * (height() - PlotTop - 29),
          float(1 - split) * (height() - PlotTop - 29));
@@ -35,9 +35,11 @@ void AnalysisView::Axes(visage::Canvas &c) {
           20);
   }
   std::string legend =
-      comparison == Comparison::Difference
+      Mode() == Comparison::Difference
           ? "Cyan: less model · black: equal · amber: more model"
-          : "Reference  |  TriggerFish — same dBFS/bin colour scale";
+      : HasReference()
+          ? "Reference  |  TriggerFish — same dBFS/bin colour scale"
+          : "TriggerFish — synth only";
   if (!hover_)
     Label(c, legend, 48, PlotTop - 20, width() - 60, 18, 0xffe8b755);
 }
@@ -54,6 +56,9 @@ void AnalysisView::Readout(visage::Canvas &c) {
   std::snprintf(text, sizeof(text),
                 "%.3f s · %.1f Hz · Ref %.1f / Model %.1f dBFS · Δ %+.1f dB",
                 p.time, p.frequency, ref, model, model - ref);
+  if (!HasReference())
+    std::snprintf(text, sizeof(text), "%.3f s · %.1f Hz · Model %.1f dBFS",
+                  p.time, p.frequency, model);
   Label(c, text, 48, PlotTop - 20, width() - 60, 18, 0xffe8b755);
 }
 } // namespace drumfoundry::ui

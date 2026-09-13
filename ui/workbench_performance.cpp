@@ -29,11 +29,7 @@ void Workbench::SetupPerformance() {
       Error(e.what());
     }
   };
-  settings_.setVisible(bool(bridge_.settings));
-  settings_.onToggle() = [this](auto *, bool) {
-    if (bridge_.settings)
-      bridge_.settings();
-  };
+  settings_.onToggle() = [this](auto *, bool) { OpenSettings(); };
   master_.changed = [this](double v) { Change(105, v); };
   hardness_.changed = [this](double v) { Change(101, v); };
   spread_.changed = [this](double v) { Change(109, v); };

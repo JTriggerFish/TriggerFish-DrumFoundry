@@ -15,6 +15,7 @@ add_library(drumfoundry_ui STATIC ui/controls.cpp ui/workbench.cpp ui/layout.cpp
 target_sources(drumfoundry_ui PRIVATE ui/slider_text.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/workbench_panels.cpp ui/workbench_history.cpp
   ui/workbench_performance.cpp ui/workbench_poll.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/workbench_settings.cpp ui/analysis_reference.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/help_bubble.cpp ui/parameter_help.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/live_spectrum.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/eq_plot.cpp ui/eq_gestures.cpp)
@@ -25,7 +26,7 @@ target_sources(drumfoundry_ui PRIVATE ui/modal_plot.cpp ui/modal_gestures.cpp ui
 target_sources(drumfoundry_ui PRIVATE ui/file_panel.cpp ui/history_bar.cpp ui/workbench_files.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/analysis_view.cpp ui/analysis_axes.cpp ui/analysis_gestures.cpp ui/analysis_panel.cpp ui/analysis_menus.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/reference_menu.cpp ui/analysis_playback.cpp)
-target_sources(drumfoundry_ui PRIVATE ui/reference_controls.cpp ui/analysis_toolbar.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/analysis_toolbar.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/analysis_waveform.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/meta_panel.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/decay_hold_panel.cpp)

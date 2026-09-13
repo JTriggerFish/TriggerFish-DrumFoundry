@@ -41,10 +41,9 @@ void AnalysisView::mouseDown(const visage::MouseEvent &e) {
   dragging_ = true;
   divider_ =
       !dragWaveform_ &&
-      ((comparison == Comparison::Mirror ||
-        comparison == Comparison::SideBySide)
+      ((Mode() == Comparison::Mirror || Mode() == Comparison::SideBySide)
            ? std::abs(e.position.x - 42 - float(split) * (width() - 54)) < 7
-           : comparison == Comparison::Stacked &&
+           : Mode() == Comparison::Stacked &&
                  std::abs(e.position.y - PlotTop -
                           float(split) * (height() - PlotTop - 29)) < 7);
 }
@@ -53,17 +52,17 @@ void AnalysisView::mouseDrag(const visage::MouseEvent &e) {
     return;
   if (divider_) {
     split =
-        comparison == Comparison::Stacked
+        Mode() == Comparison::Stacked
             ? (e.position.y - PlotTop) / std::max(1.f, height() - PlotTop - 29)
             : (e.position.x - 42) / std::max(1.f, width() - 54);
     split = std::clamp(split, .1, .9);
   } else {
     const bool horizontal =
-        !dragWaveform_ && (comparison == Comparison::Mirror ||
-                           comparison == Comparison::SideBySide);
+        !dragWaveform_ &&
+        (Mode() == Comparison::Mirror || Mode() == Comparison::SideBySide);
     const double pane = horizontal ? (dragReference_ ? split : 1 - split) : 1;
     const double direction =
-        comparison == Comparison::Mirror && dragReference_ ? -1 : 1;
+        Mode() == Comparison::Mirror && dragReference_ ? -1 : 1;
     const double delta = (previous_.x - e.position.x) * span * direction /
                          std::max(1., (width() - 54) * pane);
     if (e.isShiftDown() && !dragWaveform_)

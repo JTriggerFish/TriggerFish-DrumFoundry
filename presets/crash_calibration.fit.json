@@ -3,7 +3,7 @@
   "id": "8b5d14e9-93af-4f33-b950-496865caf9cc",
   "parentId": "76c54fcb-86a9-4f34-b3d8-193b5dce9007",
   "createdAt": "2026-09-12T15:18:29.437152+00:00",
-  "name": "Crash \u2014 beating doubles, refined decay",
+  "name": "Crash — beating doubles, refined decay",
   "renderer": {
     "recipe": "metal.cymbal.v1",
     "api": 1,
@@ -317,7 +317,10 @@
       "seed": 1396978464,
       "split": "fit",
       "url": "/reference/private-crash-a/032-edge-v072-r01.wav"
-    }
+    },
+    "libraryPath": "private-crash-a/032-edge-v072-r01.wav",
+    "visible": true,
+    "offsetSeconds": 0.05
   },
   "controls": {
     "event": {

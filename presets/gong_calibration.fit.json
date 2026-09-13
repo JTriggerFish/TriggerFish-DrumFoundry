@@ -317,7 +317,10 @@
       "seed": 1675,
       "split": "audition",
       "url": "/reference/gong-dresden/Gong%20Dresden%2003.wav"
-    }
+    },
+    "libraryPath": "gong-dresden/Gong Dresden 03.wav",
+    "visible": true,
+    "offsetSeconds": 0
   },
   "controls": {
     "event": {

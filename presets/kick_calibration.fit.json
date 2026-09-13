@@ -261,7 +261,10 @@
       "seed": 1449,
       "split": "audition",
       "url": "http://127.0.0.1:8765/reference/acoustic-kick-oak/Kick%20Yamaha%20Oak%20Custom%204%2001.wav"
-    }
+    },
+    "libraryPath": "acoustic-kick-oak/Kick Yamaha Oak Custom 4 01.wav",
+    "visible": true,
+    "offsetSeconds": 0.001315
   },
   "controls": {
     "event": {

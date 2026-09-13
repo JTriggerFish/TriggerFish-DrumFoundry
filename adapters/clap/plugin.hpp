@@ -76,6 +76,7 @@ public:
   void PrepareEditorPreset();
   void EditDocument(Json);
   void SelectFactory(unsigned index);
+  void SelectCalibration(unsigned index);
   void EditPresentation(const Json &reference, const Json &analysis);
   double PreviewStrength() const { return previewStrength_.load(); }
   void SetPreviewStrength(double);

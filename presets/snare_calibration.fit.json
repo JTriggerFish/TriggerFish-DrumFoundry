@@ -322,7 +322,10 @@
       "seed": 1575,
       "split": "audition",
       "url": "http://127.0.0.1:8765/reference/acoustic-snare-maple/Snare%20YMCA%201%20B%2001.wav"
-    }
+    },
+    "libraryPath": "acoustic-snare-maple/Snare YMCA 1 B 01.wav",
+    "visible": true,
+    "offsetSeconds": 0.000975
   },
   "controls": {
     "event": {

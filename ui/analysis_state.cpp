@@ -23,7 +23,7 @@ void AnalysisPanel::LoadView(const editing::Json &analysis) {
   comparison_.setText(names[int(mode)]);
 }
 void AnalysisPanel::PublishState() {
-  if (!presentation || hashPending_ || request_.document.is_null())
+  if (!presentation || request_.document.is_null())
     return;
   const auto ref = Reference(), settings = Settings();
   const editing::Json next = {{"reference", ref}, {"analysis", settings}};

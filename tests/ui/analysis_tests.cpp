@@ -104,6 +104,8 @@ int main(int argc, char **argv) {
     Require(rejected && panel.Settings() == previous);
   }
   ReferenceTests(request.document);
+  extern void LibraryTests(Json);
+  LibraryTests(request.document);
   extern void LiveSpectrumTests();
   LiveSpectrumTests();
   extern void StreamingTests();

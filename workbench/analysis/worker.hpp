@@ -23,6 +23,8 @@ struct Result {
   Spectrogram modelSpectrum, referenceSpectrum;
   double elapsedMs{};
   std::string error;
+  std::string
+      referenceWarning; // Optional comparison failure, never a synthesis error.
   std::string referenceHash;
   unsigned auditionRate{};
   std::vector<float> modelPlayback, referencePlayback;

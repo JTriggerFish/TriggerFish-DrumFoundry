@@ -42,9 +42,11 @@ void ValidateEnvelope(const Json &d) {
       d.at("renderer").at("adapter") != "percussion-recipe-v1" ||
       d.at("renderer").at("recipe") != d.at("instrument").at("recipe"))
     throw std::invalid_argument("Unsupported fit format");
-  const auto &reference = d.at("reference");
+  const auto reference = d.value("reference", Json());
   if (!reference.is_null() &&
-      (!reference.at("id").is_string() || !reference.at("sha256").is_string()))
+      (!reference.is_object() ||
+       (reference.contains("id") && !reference.at("id").is_string()) ||
+       (reference.contains("sha256") && !reference.at("sha256").is_string())))
     throw std::invalid_argument("Invalid reference identity");
   const auto &a = d.at("controls").at("analysis");
   const int size = a.at("size").get<int>(), hop = a.at("hop").get<int>();

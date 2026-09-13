@@ -32,7 +32,6 @@ void Workbench::SetupAnalysis() {
            &analysis_, &modal_, &strike_, &hardness_, &velocity_, &spread_,
            &analysisSplit_, &fixedStrike_})
     right_.addScrolledChild(frame);
-  analysis_.chooseReference = [this] { OpenReferenceFile(); };
   analysisSplit_.started = [this] { splitStart_ = analysis_.height(); };
   analysisSplit_.dragged = [this](float delta) {
     const double flexible = std::max(1350.f, right_.height()) - 210;

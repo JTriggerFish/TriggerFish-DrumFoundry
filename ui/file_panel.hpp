@@ -9,6 +9,7 @@ public:
   FilePanel();
   void Open(std::filesystem::path directory, bool save,
             std::string extension = ".json");
+  void OpenDirectory(std::filesystem::path directory);
   void resized() override;
   void draw(visage::Canvas &) override;
   std::function<void(const std::filesystem::path &)> chosen;
@@ -22,6 +23,7 @@ private:
   visage::UiButton browse_{"Browse folder"}, up_{"Up"}, accept_{"Open"},
       close_{"Cancel"};
   bool save_{};
+  bool folderOnly_{};
   std::string extension_{".json"};
 };
 } // namespace drumfoundry::ui

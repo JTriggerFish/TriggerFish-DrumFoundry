@@ -39,13 +39,13 @@ private:
   void SetupFiles();
   void SetupPerformance();
   bool EnsureAudio();
+  void OpenSettings();
   void SetupRouting();
   float LeftControlsTop() const { return 144 + (routingOpen_ ? 156.f : 0.f); }
   void RefreshDocument();
   void ApplyDocument();
   editing::Json CaptureDocument() const;
   void OpenFitFile(bool save, const editing::Json &);
-  void OpenReferenceFile();
   Bridge bridge_;
   visage::EventTimer timer_;
   visage::UiButton preset_{"Kick"}, settings_{"Settings"}, stop_{"Stop"},

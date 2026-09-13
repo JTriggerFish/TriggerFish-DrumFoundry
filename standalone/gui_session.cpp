@@ -77,6 +77,13 @@ ui::Bridge GuiSession::Connect() {
       audio_->Start();
     }
   };
+  bridge.selectCalibration = [this, &plugin](unsigned index) {
+    plugin.SelectCalibration(index);
+    if (audio_) {
+      audio_->Stop();
+      audio_->Start();
+    }
+  };
   bridge.presentation = [&plugin](const auto &ref, const auto &analysis) {
     plugin.EditPresentation(ref, analysis);
   };

@@ -9,13 +9,18 @@ target_include_directories(drumfoundry_clap_sdk SYSTEM INTERFACE ${clap_SOURCE_D
 
 # Embed the existing fits as read-only assets. Never duplicate their values in C++.
 set(preset_header "#pragma once\n#include <array>\nnamespace drumfoundry::clap_adapter {\ninline constexpr std::array<const char*, 6> PresetJson{{\n")
+set(calibration_header "inline constexpr std::array<const char*, 6> CalibrationJson{{\n")
 foreach(preset kick snare hihat crash ride gong)
   set(preset_path "${PROJECT_SOURCE_DIR}/presets/${preset}_calibration.fit.json")
   set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${preset_path}")
   file(READ "${preset_path}" preset_json)
+  string(APPEND calibration_header "R\"dfpreset(${preset_json})dfpreset\",\n")
+  # One source of sound parameters; the factory variant has no comparison attachment.
+  string(JSON preset_json SET "${preset_json}" reference null)
+  string(JSON preset_json SET "${preset_json}" id "\"factory.${preset}\"")
   string(APPEND preset_header "R\"dfpreset(${preset_json})dfpreset\",\n")
 endforeach()
-string(APPEND preset_header "}};\n}\n")
+string(APPEND preset_header "}};\n${calibration_header}}};\n}\n")
 file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/generated")
 file(CONFIGURE OUTPUT "${PROJECT_BINARY_DIR}/generated/builtin_presets.hpp"
   CONTENT "${preset_header}" @ONLY)

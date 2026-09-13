@@ -317,7 +317,10 @@
       "seed": 1575,
       "split": "audition",
       "url": "/reference/ride-21-reference/21ride.stick.normal.mf.stereo.wav"
-    }
+    },
+    "libraryPath": "ride-21-reference/21ride.stick.normal.mf.stereo.wav",
+    "visible": true,
+    "offsetSeconds": 0.084125
   },
   "controls": {
     "event": {

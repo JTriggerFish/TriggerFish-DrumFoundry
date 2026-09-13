@@ -101,7 +101,9 @@ void ReferenceTests(const drumfoundry::Json &fit) {
     while (!(result = worker.Take()) &&
            std::chrono::steady_clock::now() < deadline)
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    Check(result && result->error.find("SHA256") != std::string::npos);
+    Check(result && result->error.empty() &&
+          result->referenceWarning.find("SHA256") != std::string::npos);
+    Check(!result->model.samples.empty() && result->reference.samples.empty());
     request.expectedHash = hash;
     for (auto channel : {Channel::Left, Channel::Right}) {
       request.channel = channel;

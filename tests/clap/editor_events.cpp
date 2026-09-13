@@ -18,6 +18,20 @@ int main(int argc, char **argv) {
   std::ifstream source(argv[1]);
   NativeStrikeParity(drumfoundry::Json::parse(source));
   clap_host_t host{CLAP_VERSION, nullptr, "Test", "TriggerFish", "", "1"};
+  Plugin presets(&host);
+  Require(presets.Init());
+  Require(presets.EditableDocument().at("reference").is_null());
+  for (unsigned i = 0; i < 6; ++i) {
+    presets.SelectCalibration(i);
+    const auto calibration = presets.EditableDocument();
+    Require(calibration.at("reference").contains("libraryPath"));
+    presets.SelectFactory(i);
+    const auto factory = presets.EditableDocument();
+    Require(factory.at("reference").is_null());
+    Require(factory.at("instrument") == calibration.at("instrument"));
+    Require(factory.at("controls").at("event") ==
+            calibration.at("controls").at("event"));
+  }
   Plugin plugin(&host);
   Require(plugin.Init());
   auto document = plugin.EditableDocument();

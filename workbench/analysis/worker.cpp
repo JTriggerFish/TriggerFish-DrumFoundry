@@ -91,14 +91,25 @@ Result Worker::Execute(const Request &request, unsigned revision) {
   Result result;
   result.auditionRate = request.auditionRate;
   result.document = request.document;
-  ReadReference(request, result, cancelled);
+  try {
+    ReadReference(request, result, cancelled);
+  } catch (const std::exception &e) {
+    result.reference = {};
+    result.referenceSpectrum = {};
+    result.referencePlayback.clear();
+    result.referenceHash.clear();
+    result.referenceWarning = std::string("Reference unavailable: ") + e.what();
+  }
   if (cancelled())
     return {};
-  const unsigned rate =
-      result.reference.sampleRate ? result.reference.sampleRate : 48000;
+  // Reference audio cannot change the instrument rate.
+  const unsigned rate = request.auditionRate;
   double duration = request.duration;
-  if (duration == 0 && !result.reference.samples.empty())
-    duration = double(result.reference.samples.size()) / rate;
+  if (duration == 0)
+    duration = result.reference.samples.empty()
+                   ? 8.
+                   : double(result.reference.samples.size()) /
+                         result.reference.sampleRate;
   if (!std::isfinite(duration) || duration <= 0 || duration > 60)
     throw std::invalid_argument(
         "Render duration must be above zero and at most 60 seconds");

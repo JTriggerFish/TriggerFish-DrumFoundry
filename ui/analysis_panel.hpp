@@ -2,18 +2,25 @@
 #include "analysis_view.hpp"
 #include "bridge.hpp"
 #include "editing/document.hpp"
-#include "workbench/analysis/catalog.hpp"
+#include "workbench/analysis/library.hpp"
 #include "workbench/analysis/live_worker.hpp"
 namespace drumfoundry::ui {
 class AnalysisPanel : public visage::Frame {
 public:
-  AnalysisPanel();
+  explicit AnalysisPanel(
+      std::filesystem::path librarySettings = analysis::LibrarySettingsPath());
   void SetDocument(const editing::Json &);
   void UpdateModel(const editing::Json &document) {
     request_.document = document;
     Queue();
   }
   void SetReference(const std::filesystem::path &);
+  void ClearReference();
+  void SetReferenceVisible(bool);
+  void SetLibraryRoot(const std::filesystem::path &);
+  const std::filesystem::path &LibraryRoot() const { return libraryRoot_; }
+  bool HasReferenceSelection() const { return reference_.is_object(); }
+  const std::string &ReferenceWarning() const { return referenceWarning_; }
   editing::Json Reference() const;
   editing::Json Settings() const;
   void Poll();
@@ -31,7 +38,6 @@ public:
   void Play(bool reference);
   void resized() override;
   void draw(visage::Canvas &) override;
-  std::function<void()> chooseReference;
   std::function<void(const std::string &)> error;
   std::function<void(std::shared_ptr<const std::vector<float>>, unsigned,
                      double)>
@@ -49,13 +55,15 @@ private:
   void PublishState();
   void Menus();
   void ReferenceMenu();
-  void ReferenceDimensionMenu(const char *key, visage::UiButton &);
-  void RefreshReferenceControls();
+  void ResolveReference();
+  void ApplyReferenceView();
   void RefreshTransformLabels();
   void OverlapMenu();
   void RenderMenu();
-  void SelectReference(const analysis::ReferenceCell &);
-  analysis::Catalog catalog_;
+  std::filesystem::path libraryRoot_;
+  std::filesystem::path librarySettings_;
+  std::string referenceFolder_, referenceWarning_;
+  bool browsePending_{}, referenceReady_{};
   analysis::Worker worker_;
   analysis::LiveWorker liveWorker_;
   std::array<float, host::AudioTap::Capacity> liveSamples_{};
@@ -71,12 +79,12 @@ private:
   visage::UiButton referenceButton_{"Reference WAV"}, fft_{"FFT 4096"},
       window_{"Hann"}, comparison_{"Mirror"}, reset_{"Reset zoom"},
       channel_{"Mono average"};
-  visage::UiButton articulation_{"Articulation"}, layer_{"Velocity"},
-      take_{"Take"}, overlap_{"Overlap"}, render_{"Render"};
+  visage::UiButton overlap_{"Overlap"}, render_{"Render"};
+  visage::UiButton referenceVisible_{"Show reference"};
   Slider duration_{"Render length", .25, 60, 8, " s"};
   Slider range_{"Colour range", 30, 120, 80, " dB"};
   Slider referenceGain_{"Reference gain", -60, 48, 0, " dB"};
   std::string status_;
-  bool hashPending_{}, matchLength_{};
+  bool matchLength_{};
 };
 } // namespace drumfoundry::ui

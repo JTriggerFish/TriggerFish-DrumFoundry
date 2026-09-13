@@ -40,9 +40,17 @@ void Workbench::SelectPreset() {
   visage::PopupMenu menu;
   for (int i = 0; i < 6; ++i)
     menu.addOption(i, names[i]).select(bridge_.value(100) == i);
+  if (bridge_.selectCalibration) {
+    visage::PopupMenu calibrations("Calibrations (with reference)");
+    for (int i = 0; i < 6; ++i)
+      calibrations.addOption(100 + i, names[i]);
+    menu.addSubMenu(std::move(calibrations));
+  }
   menu.onSelection() = [this](int index) {
     try {
-      if (bridge_.selectFactory)
+      if (index >= 100 && bridge_.selectCalibration)
+        bridge_.selectCalibration(unsigned(index - 100));
+      else if (bridge_.selectFactory)
         bridge_.selectFactory(unsigned(index));
       else
         Change(100, index);

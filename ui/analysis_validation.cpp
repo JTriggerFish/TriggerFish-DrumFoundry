@@ -48,10 +48,12 @@ void ValidateAnalysisDocument(const editing::Json &document) {
       window != "rectangular")
     throw std::invalid_argument("Invalid saved FFT window");
   Number(analysis, "dynamicRangeDb", 80, 30, 120);
-  const auto &ref = document.at("reference");
+  const auto ref = document.value("reference", editing::Json());
   if (ref.is_null())
     return;
-  for (const char *key : {"id", "sha256", "name", "localPath"})
+  if (!ref.is_object())
+    throw std::invalid_argument("Invalid reference attachment");
+  for (const char *key : {"id", "sha256", "name", "localPath", "libraryPath"})
     if (ref.contains(key) && !ref.at(key).is_string())
       throw std::invalid_argument(std::string("Invalid reference ") + key);
   const double channel = Number(ref, "channel", 0, 0, 2);
@@ -59,6 +61,9 @@ void ValidateAnalysisDocument(const editing::Json &document) {
     throw std::invalid_argument("Invalid reference channel");
   Number(ref, "referenceGainDb", 0, -60, 48);
   Number(ref, "duration", 8, 0, 60);
+  Number(ref, "offsetSeconds", 0, -1e6, 1e6);
+  if (ref.contains("visible") && !ref.at("visible").is_boolean())
+    throw std::invalid_argument("Invalid reference visibility");
   if (ref.contains("cell"))
     Number(ref.at("cell"), "onset_seconds", 0, -1e6, 1e6);
 }

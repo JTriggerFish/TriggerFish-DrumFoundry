@@ -23,11 +23,19 @@ FilePanel::FilePanel() {
 void FilePanel::Open(std::filesystem::path directory, bool save,
                      std::string extension) {
   save_ = save;
+  folderOnly_ = false;
+  filename_.setVisible(true);
   extension_ = std::move(extension);
   directory_.setText(directory.u8string());
   filename_.setText("");
   accept_.setText(save ? "Save new fit" : "Open");
   setVisible(true);
+}
+void FilePanel::OpenDirectory(std::filesystem::path directory) {
+  Open(std::move(directory), false);
+  folderOnly_ = true;
+  filename_.setVisible(false);
+  accept_.setText("Use this folder");
 }
 std::filesystem::path FilePanel::Directory() const {
   return std::filesystem::u8path(directory_.text().toUtf8());
@@ -39,7 +47,7 @@ void FilePanel::Browse() {
       auto extension = entry.path().extension().u8string();
       std::transform(extension.begin(), extension.end(), extension.begin(),
                      [](unsigned char c) { return char(std::tolower(c)); });
-      if (entry.is_directory() || extension == extension_)
+      if (entry.is_directory() || (!folderOnly_ && extension == extension_))
         entries.push_back(entry);
     }
     std::sort(entries.begin(), entries.end(), [](const auto &a, const auto &b) {
@@ -72,6 +80,14 @@ void FilePanel::Browse() {
 }
 void FilePanel::Accept() {
   try {
+    if (folderOnly_) {
+      if (!std::filesystem::is_directory(Directory()))
+        throw std::runtime_error("Choose an existing folder");
+      if (chosen)
+        chosen(std::filesystem::canonical(Directory()));
+      setVisible(false);
+      return;
+    }
     if (filename_.text().toUtf8().empty())
       throw std::runtime_error("Enter or choose a filename");
     auto path =
@@ -100,13 +116,19 @@ void FilePanel::resized() {
 void FilePanel::draw(visage::Canvas &c) {
   c.setColor(0xff18212b);
   c.roundedRectangle(0, 0, width(), height(), 8);
-  Label(c, save_ ? "SAVE A NEW FIT" : "OPEN FILE", 18, 12, width() - 36, 28,
-        0xffe8b755);
+  Label(c,
+        folderOnly_ ? "REFERENCE LIBRARY FOLDER"
+        : save_     ? "SAVE A NEW FIT"
+                    : "OPEN FILE",
+        18, 12, width() - 36, 28, 0xffe8b755);
   Label(c, "Folder — paste a path or browse its contents", 18, 36, width() - 36,
         22);
-  Label(c, "Filename", 18, 140, width() - 36, 22);
+  if (!folderOnly_)
+    Label(c, "Filename", 18, 140, width() - 36, 22);
   Label(c,
-        save_
+        folderOnly_
+            ? "This local folder is shared by the standalone and CLAP editor."
+        : save_
             ? "Existing fits are kept; choose a new filename for each version."
             : "Choose a file, then Open.",
         18, 206, width() - 36, 28);

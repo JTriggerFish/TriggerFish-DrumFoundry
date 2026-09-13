@@ -13,6 +13,7 @@ struct Bridge {
   std::function<double(unsigned)> value;
   std::function<void(unsigned, double)> change;
   std::function<void(unsigned)> selectFactory;
+  std::function<void(unsigned)> selectCalibration;
   std::function<void(float, float)> strike;
   std::function<double()> velocity;
   std::function<void(double)> setVelocity;

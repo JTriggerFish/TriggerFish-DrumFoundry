@@ -11,13 +11,13 @@ void AnalysisView::Waveform(visage::Canvas &c) {
   double peak = .001;
   for (float v : result_->reference.samples)
     peak = std::max(peak, std::abs(v * gain));
-  if (result_->reference.samples.empty())
+  if (!HasReference())
     peak = 1;
   const int pixels = std::max(1, int(width() - 54));
-  for (int source = 0; source < 2; ++source) {
+  for (int source = HasReference() ? 0 : 1; source < 2; ++source) {
     const auto &audio = source ? result_->model : result_->reference;
     const double offset = source ? modelOffset : referenceOffset;
-    const float centre = source ? 57.f : 21.f;
+    const float centre = HasReference() ? (source ? 57.f : 21.f) : 42.f;
     const unsigned colour = source ? 0xff8bbbeb : 0xffd6b25c;
     c.setColor(0xff293440);
     c.fill(42, centre, pixels, 1);

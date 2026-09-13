@@ -24,9 +24,9 @@ needed. Custom DSP editors and graphs use Visage drawing, not browser widgets.
 Do not redesign the control surface or change presets during this port.
 
 The analysis toolbar uses compact wrapping controls below the plot, matching
-the web workbench ordering. Above it, reference corpus/articulation/velocity/take
-selection stays separate from the instrument's strike controls. Catalogue
-`reference_gain_db` is preserved when selecting a different recorded layer.
+the web workbench ordering. Above it, optional reference selection stays separate
+from the instrument's strike controls. Factory presets start with None and a
+single model plot. Calibrations retain their explicit reference gain.
 Waveforms have labelled, forward-time lanes and a shared reference amplitude
 scale; mirroring applies only to the spectrogram, including its pan gestures.
 The strike pad sits beside implement/character controls, not above full-width
@@ -207,11 +207,12 @@ restarting the voice. Structural edits retain that current presentation metadata
 The optional, one-time `tools/import_workbench_references.py` helper copies the
 old workbench's curated allow-list into the user's application-data
 `TriggerFish/DrumFoundry/references` folder. It refuses conflicting existing files.
-The native UI reads `catalog.json` and WAV files directly; Python and the old
-repository are not runtime dependencies. Recordings are never packaged or
-committed. A native hierarchical menu offers the curated instrument/cell grid,
-and Other WAV opens the native picker. Selecting a reference does not secretly
-alter synthesis settings or normalize gain.
+Choose that folder (or any other WAV library) in Settings → Reference library
+folder. The native UI browses the folder hierarchy directly; it does not need
+`catalog.json`, Python or the old repository. Recordings are never packaged or
+committed. Selecting a reference does not alter synthesis settings or normalize
+gain. The optional attachment and missing-file behaviour are specified in
+[Reference libraries](reference-libraries.md).
 
 Play reference and Play render audition the exact PCM represented by the plots,
 through the host master and optional 1 ms limiter. File gain is explicit; model

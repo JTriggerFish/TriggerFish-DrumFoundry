@@ -60,19 +60,17 @@ AnalysisView::Coordinate AnalysisView::At(float x, float y) const {
       std::clamp(double((x - 42) / std::max(1.f, width() - 54)), 0., 1.);
   double v = std::clamp(
       double((y - PlotTop) / std::max(1.f, height() - PlotTop - 29)), 0., 1.);
-  bool reference = comparison == Comparison::Reference;
+  bool reference = Mode() == Comparison::Reference;
   double time = pan + span * u;
   if (y < PlotTop)
     return {false, time,
             frequencyHigh}; // Forward-time waveform, not a mirrored pane.
-  if (comparison == Comparison::Mirror ||
-      comparison == Comparison::SideBySide) {
+  if (Mode() == Comparison::Mirror || Mode() == Comparison::SideBySide) {
     reference = u < split;
     const double local = reference ? u / split : (u - split) / (1 - split);
-    time =
-        pan + span * (reference && comparison == Comparison::Mirror ? 1 - local
-                                                                    : local);
-  } else if (comparison == Comparison::Stacked) {
+    time = pan + span * (reference && Mode() == Comparison::Mirror ? 1 - local
+                                                                   : local);
+  } else if (Mode() == Comparison::Stacked) {
     reference = v < split;
     v = reference ? v / split : (v - split) / (1 - split);
   }
@@ -91,7 +89,7 @@ void AnalysisView::Refresh() {
   heatmap_.setDimensions(columns, rows);
   // One reference-anchored ceiling for BOTH sides. Never adapt to model edits.
   const float ceiling =
-      result_->referenceSpectrum.frames &&
+      HasReference() && result_->referenceSpectrum.frames &&
               result_->referenceSpectrum.maximumDb > -180
           ? result_->referenceSpectrum.maximumDb + float(referenceGainDb)
           : 0;
@@ -104,7 +102,7 @@ void AnalysisView::Refresh() {
   for (int y = 0; y < rows; ++y) {
     const auto vertical =
         At(42, PlotTop + (height() - PlotTop - 29) * (y + .5f) / rows);
-    const double verticalShare = comparison == Comparison::Stacked
+    const double verticalShare = Mode() == Comparison::Stacked
                                      ? (vertical.reference ? split : 1 - split)
                                      : 1;
     const double halfBand = std::pow(
@@ -115,10 +113,10 @@ void AnalysisView::Refresh() {
     for (int x = 0; x < columns; ++x) {
       auto p = horizontal[x];
       p.frequency = vertical.frequency;
-      if (comparison == Comparison::Stacked)
+      if (Mode() == Comparison::Stacked)
         p.reference = vertical.reference;
-      const bool splitTime = comparison == Comparison::Mirror ||
-                             comparison == Comparison::SideBySide;
+      const bool splitTime =
+          Mode() == Comparison::Mirror || Mode() == Comparison::SideBySide;
       const double halfTime =
           .5 * span /
           (columns * (splitTime ? (p.reference ? split : 1 - split) : 1));
@@ -137,7 +135,7 @@ void AnalysisView::Refresh() {
                                   p.time + modelOffset + halfTime, frequencyLo,
                                   frequencyHi);
       const double value =
-          comparison == Comparison::Difference
+          Mode() == Comparison::Difference
               ? .5 + .5 * (std::max(model, floor) - std::max(ref, floor)) /
                          differenceDb
               : ((p.reference ? ref : model) - floor) / rangeDb;
@@ -153,7 +151,7 @@ void AnalysisView::draw(visage::Canvas &c) {
     Label(c, "Preparing native render…", 8, 8, width() - 16, 24);
     return;
   }
-  if (comparison == Comparison::Difference)
+  if (Mode() == Comparison::Difference)
     c.setColor(visage::Brush::horizontal(
         visage::Gradient(0xff65dce8, 0xff000000, 0xffffb458)));
   else
@@ -163,26 +161,25 @@ void AnalysisView::draw(visage::Canvas &c) {
   Axes(c);
   Readout(c);
   WriteEdge(c);
-  if (comparison == Comparison::Mirror ||
-      comparison == Comparison::SideBySide) {
+  if (Mode() == Comparison::Mirror || Mode() == Comparison::SideBySide) {
     c.setColor(0xff8e9ead);
     c.fill(42 + float(split) * (width() - 54), PlotTop, 1,
            height() - PlotTop - 29);
-  } else if (comparison == Comparison::Stacked) {
+  } else if (Mode() == Comparison::Stacked) {
     c.setColor(0xff8e9ead);
     c.fill(42, PlotTop + float(split) * (height() - PlotTop - 29), width() - 54,
            1);
   }
 }
 void AnalysisView::WriteEdge(visage::Canvas &c) {
-  if (writtenSeconds_ < 0 || comparison == Comparison::Reference)
+  if (writtenSeconds_ < 0 || Mode() == Comparison::Reference)
     return;
   double x = (writtenSeconds_ - modelOffset - pan) / span;
   if (x < 0 || x > 1)
     return;
-  if (comparison == Comparison::Mirror || comparison == Comparison::SideBySide)
+  if (Mode() == Comparison::Mirror || Mode() == Comparison::SideBySide)
     x = split + (1 - split) * x;
-  const float top = comparison == Comparison::Stacked
+  const float top = Mode() == Comparison::Stacked
                         ? PlotTop + float(split) * (height() - PlotTop - 29)
                         : PlotTop;
   c.setColor(0xffa6adb5);

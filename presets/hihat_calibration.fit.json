@@ -318,7 +318,10 @@
       "split": "audition",
       "url": "http://127.0.0.1:8765/reference/hihat-14-reference/Hi-Hat%2014%20K%20Custom%20H-Op%2003.wav",
       "constraint": 0.38
-    }
+    },
+    "libraryPath": "hihat-14-reference/Hi-Hat 14 K Custom H-Op 03.wav",
+    "visible": true,
+    "offsetSeconds": 0.000431
   },
   "controls": {
     "event": {

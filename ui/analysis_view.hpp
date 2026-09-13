@@ -28,6 +28,13 @@ public:
     redraw();
   }
   Comparison comparison{Comparison::Mirror};
+  bool showReference{true};
+  bool HasReference() const {
+    return showReference && result_ && !result_->reference.samples.empty();
+  }
+  Comparison Mode() const {
+    return HasReference() ? comparison : Comparison::Model;
+  }
   double rangeDb{80}, differenceDb{24}, referenceGainDb{}, referenceOffset{},
       modelOffset{};
   double span{8}, pan{}, split{.5};

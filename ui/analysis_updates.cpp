@@ -1,6 +1,8 @@
 #include "analysis_panel.hpp"
 namespace drumfoundry::ui {
 void AnalysisPanel::Poll() {
+  if (std::exchange(browsePending_, false))
+    ReferenceMenu();
   if (auto context = worker_.TakeContext())
     ReceiveContext(std::move(context));
   const auto chunks = worker_.TakeChunks();
@@ -59,6 +61,10 @@ void AnalysisPanel::ReceiveResult(
   redraw();
 }
 void AnalysisPanel::AcceptReference(const analysis::Result &context) {
+  referenceReady_ = context.reference.sampleRate != 0;
+  if (referenceReady_ || !context.referenceWarning.empty())
+    referenceWarning_ = context.referenceWarning;
+  ApplyReferenceView();
   if (request_.reference.empty() || !context.reference.sampleRate)
     return;
   reference_["id"] = "sha256:" + context.referenceHash;
@@ -67,7 +73,6 @@ void AnalysisPanel::AcceptReference(const analysis::Result &context) {
   reference_["channels"] = context.reference.sourceChannels;
   reference_["duration"] =
       double(context.reference.samples.size()) / context.reference.sampleRate;
-  hashPending_ = false;
   if (matchLength_) {
     duration_.Set(reference_.at("duration"));
     view_.span = view_.renderDuration = duration_.Value();
