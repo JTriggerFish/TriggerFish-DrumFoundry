@@ -19,6 +19,7 @@ public:
   double Value(clap_id id) const;
   void Service();
   std::string Status() const;
+  const clap_plugin_t *Api() const { return plugin_; }
   unsigned DroppedEvents() const noexcept;
   EventQueue<> controls;
   std::array<EventQueue<>, 32> midi;

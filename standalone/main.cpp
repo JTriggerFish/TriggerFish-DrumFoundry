@@ -12,7 +12,8 @@ namespace {
 struct Options {
   drumfoundry::standalone::AudioSettings audio;
   std::string midi{"all"}, preset{"kick"};
-  bool list{}, midiList{}, smoke{}, audition{}, gui{}, uiSmoke{};
+  bool list{}, midiList{}, smoke{}, audition{}, gui{}, uiSmoke{},
+      pluginGuiSmoke{};
   unsigned seconds{};
 };
 unsigned Integer(const std::string &text, unsigned low, unsigned high) {
@@ -45,6 +46,8 @@ Options Parse(int argc, char **argv) {
       options.gui = true;
     else if (arg == "--ui-smoke")
       options.uiSmoke = true;
+    else if (arg == "--clap-ui-smoke")
+      options.pluginGuiSmoke = true;
     else {
       if (++i >= argc)
         throw std::runtime_error("Missing value for " + arg);
@@ -81,6 +84,7 @@ void Help() {
       << "--gui: native editor (./dev.ps1 ui); omit --device to inspect "
          "silently\n"
       << "--ui-smoke: open/capture/close editor without audio hardware\n"
+      << "--clap-ui-smoke: embedded editor lifecycle check (Windows verified)\n"
       << "Without --gui or --test-seconds, runs an interactive control "
          "console.\n"
       << "Timed device tests are silent unless --audition or live MIDI is "
@@ -108,12 +112,16 @@ int main(int argc, char **argv) {
     }
     PluginHost host;
 #ifdef DRUMFOUNDRY_UI
+    if (options.pluginGuiSmoke) {
+      PluginGuiSmoke(host);
+      return 0;
+    }
     if (options.uiSmoke || (options.gui && options.audio.device.empty())) {
       RunGui(host, nullptr, options.uiSmoke);
       return 0;
     }
 #else
-    if (options.gui || options.uiSmoke)
+    if (options.gui || options.uiSmoke || options.pluginGuiSmoke)
       throw std::runtime_error("Build the Visage editor with ./dev.ps1 ui");
 #endif
     AudioDevice audio(host, options.audio);

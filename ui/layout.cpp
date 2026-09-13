@@ -11,8 +11,11 @@ void Workbench::resized() {
   settings_.setBounds(width() - 130, 10, 114, 28);
   master_.setBounds(width() - 510, 42, 220, 44);
   const float col = (left - 48) / 2;
-  hardness_.setBounds(16, 154, col, 44);
-  implement_.setBounds(16, 210, col, 44);
+  hardness_.setBounds(left + 16, height() * .5f + 152, width() - left - 32, 44);
+  const float buttonWidth = (width() - left - 48) / 3;
+  for (unsigned i = 0; i < implements_.size(); ++i)
+    implements_[i].setBounds(left + 16 + i * (buttonWidth + 8),
+                             height() * .5f + 116, buttonWidth, 28);
   location_.setBounds(32 + col, 154, col, 44);
   mute_.setBounds(32 + col, 210, col, 44);
   strike_.setBounds(left + 16, height() * .5f, width() - left - 32, 110);
@@ -30,10 +33,10 @@ void Workbench::draw(visage::Canvas &c) {
   Label(c, "WAVEFORM / SPECTROGRAM", left + 16, 110, width() - left - 32, 24);
   Label(c, "Native analysis port in progress — no placeholder measurements",
         left + 16, 150, width() - left - 32, 24, 0xff8799ae);
-  Label(c, "MODAL PACKET DESIGN", left + 16, height() * .5f + 128,
+  Label(c, "MODAL PACKET DESIGN", left + 16, height() * .5f + 210,
         width() - left - 32, 24);
   Label(c, "Modal and T60 editors are the next migration chunk", left + 16,
-        height() * .5f + 158, width() - left - 32, 24, 0xff8799ae);
+        height() * .5f + 240, width() - left - 32, 24, 0xff8799ae);
   char meter[96];
   std::snprintf(meter, sizeof(meter), "Reduction %.1f dB  |  Lookahead %.2f ms",
                 reduction_, latency_);

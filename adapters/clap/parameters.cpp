@@ -121,7 +121,8 @@ const clap_plugin_params_t ParamsExtension{
       return true;
     },
     [](const clap_plugin_t *p, const clap_input_events_t *in,
-       const clap_output_events_t *) {
+       const clap_output_events_t *out) {
+      Plugin::Get(p).DrainEditor(out, false);
       if (!in || !in->size || !in->get)
         return;
       for (uint32_t i = 0; i < in->size(in); ++i) {

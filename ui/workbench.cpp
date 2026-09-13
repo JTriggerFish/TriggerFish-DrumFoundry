@@ -10,8 +10,14 @@ constexpr const char *names[]{"Kick",  "Snare", "Hi-hat",
 Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   for (auto *frame : std::initializer_list<visage::Frame *>{
            &preset_, &settings_, &stop_, &limiter_, &master_, &hardness_,
-           &implement_, &location_, &mute_, &strike_})
+           &location_, &mute_, &strike_})
     addChild(frame);
+  for (unsigned i = 0; i < implements_.size(); ++i) {
+    addChild(&implements_[i]);
+    implements_[i].onToggle() = [this, i](auto *, bool) {
+      Change(102, i * .5);
+    };
+  }
   preset_.onToggle() = [this](auto *, bool) { SelectPreset(); };
   limiter_.onToggle() = [this](auto *, bool) {
     Change(106, bridge_.value(106) < .5);
@@ -30,7 +36,6 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   };
   master_.changed = [this](double v) { Change(105, v); };
   hardness_.changed = [this](double v) { Change(101, v); };
-  implement_.changed = [this](double v) { Change(102, v); };
   location_.changed = [this](double v) { Change(103, v); };
   mute_.changed = [this](double v) { Change(104, v); };
   strike_.strike = [this](float v, float x) {
@@ -70,7 +75,16 @@ void Workbench::Poll() {
     preset_.setText(names[std::clamp(int(bridge_.value(100)), 0, 5)]);
     master_.Set(bridge_.value(105));
     hardness_.Set(bridge_.value(101));
-    implement_.Set(bridge_.value(102));
+    const double implement = bridge_.value(102);
+    for (unsigned i = 0; i < implements_.size(); ++i)
+      implements_[i].setActionButton(std::abs(implement - i * .5) < .01);
+    hardness_.SetLabel(implement < .25   ? "Bristle stiffness"
+                       : implement < .75 ? "Mallet firmness"
+                                         : "Tip hardness");
+    const bool kick = bridge_.value(100) == 0;
+    strike_.SetKick(kick);
+    location_.setVisible(!kick);
+    mute_.setVisible(bridge_.value(100) >= 2);
     location_.Set(bridge_.value(103));
     mute_.Set(bridge_.value(104));
     limiter_.setText(bridge_.value(106) >= .5 ? "Limiter ON" : "UNPROTECTED");

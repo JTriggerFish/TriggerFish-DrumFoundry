@@ -75,6 +75,7 @@ clap_process_status Plugin::Process(const clap_process_t *p) noexcept {
     return CLAP_PROCESS_ERROR;
   }
   limiter_.ClearMeters();
+  DrainEditor(p->out_events, true);
   uint32_t cursor = 0;
   const auto count = p->in_events ? p->in_events->size(p->in_events) : 0;
   for (uint32_t i = 0; i < count; ++i) {

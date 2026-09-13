@@ -1,7 +1,15 @@
 #include "plugin.hpp"
+#ifdef DRUMFOUNDRY_UI
+#include "gui.hpp"
+#endif
 #include <cstring>
 
 namespace drumfoundry::clap_adapter {
+Plugin::~Plugin() {
+#ifdef DRUMFOUNDRY_UI
+  editor.reset(); // Stop callbacks before the plugin's control storage dies.
+#endif
+}
 namespace {
 const char *const Features[]{CLAP_PLUGIN_FEATURE_INSTRUMENT,
                              CLAP_PLUGIN_FEATURE_DRUM,

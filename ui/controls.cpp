@@ -66,8 +66,10 @@ void StrikePad::draw(visage::Canvas &c) {
   Label(c, "STRIKE  /  velocity", 12, 5, width() - 24, 22);
   Label(c, "Strong", 12, 30, 80, 20);
   Label(c, "Light", 12, height() - 26, 80, 20);
-  Label(c, "Bell     —     Bow     —     Edge", width() * .35f, height() - 26,
-        width() * .6f, 20);
+  Label(c,
+        kick_ ? "Soft beater     —     Hard beater"
+              : "Bell     —     Bow     —     Edge",
+        width() * .35f, height() - 26, width() * .6f, 20);
 }
 void StrikePad::mouseDown(const visage::MouseEvent &e) {
   if (!e.isLeftButton() || height() <= 0 || width() <= 0)

@@ -16,6 +16,12 @@ public:
          std::string unit = "");
   void Set(double value);
   double Value() const { return value_; }
+  void SetLabel(std::string label) {
+    if (label_ != label) {
+      label_ = std::move(label);
+      redraw();
+    }
+  }
   void draw(visage::Canvas &) override;
   void mouseDown(const visage::MouseEvent &) override;
   void mouseDrag(const visage::MouseEvent &) override;
@@ -30,8 +36,17 @@ private:
 
 class StrikePad : public visage::Frame {
 public:
+  void SetKick(bool kick) {
+    if (kick_ != kick) {
+      kick_ = kick;
+      redraw();
+    }
+  }
   void draw(visage::Canvas &) override;
   void mouseDown(const visage::MouseEvent &) override;
   std::function<void(float, float)> strike;
+
+private:
+  bool kick_{};
 };
 } // namespace drumfoundry::ui

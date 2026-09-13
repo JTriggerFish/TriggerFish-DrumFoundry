@@ -22,7 +22,9 @@ private:
       limiter_{"Limiter ON"};
   Slider master_{"Master", -60, 0, -12, " dB"};
   Slider hardness_{"Tip hardness", 0, 1, .5};
-  Slider implement_{"Implement", 0, 1, .5};
+  std::array<visage::UiButton, 3> implements_{{visage::UiButton("Brush"),
+                                               visage::UiButton("Mallet"),
+                                               visage::UiButton("Stick")}};
   Slider location_{"Strike location", 0, 1, 0};
   Slider mute_{"Mute / closure", 0, 1, 0};
   StrikePad strike_;

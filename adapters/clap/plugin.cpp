@@ -102,6 +102,14 @@ void Plugin::OnMainThread() noexcept {
 const void *Plugin::Extension(const char *id) const noexcept {
   if (!id)
     return nullptr;
+#ifdef DRUMFOUNDRY_UI
+  if (!std::strcmp(id, CLAP_EXT_GUI))
+    return &GuiExtension;
+#if defined(__linux__)
+  if (!std::strcmp(id, CLAP_EXT_POSIX_FD_SUPPORT))
+    return &FdExtension;
+#endif
+#endif
   if (!std::strcmp(id, CLAP_EXT_PARAMS))
     return &ParamsExtension;
   if (!std::strcmp(id, CLAP_EXT_AUDIO_PORTS))

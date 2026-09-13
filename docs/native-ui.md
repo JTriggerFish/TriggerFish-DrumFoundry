@@ -42,7 +42,15 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   sliders with double-click reset/fine drag, strike pad, limiter/status/error
   readouts and standalone `--gui` path. `--ui-smoke` captures a real GPU frame and
   closes without opening devices. Interaction tests do not require a display.
-- CLAP embedding, full settings and the DSP/analysis editors remain next.
+- CLAP embedding: shared content via the standard GUI extension, native Windows/
+  Cocoa/X11 parents, host resizing and Linux FD dispatch. UI controls use bounded
+  queues; the audio/flush consumer applies them and emits host parameter events.
+  Manual strikes wait for Process, including when initially inactive. The
+  `--clap-ui-smoke` embedding/capture test is currently verified on Windows.
+- `cmake/visage-compat.cmake` fixes the pinned Windows parent-procedure lookup
+  when a Visage editor is embedded in a Visage host. Generated source only; no
+  upstream checkout mutation. The real embedding test caught this dispatch bug.
+- Native device settings, full patch editing and analysis editors remain next.
 
 ## References
 

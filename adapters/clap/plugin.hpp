@@ -1,4 +1,5 @@
 #pragma once
+#include "../shared/event_queue.hpp"
 #include "output/limiter.hpp"
 #include "runtime/voice.hpp"
 #include <array>
@@ -7,6 +8,11 @@
 #include <memory>
 
 namespace drumfoundry::clap_adapter {
+#ifdef DRUMFOUNDRY_UI
+class Editor;
+extern const clap_plugin_gui_t GuiExtension;
+extern const clap_plugin_posix_fd_support_t FdExtension;
+#endif
 inline constexpr const char *PluginId = "com.triggerfish.drumfoundry";
 inline constexpr std::array<const char *, 6> PresetNames{
     "Kick", "Snare", "Hi-hat", "Crash", "Ride", "Gong"};
@@ -43,6 +49,7 @@ extern const clap_plugin_state_t StateExtension;
 class Plugin {
 public:
   explicit Plugin(const clap_host_t *host);
+  ~Plugin();
   static Plugin &Get(const clap_plugin_t *p) {
     return *static_cast<Plugin *>(p->plugin_data);
   }
@@ -59,6 +66,18 @@ public:
   bool Save(const clap_ostream_t *);
   bool Load(const clap_istream_t *);
   const void *Extension(const char *) const noexcept;
+  bool QueueEdit(clap_id, double) noexcept;
+  bool QueueStrike(float velocity, float location) noexcept;
+  bool QueuePanic() noexcept;
+  void DrainEditor(const clap_output_events_t *, bool notes) noexcept;
+  const clap_host_t *Host() const { return host_; }
+  unsigned EditorErrors() const {
+    return editorParams_.Dropped() + editorNotes_.Dropped() +
+           editorNotificationErrors_.load();
+  }
+#ifdef DRUMFOUNDRY_UI
+  std::unique_ptr<Editor> editor;
+#endif
   clap_plugin_t api{};
   bool processing{};
   bool active{}; // CLAP lifecycle synchronization guards accesses.
@@ -81,5 +100,7 @@ private:
   double sampleRate_{48000}, masterGain_{}, masterTarget_{}, masterStep_{};
   double reductionHold_{};
   std::atomic<bool> restartQueued_{};
+  host::EventQueue<> editorParams_, editorNotes_;
+  std::atomic<unsigned> editorNotificationErrors_{};
 };
 } // namespace drumfoundry::clap_adapter

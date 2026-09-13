@@ -1,6 +1,8 @@
 # Native CLAP integration
 
-This is a headless development shell, not the finished instrument editor. It
+The default build is a headless development shell. `./dev.ps1 ui` additionally
+builds the staged Visage editor, shared with the standalone; see
+[native-ui.md](native-ui.md). Neither is the finished instrument editor yet. It
 links the same `drumfoundry_engine` used by Python; it contains no alternate DSP,
 Python, Node, Wasm or web server. Windows uses the existing MinGW64 launcher.
 

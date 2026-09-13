@@ -21,7 +21,8 @@ void RunGui(PluginHost &host, AudioDevice *audio, bool smoke) {
   bridge.strike = [&host, audio](float velocity, float location) {
     if (!audio)
       throw std::runtime_error("No audio device open in UI inspection mode");
-    if (!host.controls.Push({false, 103, location, {}}) ||
+    if (!host.controls.Push(
+            {false, host.Value(100) == 0 ? 101u : 103u, location, {}}) ||
         !host.controls.Push(
             {true,
              0,

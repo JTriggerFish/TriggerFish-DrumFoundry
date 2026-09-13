@@ -7,6 +7,7 @@ FetchContent_Declare(visage
   URL https://codeload.github.com/VitalAudio/visage/tar.gz/828037000d0893647ab29b66ae9c4a241c90f671
   URL_HASH SHA256=74b68f0b0da9145ce539331915e031361e89098d72f5e30640fd6e8f3ce80101)
 FetchContent_MakeAvailable(visage)
+include(cmake/visage-compat.cmake)
 FetchContent_GetProperties(bgfx)
 FetchContent_GetProperties(freetype)
 add_library(drumfoundry_ui STATIC ui/controls.cpp ui/workbench.cpp ui/layout.cpp)
