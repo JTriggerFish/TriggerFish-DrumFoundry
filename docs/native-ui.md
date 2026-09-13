@@ -104,10 +104,15 @@ difference views. The colour ceiling comes only from the reference; without a
 reference it stays at 0 dBFS. No PCM normalization occurs. Difference is model
 minus reference in dB, black at zero, amber for excess and cyan for missing energy.
 Both sides use the same reference floor. Wheel pans both sides reversibly;
-Ctrl-wheel zooms, Shift-drag aligns either side, and the divider is draggable.
+Ctrl-wheel zooms time, Alt-wheel zooms frequency, Shift-drag aligns either side,
+and the divider is draggable. Hover shows time/frequency and both spectra's bin
+levels. FFT's menu includes overlap choices; the view menu includes difference
+range. Reference-dependent colour scaling does not change when model settings do.
 FFT size, window, render duration, colour range, explicit reference gain and mono/
 left/right channel selection are native controls. Saved fits retain the channel.
-Full view-state persistence is a remaining integration step.
+Snapshots and CLAP state retain view, zoom, alignment, render length, channel,
+reference and transform. UI-only metadata changes mark host state dirty without
+restarting the voice. Structural edits retain that current presentation metadata.
 
 The optional, one-time `tools/import_workbench_references.py` helper copies the
 old workbench's curated allow-list into the user's application-data

@@ -1,4 +1,6 @@
 #include "analysis_panel.hpp"
+#include <algorithm>
+#include <cmath>
 namespace drumfoundry::ui {
 void AnalysisPanel::Menus() {
   fft_.onToggle() = [this](auto *, bool) {
@@ -6,10 +8,25 @@ void AnalysisPanel::Menus() {
     for (unsigned size = 256; size <= 32768; size *= 2)
       menu.addOption(int(size), "FFT " + std::to_string(size))
           .select(size == request_.transform.size);
+    visage::PopupMenu overlap("Overlap");
+    for (int divisor : {2, 4, 8, 16})
+      overlap
+          .addOption(100000 + divisor,
+                     std::to_string(100. - 100. / divisor) + " %")
+          .select(request_.transform.hop * divisor == request_.transform.size);
+    menu.addSubMenu(std::move(overlap));
     menu.onSelection() = [this](int size) {
-      request_.transform.size = unsigned(size);
-      request_.transform.hop = unsigned(size) / 8;
-      fft_.setText("FFT " + std::to_string(size));
+      if (size >= 100000)
+        request_.transform.hop =
+            request_.transform.size / unsigned(size - 100000);
+      else {
+        const double fraction =
+            double(request_.transform.hop) / request_.transform.size;
+        request_.transform.size = unsigned(size);
+        request_.transform.hop = std::clamp(
+            unsigned(std::lround(size * fraction)), 1u, unsigned(size));
+      }
+      fft_.setText("FFT " + std::to_string(request_.transform.size));
       Queue();
     };
     menu.show(&fft_);
@@ -34,7 +51,17 @@ void AnalysisPanel::Menus() {
                         "Difference", "Model",        "Reference"};
     for (int i = 0; i < 6; ++i)
       menu.addOption(i, names[i]).select(int(view_.comparison) == i);
+    visage::PopupMenu range("Difference scale");
+    for (int db : {6, 12, 24, 48})
+      range.addOption(100 + db, "±" + std::to_string(db) + " dB")
+          .select(view_.differenceDb == db);
+    menu.addSubMenu(std::move(range));
     menu.onSelection() = [this](int i) {
+      if (i >= 100) {
+        view_.differenceDb = i - 100;
+        view_.Refresh();
+        return;
+      }
       const char *names[]{"Mirror",     "Side by side", "Stacked",
                           "Difference", "Model",        "Reference"};
       view_.comparison = Comparison(i);

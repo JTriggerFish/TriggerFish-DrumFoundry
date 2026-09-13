@@ -5,6 +5,8 @@
 
 namespace drumfoundry::ui {
 visage::Font Font(float size = 13);
+// Typography only: retain Visage's stock widget behaviour and drawing.
+void NativeFonts(visage::Frame &);
 void Label(visage::Canvas &, const std::string &, float x, float y, float w,
            float h, unsigned color = 0xffcad4df);
 
@@ -48,11 +50,18 @@ public:
       redraw();
     }
   }
+  void SetMembrane(bool membrane) {
+    if (membrane_ != membrane) {
+      membrane_ = membrane;
+      redraw();
+    }
+  }
   void draw(visage::Canvas &) override;
   void mouseDown(const visage::MouseEvent &) override;
   std::function<void(float, float)> strike;
 
 private:
   bool kick_{};
+  bool membrane_{};
 };
 } // namespace drumfoundry::ui

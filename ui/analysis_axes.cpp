@@ -4,13 +4,15 @@
 #include <cstdio>
 namespace drumfoundry::ui {
 void AnalysisView::Axes(visage::Canvas &c) {
-  const double maximum = std::min(20000., result_->model.sampleRate * .5);
+  const double maximum =
+      std::min(frequencyHigh, result_->model.sampleRate * .5);
   const auto grid = [&](float top, float h) {
     for (double f : {20., 50., 100., 200., 500., 1000., 2000., 5000., 10000.}) {
-      if (f > maximum)
+      if (f > maximum || f < frequencyLow)
         continue;
       const float y =
-          top + float(std::log(maximum / f) / std::log(maximum / 20)) * h;
+          top +
+          float(std::log(maximum / f) / std::log(maximum / frequencyLow)) * h;
       c.setColor(0x502d3b48);
       c.fill(42, y, width() - 54, 1);
       char text[20];
@@ -29,13 +31,30 @@ void AnalysisView::Axes(visage::Canvas &c) {
     const float x = 42 + (width() - 54) * i / 6;
     char text[32];
     std::snprintf(text, sizeof(text), "%.2f s", At(x, 64).time);
-    Label(c, text, x - 20, height() - 26, 65, 20);
+    Label(c, text, std::clamp(x - 20, 0.f, width() - 65), height() - 26, 65,
+          20);
   }
   std::string legend =
       comparison == Comparison::Difference
           ? "Cyan: less model · black: equal · amber: more model"
           : "Reference  |  TriggerFish — same dBFS/bin colour scale";
-  Label(c, legend, 48, 42, width() - 60, 18, 0xffe8b755);
+  if (!hover_)
+    Label(c, legend, 48, 42, width() - 60, 18, 0xffe8b755);
+}
+void AnalysisView::Readout(visage::Canvas &c) {
+  if (!hover_)
+    return;
+  const auto p = At(pointer_.x, pointer_.y);
+  const double ref =
+      result_->referenceSpectrum.At(p.time + referenceOffset, p.frequency) +
+      referenceGainDb;
+  const double model =
+      result_->modelSpectrum.At(p.time + modelOffset, p.frequency);
+  char text[160];
+  std::snprintf(text, sizeof(text),
+                "%.3f s · %.1f Hz · Ref %.1f / Model %.1f dBFS · Δ %+.1f dB",
+                p.time, p.frequency, ref, model, model - ref);
+  Label(c, text, 48, 42, width() - 60, 18, 0xffe8b755);
 }
 void AnalysisView::Waveform(visage::Canvas &c) {
   const double gain = std::pow(10., referenceGainDb / 20);

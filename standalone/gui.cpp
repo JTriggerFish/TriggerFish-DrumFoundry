@@ -10,6 +10,7 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
             bool smoke) {
   GuiSession session(host);
   ui::SettingsPanel settings(session.Settings(), config);
+  ui::NativeFonts(settings);
   visage::Frame shade;
   shade.onDraw() = [&](visage::Canvas &c) {
     c.setColor(0x9905090f);
@@ -52,6 +53,13 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
   int captureStage = 0;
   if (smoke) {
     finish.onTimerCallback() = [&] {
+      if (!editor.AnalysisReady()) {
+        if (++attempts >= 40) {
+          finish.stopTimer();
+          window.window()->close();
+        }
+        return;
+      }
       const auto &shot = window.takeScreenshot();
       if (shot.width() > 0 && shot.height() > 0) {
         if (captureStage == 0) {
@@ -64,7 +72,7 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
         }
         ++captureStage;
       }
-      if (captured || ++attempts == 8) {
+      if (captured || ++attempts >= 44) {
         finish.stopTimer();
         window.window()->close();
       }

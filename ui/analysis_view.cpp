@@ -4,10 +4,15 @@
 namespace drumfoundry::ui {
 void AnalysisView::Set(std::shared_ptr<const analysis::Result> result) {
   result_ = std::move(result);
+  frequencyHigh = std::min(frequencyHigh, result_->model.sampleRate * .5);
+  if (frequencyLow >= frequencyHigh)
+    frequencyLow = 20;
   Refresh();
 }
 void AnalysisView::ResetZoom() {
   pan = 0;
+  frequencyLow = 20;
+  frequencyHigh = 20000;
   if (result_)
     span = double(result_->model.samples.size()) / result_->model.sampleRate;
   Refresh();
@@ -31,8 +36,9 @@ AnalysisView::Coordinate AnalysisView::At(float x, float y) const {
     v = reference ? v / split : (v - split) / (1 - split);
   }
   const double maximum =
-      result_ ? std::min(20000., result_->model.sampleRate * .5) : 20000;
-  return {reference, time, maximum * std::pow(20 / maximum, v)};
+      result_ ? std::min(frequencyHigh, result_->model.sampleRate * .5)
+              : frequencyHigh;
+  return {reference, time, maximum * std::pow(frequencyLow / maximum, v)};
 }
 void AnalysisView::Refresh() {
   if (!result_ || width() < 55 || height() < 92) {
@@ -44,14 +50,24 @@ void AnalysisView::Refresh() {
   heatmap_.setDimensions(columns, rows);
   // One reference-anchored ceiling for BOTH sides. Never adapt to model edits.
   const float ceiling =
-      result_->referenceSpectrum.frames
+      result_->referenceSpectrum.frames &&
+              result_->referenceSpectrum.maximumDb > -180
           ? result_->referenceSpectrum.maximumDb + float(referenceGainDb)
           : 0;
   const double floor = ceiling - rangeDb;
-  for (int y = 0; y < rows; ++y)
+  std::vector<Coordinate> horizontal;
+  horizontal.reserve(columns);
+  for (int x = 0; x < columns; ++x)
+    horizontal.push_back(
+        At(42 + (width() - 54) * x / std::max(1, columns - 1), 62));
+  for (int y = 0; y < rows; ++y) {
+    const auto vertical =
+        At(42, 62 + (height() - 91) * y / std::max(1, rows - 1));
     for (int x = 0; x < columns; ++x) {
-      const auto p = At(42 + (width() - 54) * x / std::max(1, columns - 1),
-                        62 + (height() - 91) * y / std::max(1, rows - 1));
+      auto p = horizontal[x];
+      p.frequency = vertical.frequency;
+      if (comparison == Comparison::Stacked)
+        p.reference = vertical.reference;
       const double ref =
           result_->referenceSpectrum.At(p.time + referenceOffset, p.frequency) +
           referenceGainDb;
@@ -64,6 +80,7 @@ void AnalysisView::Refresh() {
               : ((p.reference ? ref : model) - floor) / rangeDb;
       heatmap_.set(x, y, float(std::clamp(value, 0., 1.)));
     }
+  }
   redraw();
 }
 void AnalysisView::draw(visage::Canvas &c) {
@@ -81,6 +98,7 @@ void AnalysisView::draw(visage::Canvas &c) {
   c.heatMap(heatmap_, 42, 62, width() - 54, height() - 91);
   Waveform(c);
   Axes(c);
+  Readout(c);
   if (comparison == Comparison::Mirror ||
       comparison == Comparison::SideBySide) {
     c.setColor(0xff8e9ead);

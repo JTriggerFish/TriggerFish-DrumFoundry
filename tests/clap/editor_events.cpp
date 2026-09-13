@@ -11,6 +11,14 @@ int main() {
   clap_host_t host{CLAP_VERSION, nullptr, "Test", "TriggerFish", "", "1"};
   Plugin plugin(&host);
   Require(plugin.Init());
+  auto document = plugin.EditableDocument();
+  auto analysis = document.at("controls").at("analysis");
+  analysis["view"] = {{"span", 3.5}, {"pan", .1}};
+  const auto revision = plugin.DocumentRevision();
+  plugin.EditPresentation({{"id", "fixture"}, {"sha256", "test"}}, analysis);
+  Require(plugin.DocumentRevision() == revision);
+  Require(plugin.EditableDocument().at("reference").at("id") == "fixture");
+  Require(plugin.EditableDocument().at("controls").at("analysis") == analysis);
   Require(!plugin.QueueEdit(Master, 12));
   Require(plugin.QueueEdit(Master, -20));
   Require(plugin.Value(Master) ==

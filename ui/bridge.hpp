@@ -19,6 +19,8 @@ struct Bridge {
   std::function<nlohmann::json()> document;
   std::function<void(const nlohmann::json &)> applyDocument;
   std::function<unsigned()> revision;
+  std::function<void(const nlohmann::json &, const nlohmann::json &)>
+      presentation;
   std::function<unsigned()> sampleRate;
   std::function<void(std::shared_ptr<const std::vector<float>>, unsigned,
                      double)>

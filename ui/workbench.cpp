@@ -15,6 +15,7 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   SetupPanels();
   SetupFiles();
   SetupPerformance();
+  NativeFonts(*this);
   timer_.onTimerCallback() = [this] { Poll(); };
   timer_.startTimer(33);
   Poll();
@@ -35,6 +36,7 @@ void Workbench::SetupPanels() {
   analysis_.chooseReference = [this] { OpenReferenceFile(); };
   analysis_.error = [this](const auto &message) { Error(message); };
   analysis_.play = bridge_.play;
+  analysis_.presentation = bridge_.presentation;
   referencePlay_.onToggle() = [this](auto *, bool) { analysis_.Play(true); };
   modelPlay_.onToggle() = [this](auto *, bool) { analysis_.Play(false); };
   modal_.committed = [this] { ApplyDocument(); };
@@ -139,13 +141,13 @@ void Workbench::Poll() {
   try {
     if (bridge_.service)
       bridge_.service();
-    analysis_.Poll();
-    if (bridge_.sampleRate)
-      analysis_.SetAuditionRate(bridge_.sampleRate());
     if (bridge_.document &&
         (reloadDocument_ || documentPreset_ != int(bridge_.value(100)) ||
          (bridge_.revision && documentRevision_ != bridge_.revision())))
       RefreshDocument();
+    if (bridge_.sampleRate)
+      analysis_.SetAuditionRate(bridge_.sampleRate());
+    analysis_.Poll();
     // Host automation and UI performance changes use the same analysis path.
     // Briefly debounce drags; don't cancel a render on every timer tick.
     if (bridge_.document) {
@@ -169,6 +171,7 @@ void Workbench::Poll() {
                                          : "Tip hardness");
     const bool kick = bridge_.value(100) == 0;
     strike_.SetKick(kick);
+    strike_.SetMembrane(bridge_.value(100) == 1);
     location_.setVisible(!kick);
     mute_.setVisible(bridge_.value(100) >= 2);
     location_.Set(bridge_.value(103));
@@ -193,6 +196,7 @@ void Workbench::RefreshDocument() {
   resonance_.Load(document_, true);
   modal_.Load(document_);
   analysis_.SetDocument(document_.JsonValue());
+  NativeFonts(*this);
   renderedEvent_ = document_.JsonValue().at("controls").at("event");
   eventDebounce_ = 0;
 }
@@ -201,7 +205,10 @@ void Workbench::ApplyDocument() {
     auto next = document_.JsonValue();
     // Preserve the current performance controls rather than restoring the
     // gesture that happened to be active when the panel was populated.
-    next["controls"]["event"] = bridge_.document().at("controls").at("event");
+    const auto current = bridge_.document();
+    next["controls"]["event"] = current.at("controls").at("event");
+    next["reference"] = current.at("reference");
+    next["controls"]["analysis"] = current.at("controls").at("analysis");
     bridge_.applyDocument(next);
     analysis_.UpdateModel(next);
     renderedEvent_ = next.at("controls").at("event");

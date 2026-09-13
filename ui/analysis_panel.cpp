@@ -32,6 +32,8 @@ void AnalysisPanel::SetDocument(const editing::Json &document) {
   const bool different =
       first || request_.document.value("id", "") != document.value("id", "");
   request_.document = document;
+  published_ = {{"reference", document.at("reference")},
+                {"analysis", document.at("controls").at("analysis")}};
   reference_ = document.value("reference", editing::Json());
   request_.reference =
       reference_.is_object()
@@ -81,6 +83,7 @@ void AnalysisPanel::SetDocument(const editing::Json &document) {
             ? reference_.at("cell").value("onset_seconds", 0.)
             : 0;
   }
+  LoadView(a);
   Queue();
 }
 void AnalysisPanel::SetReference(const std::filesystem::path &path) {
@@ -116,7 +119,17 @@ editing::Json AnalysisPanel::Settings() const {
           {"hop", request_.transform.hop},
           {"window", request_.transform.window},
           {"floorDb", -180},
-          {"dynamicRangeDb", range_.Value()}};
+          {"dynamicRangeDb", range_.Value()},
+          {"view",
+           {{"comparison", int(view_.comparison)},
+            {"span", view_.span},
+            {"pan", view_.pan},
+            {"split", view_.split},
+            {"modelOffset", view_.modelOffset},
+            {"frequencyLow", view_.frequencyLow},
+            {"frequencyHigh", view_.frequencyHigh},
+            {"differenceDb", view_.differenceDb},
+            {"renderSeconds", duration_.Value()}}}};
 }
 void AnalysisPanel::Queue() {
   if (request_.document.is_null())
@@ -159,6 +172,7 @@ void AnalysisPanel::Poll() {
   }
   if (worker_.Busy())
     redraw();
+  PublishState();
 }
 void AnalysisPanel::resized() {
   const float col = (width() - 24) / 3;

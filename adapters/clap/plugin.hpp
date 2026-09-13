@@ -73,6 +73,7 @@ public:
   Json EditableDocument() const;
   void PrepareEditorPreset();
   void EditDocument(Json);
+  void EditPresentation(const Json &reference, const Json &analysis);
   unsigned DocumentRevision() const { return documentRevision_; }
   const void *Extension(const char *) const noexcept;
   bool QueueEdit(clap_id, double) noexcept;

@@ -17,6 +17,7 @@ public:
   void resized() override;
   void draw(visage::Canvas &) override;
   void Error(const std::string &message);
+  bool AnalysisReady() const { return analysis_.Ready(); }
 
 private:
   void Poll();

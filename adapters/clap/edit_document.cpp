@@ -1,6 +1,25 @@
 #include "plugin.hpp"
 
 namespace drumfoundry::clap_adapter {
+void Plugin::EditPresentation(const Json &reference, const Json &analysis) {
+  PrepareEditorPreset();
+  auto next = DesiredDocument();
+  next["reference"] = reference;
+  next["controls"]["analysis"] = analysis;
+  ValidateEnvelope(next);
+  // Main-thread metadata only: never reset the sounding voice for a zoom/gain
+  // change in the comparison panel. Host state still captures the workbench.
+  if (next == document_)
+    return;
+  document_ = std::move(next);
+  documentPreset_ = int(Value(Preset));
+  const auto *state = host_->get_extension
+                          ? static_cast<const clap_host_state_t *>(
+                                host_->get_extension(host_, CLAP_EXT_STATE))
+                          : nullptr;
+  if (state && state->mark_dirty)
+    state->mark_dirty(host_);
+}
 void Plugin::PrepareEditorPreset() {
   if (static_cast<int>(Value(Preset)) == documentPreset_)
     return;

@@ -15,6 +15,7 @@ public:
   editing::Json Reference() const;
   editing::Json Settings() const;
   void Poll();
+  bool Ready() const { return result_ && !worker_.Busy(); }
   void SetAuditionRate(unsigned);
   void Play(bool reference);
   void resized() override;
@@ -24,9 +25,13 @@ public:
   std::function<void(std::shared_ptr<const std::vector<float>>, unsigned,
                      double)>
       play;
+  std::function<void(const editing::Json &, const editing::Json &)>
+      presentation;
 
 private:
   void Queue();
+  void LoadView(const editing::Json &);
+  void PublishState();
   void Menus();
   void ReferenceMenu();
   void SelectReference(const analysis::ReferenceCell &);
@@ -34,6 +39,7 @@ private:
   analysis::Worker worker_;
   analysis::Request request_;
   editing::Json reference_;
+  editing::Json published_;
   std::shared_ptr<const analysis::Result> result_;
   AnalysisView view_;
   visage::UiButton referenceButton_{"Reference WAV"}, fft_{"FFT 4096"},

@@ -37,6 +37,9 @@ ui::Bridge GuiSession::Connect() {
                                "the render if its rate changed");
   };
   bridge.document = [&plugin] { return plugin.EditableDocument(); };
+  bridge.presentation = [&plugin](const auto &ref, const auto &analysis) {
+    plugin.EditPresentation(ref, analysis);
+  };
   bridge.revision = [&plugin] { return plugin.DocumentRevision(); };
   bridge.applyDocument = [this, &plugin](const auto &document) {
     // Validation occurs before stopping a working stream. Publication is main

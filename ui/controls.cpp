@@ -8,6 +8,12 @@ namespace drumfoundry::ui {
 visage::Font Font(float size) {
   return visage::Font(size, visage::fonts::Lato_Regular_ttf);
 }
+void NativeFonts(visage::Frame &frame) {
+  if (auto *button = dynamic_cast<visage::UiButton *>(&frame))
+    button->setFont(Font());
+  for (auto *child : frame.children())
+    NativeFonts(*child);
+}
 void Label(visage::Canvas &c, const std::string &text, float x, float y,
            float w, float h, unsigned color) {
   c.setColor(color);
@@ -41,8 +47,31 @@ double Slider::ValueAt(double p) const {
 void Slider::draw(visage::Canvas &c) {
   Label(c, label_, 0, 0, width() * .65f, 22);
   char text[48];
-  std::snprintf(text, sizeof(text), "%.4g%s", value_, unit_.c_str());
-  Label(c, text, width() * .67f, 0, width() * .33f, 22);
+  auto unit = unit_;
+  double shown = value_;
+  if (unit == " Hz" && std::abs(shown) >= 1000) {
+    shown /= 1000;
+    unit = " kHz";
+  }
+  const double magnitude = std::abs(shown);
+  if (magnitude > 0 && magnitude < .0001)
+    std::snprintf(text, sizeof(text), "%.2g", shown);
+  else
+    std::snprintf(text, sizeof(text), "%.*f",
+                  magnitude >= 100   ? 1
+                  : magnitude >= 1   ? 2
+                  : magnitude >= .01 ? 3
+                                     : 4,
+                  shown);
+  std::string readout = text;
+  if (readout.find('.') != std::string::npos &&
+      readout.find('e') == std::string::npos) {
+    while (readout.back() == '0')
+      readout.pop_back();
+    if (readout.back() == '.')
+      readout.pop_back();
+  }
+  Label(c, readout + unit, width() * .67f, 0, width() * .33f, 22);
   const float track = std::max(1.f, width() - 12.f);
   c.setColor(0xff303c49);
   c.roundedRectangle(6, 30, track, 4, 2);
@@ -77,8 +106,9 @@ void StrikePad::draw(visage::Canvas &c) {
   Label(c, "Strong", 12, 30, 80, 20);
   Label(c, "Light", 12, height() - 26, 80, 20);
   Label(c,
-        kick_ ? "Soft beater     —     Hard beater"
-              : "Bell     —     Bow     —     Edge",
+        kick_       ? "Soft beater     —     Hard beater"
+        : membrane_ ? "Centre     —     Edge"
+                    : "Bell     —     Bow     —     Edge",
         width() * .35f, height() - 26, width() * .6f, 20);
 }
 void StrikePad::mouseDown(const visage::MouseEvent &e) {

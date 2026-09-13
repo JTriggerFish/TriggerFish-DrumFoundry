@@ -1,4 +1,5 @@
 #include "editing/files.hpp"
+#include "ui/analysis_panel.hpp"
 #include "ui/analysis_view.hpp"
 #include "workbench/analysis/worker.hpp"
 #include <chrono>
@@ -43,6 +44,18 @@ int main(int argc, char **argv) {
   analysis::Worker worker;
   analysis::Request request;
   request.document = editing::ReadFit(argv[1]);
+  {
+    auto document = request.document;
+    document["reference"] = nullptr;
+    document["controls"]["analysis"]["view"] = {
+        {"comparison", 3},      {"pan", .25},          {"span", 2},
+        {"split", .4},          {"modelOffset", .003}, {"differenceDb", 12},
+        {"renderSeconds", .25}, {"frequencyLow", 100}, {"frequencyHigh", 5000}};
+    ui::AnalysisPanel panel;
+    panel.SetDocument(document);
+    Require(panel.Settings().at("view") ==
+            document.at("controls").at("analysis").at("view"));
+  }
   ReferenceTests(request.document);
   request.duration = .25;
   request.transform = {512, 128, "hann"};

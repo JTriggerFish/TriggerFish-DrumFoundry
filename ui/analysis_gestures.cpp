@@ -3,7 +3,21 @@
 #include <cmath>
 namespace drumfoundry::ui {
 bool AnalysisView::mouseWheel(const visage::MouseEvent &e) {
-  if (e.isCtrlDown() || e.isCmdDown())
+  if (e.isAltDown()) {
+    const double centre = At(e.position.x, e.position.y).frequency;
+    const double scale =
+        std::clamp(std::exp(-.12 * e.precise_wheel_delta_y), .2, 5.);
+    const double top =
+        result_ ? std::min(20000., result_->model.sampleRate * .5) : 20000;
+    const double lo =
+        std::max(20., centre * std::pow(frequencyLow / centre, scale));
+    const double hi =
+        std::min(top, centre * std::pow(frequencyHigh / centre, scale));
+    if (hi / lo > 1.02) {
+      frequencyLow = lo;
+      frequencyHigh = hi;
+    }
+  } else if (e.isCtrlDown() || e.isCmdDown())
     span =
         std::clamp(span * std::exp(-.12 * e.precise_wheel_delta_y), .02, 60.);
   else
@@ -47,4 +61,9 @@ void AnalysisView::mouseDrag(const visage::MouseEvent &e) {
   Refresh();
 }
 void AnalysisView::mouseUp(const visage::MouseEvent &) { dragging_ = false; }
+void AnalysisView::mouseMove(const visage::MouseEvent &e) {
+  pointer_ = e.position;
+  hover_ = pointer_.x >= 42 && pointer_.y >= 62 && pointer_.y < height() - 29;
+  redraw();
+}
 } // namespace drumfoundry::ui

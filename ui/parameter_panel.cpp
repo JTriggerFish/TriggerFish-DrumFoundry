@@ -70,6 +70,7 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
         AddParameter(document, p);
   }
   resized();
+  NativeFonts(*this);
 }
 void ParameterPanel::AddParameter(editing::Document &document,
                                   const editing::Parameter &p) {
