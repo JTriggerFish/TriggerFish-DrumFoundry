@@ -85,6 +85,10 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
           settings.setVisible(true);
         } else if (captureStage == 2) {
           shot.save("build/ui-settings-smoke.png");
+          settings.setVisible(false);
+          editor.OpenRouting();
+        } else if (captureStage == 4) {
+          shot.save("build/ui-routing-smoke.png");
           captured = true;
         }
         ++captureStage;

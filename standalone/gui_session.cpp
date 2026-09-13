@@ -47,6 +47,9 @@ ui::Bridge GuiSession::Connect() {
     plugin.EditPresentation(ref, analysis);
   };
   bridge.revision = [&plugin] { return plugin.DocumentRevision(); };
+  bridge.layout = [&plugin](const auto &positions) {
+    plugin.EditLayout(positions);
+  };
   bridge.applyDocument = [this, &plugin](const auto &document) {
     // Validation occurs before stopping a working stream. Publication is main
     // thread only; audio owns its existing Voice until Stop joins its callback.

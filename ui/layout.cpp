@@ -14,17 +14,28 @@ void Workbench::resized() {
   settings_.setBounds(width() - 130, 10, 114, 28);
   master_.setBounds(width() - 510, 42, 220, 44);
   const float col = (left - 48) / 2;
+  routingToggle_.setBounds(16, 110, left - 32, 28);
+  routing_.setBounds(16, 142, left - 32, 150);
+  const float controlsTop = LeftControlsTop();
   right_.setBounds(left + 16, 110, width() - left - 32, height() - 221);
   LayoutRight();
-  location_.setBounds(16, 134, col, 44);
-  mute_.setBounds(32 + col, 134, col, 44);
-  excitation_.setBounds(16, 188, col, height() - 299);
-  resonance_.setBounds(32 + col, 188, col, height() - 299);
+  location_.setBounds(16, controlsTop + 24, col, 44);
+  mute_.setBounds(32 + col, controlsTop + 24, col, 44);
+  excitation_.setBounds(16, controlsTop + 78, col,
+                        height() - controlsTop - 189);
+  resonance_.setBounds(32 + col, controlsTop + 78, col,
+                       height() - controlsTop - 189);
   history_.setBounds(16, height() - 100, width() - 32, 34);
   fileShade_.setBounds(localBounds());
   files_.setBounds((width() - 640) / 2, (height() - 300) / 2, 640, 300);
   metaShade_.setBounds(localBounds());
   meta_.setBounds((width() - 700) / 2, 110, 700, 280);
+  routingShade_.setBounds(localBounds());
+  const float routingWidth = std::min(1120.f, width() - 40),
+              routingHeight = std::min(760.f, height() - 60);
+  routes_.setBounds((width() - routingWidth) / 2,
+                    (height() - routingHeight) / 2, routingWidth,
+                    routingHeight);
 }
 void Workbench::LayoutRight() {
   if (right_.width() < 160 || right_.height() < 1)
@@ -59,8 +70,9 @@ void Workbench::draw(visage::Canvas &c) {
   c.setColor(0xff293440);
   c.fill(0, 98, width(), 1);
   c.fill(left, 98, 1, height() - 140);
-  Label(c, "EXCITATION & OUTPUT", 16, 110, left / 2 - 20, 24);
-  Label(c, "RESONANCE & BLOOM", left / 2 + 8, 110, left / 2 - 20, 24);
+  Label(c, "EXCITATION & OUTPUT", 16, LeftControlsTop(), left / 2 - 20, 24);
+  Label(c, "RESONANCE & BLOOM", left / 2 + 8, LeftControlsTop(), left / 2 - 20,
+        24);
   char meter[96];
   std::snprintf(meter, sizeof(meter), "Reduction %.1f dB  |  Lookahead %.2f ms",
                 std::max(0., reduction_), latency_);

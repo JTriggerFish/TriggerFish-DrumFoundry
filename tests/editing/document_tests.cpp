@@ -16,6 +16,8 @@ int main(int argc, char **argv) {
                         "_calibration.fit.json");
     Document document;
     document.Load(Json::parse(input));
+    extern void RouteTests(Document);
+    RouteTests(document);
     const auto original = document.JsonValue();
     Require(!document.Parameters().empty(), "Missing metadata");
     for (const auto &p : document.Parameters()) {

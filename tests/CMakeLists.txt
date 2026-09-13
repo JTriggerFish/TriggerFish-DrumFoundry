@@ -22,7 +22,7 @@ set(DRUMFOUNDRY_DSP_TESTS
   percussion_turbulence_tests
   percussion_wire_tests
 )
-add_executable(editing_document_tests editing/document_tests.cpp)
+add_executable(editing_document_tests editing/document_tests.cpp editing/route_tests.cpp)
 target_link_libraries(editing_document_tests PRIVATE drumfoundry_editing)
 if(MINGW)
   target_link_options(editing_document_tests PRIVATE -static -static-libgcc -static-libstdc++)
@@ -94,7 +94,7 @@ if(DRUMFOUNDRY_BUILD_UI)
     target_link_options(ui_analysis_tests PRIVATE -static -static-libgcc -static-libstdc++)
   endif()
   add_test(NAME ui_analysis_tests COMMAND ui_analysis_tests ${PROJECT_SOURCE_DIR}/presets/kick_calibration.fit.json)
-  add_executable(ui_modal_tests ui/modal_tests.cpp ui/eq_tests.cpp)
+  add_executable(ui_modal_tests ui/modal_tests.cpp ui/eq_tests.cpp ui/routing_tests.cpp)
   target_link_libraries(ui_modal_tests PRIVATE drumfoundry_ui)
   if(MINGW)
     target_link_options(ui_modal_tests PRIVATE -static -static-libgcc -static-libstdc++)

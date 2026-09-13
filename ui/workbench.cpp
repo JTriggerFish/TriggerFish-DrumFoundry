@@ -13,6 +13,7 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
            &mute_, &excitation_, &resonance_, &referencePlay_, &modelPlay_})
     addChild(frame);
   SetupPanels();
+  SetupRouting();
   SetupFiles();
   SetupPerformance();
   addChild(&help_, false);
@@ -227,6 +228,9 @@ void Workbench::RefreshDocument() {
   help_.Hide();
   metaShade_.setVisible(false);
   document_.Load(bridge_.document());
+  routingShade_.setVisible(false);
+  routing_.Load(document_);
+  routes_.Load(document_);
   const auto &event = document_.JsonValue().at("controls").at("event");
   velocity_.SetDefault(event.at("strength"));
   hardness_.SetDefault(event.at("hardness"));

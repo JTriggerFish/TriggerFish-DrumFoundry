@@ -14,6 +14,8 @@ int main(int argc, char **argv) {
   d.Load(editing::Json::parse(input));
   extern void EqTests(editing::Document);
   EqTests(d);
+  extern void RoutingGestures(editing::Document);
+  RoutingGestures(d);
   editing::ReplaceModes(d, {});
   ui::ModalPlot plot;
   plot.setBounds(0, 0, 800, 300);

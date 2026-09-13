@@ -107,6 +107,13 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   with no compression. The latest strike updates the offline-render gesture.
   Performance defaults come from the loaded fit. Tests compare initial and
   repeated native pad output against an independent direct Voice render.
+- Routing is collapsed above the two left control columns. Expand for a compact
+  diagram, then double-click it for a larger in-window editor with native route
+  switches. Required routes are locked by the compiled contract, not by editable
+  JSON hints. Invalid disconnections leave the patch unchanged. There are no
+  extra edge gains. Moving boxes saves only validated node positions, marks host
+  state dirty and neither restarts nor retunes the voice. The canvas fits the
+  saved kick/snare layouts rather than clipping them to the metallic layout.
 
 ## Native analysis preview
 

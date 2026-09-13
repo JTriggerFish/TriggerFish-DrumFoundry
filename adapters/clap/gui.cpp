@@ -28,6 +28,9 @@ ui::Bridge Connect(Plugin &plugin) {
     plugin.EditDocument(document);
   };
   bridge.revision = [&plugin] { return plugin.DocumentRevision(); };
+  bridge.layout = [&plugin](const auto &positions) {
+    plugin.EditLayout(positions);
+  };
   bridge.change = [&plugin](unsigned id, double value) {
     if (!plugin.QueueEdit(id, value))
       throw std::runtime_error("Editor control queue full or invalid value");

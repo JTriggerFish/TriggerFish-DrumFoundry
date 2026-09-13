@@ -22,6 +22,8 @@ public:
   double Value(const std::string &key) const;
   void Set(const std::string &key, double value);
   void SetMany(const std::vector<std::pair<std::string, double>> &values);
+  void SetRoute(const std::string &id, bool enabled);
+  void MoveNode(const std::string &id, double x, double y);
   const std::string &Recipe() const { return recipe_; }
 
 private:

@@ -9,6 +9,7 @@
 #include "meta_panel.hpp"
 #include "modal_panel.hpp"
 #include "parameter_panel.hpp"
+#include "routing_panel.hpp"
 #include "split_bar.hpp"
 
 namespace drumfoundry::ui {
@@ -21,6 +22,7 @@ public:
   void draw(visage::Canvas &) override;
   void Error(const std::string &message);
   bool AnalysisReady() const { return analysis_.Ready(); }
+  void OpenRouting();
 
 private:
   void Poll();
@@ -30,6 +32,8 @@ private:
   void SetupPanels();
   void SetupFiles();
   void SetupPerformance();
+  void SetupRouting();
+  float LeftControlsTop() const { return 144 + (routingOpen_ ? 156.f : 0.f); }
   void RefreshDocument();
   void ApplyDocument();
   editing::Json CaptureDocument() const;
@@ -64,6 +68,11 @@ private:
   FilePanel files_;
   visage::Frame metaShade_;
   MetaPanel meta_;
+  visage::UiButton routingToggle_{"▸ Routing"};
+  RoutingDiagram routing_;
+  visage::Frame routingShade_;
+  RoutingPanel routes_;
+  bool routingOpen_{};
   HelpBubble help_;
   int documentPreset_{-1};
   unsigned documentRevision_{};

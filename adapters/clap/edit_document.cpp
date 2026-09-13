@@ -1,4 +1,7 @@
 #include "plugin.hpp"
+#ifdef DRUMFOUNDRY_UI
+#include "editing/routes.hpp"
+#endif
 #include <cmath>
 #include <stdexcept>
 
@@ -20,6 +23,17 @@ void Plugin::SetPreviewStrength(double velocity) {
   previewStrength_ = velocity;
   Dirty(host_);
 }
+#ifdef DRUMFOUNDRY_UI
+void Plugin::EditLayout(const Json &positions) {
+  PrepareEditorPreset();
+  auto next = DesiredDocument();
+  editing::ApplyNodePositions(next, positions);
+  if (next == document_)
+    return;
+  document_ = std::move(next);
+  Dirty(host_); // No DSP restart/revision for moving a picture of a node.
+}
+#endif
 void Plugin::EditPresentation(const Json &reference, const Json &analysis) {
   PrepareEditorPreset();
   auto next = DesiredDocument();

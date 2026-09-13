@@ -91,6 +91,7 @@ public:
   }
 #ifdef DRUMFOUNDRY_UI
   std::unique_ptr<Editor> editor;
+  void EditLayout(const Json &positions);
   bool Audition(std::shared_ptr<const std::vector<float>>, unsigned rate,
                 double gain);
   unsigned AuditionRate() const { return auditionRate_.load(); }

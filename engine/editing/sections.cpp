@@ -41,6 +41,16 @@ std::string Section(const Parameter &p) {
     return "Resonance";
   if (p.owner.find("wire") != std::string::npos)
     return "Snare wires";
+  if (p.owner.find("tension") != std::string::npos)
+    return "Strike / tension";
+  if (p.owner.find("direct-mix") != std::string::npos)
+    return "Direct mix";
+  if (p.owner.find("body-mix") != std::string::npos)
+    return "Body drive";
+  if (p.owner.find("observation") != std::string::npos)
+    return "Observation";
+  if (p.owner.find("-eq") != std::string::npos)
+    return "Output EQ";
   return p.owner;
 }
 bool RightColumn(const Parameter &p) {

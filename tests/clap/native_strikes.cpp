@@ -1,4 +1,7 @@
 #include "adapters/clap/plugin.hpp"
+#ifdef DRUMFOUNDRY_UI
+#include "editing/routes.hpp"
+#endif
 #include <cmath>
 #include <stdexcept>
 namespace {
@@ -10,7 +13,11 @@ void Check(bool condition) {
 void NativeStrikeParity(const drumfoundry::Json &document) {
   using namespace drumfoundry;
   using namespace drumfoundry::clap_adapter;
-  clap_host_t host{CLAP_VERSION, nullptr, "Test", "TriggerFish", "", "1"};
+  unsigned restarts = 0;
+  clap_host_t host{CLAP_VERSION, &restarts, "Test", "TriggerFish", "", "1"};
+  host.request_restart = [](const clap_host_t *h) {
+    ++*static_cast<unsigned *>(h->host_data);
+  };
   Plugin plugin(&host);
   Check(plugin.Init());
   const auto sourceStrike =
@@ -39,6 +46,16 @@ void NativeStrikeParity(const drumfoundry::Json &document) {
     strike.hardness = .36f;
     direct.Trigger(strike);
     for (int block = 0; block < 8; ++block) {
+#ifdef DRUMFOUNDRY_UI
+      if (block == 4) {
+        const auto revision = plugin.DocumentRevision();
+        auto positions = editing::NodePositions(plugin.EditableDocument());
+        positions.begin().value()["x"] = 80;
+        plugin.EditLayout(positions);
+        Check(editing::NodePositions(plugin.EditableDocument()) == positions);
+        Check(plugin.DocumentRevision() == revision && restarts == 0);
+      }
+#endif
       Check(plugin.Process(&process) == CLAP_PROCESS_CONTINUE);
       direct.Process(expected, 256);
       for (int i = 0; i < 256; ++i)
