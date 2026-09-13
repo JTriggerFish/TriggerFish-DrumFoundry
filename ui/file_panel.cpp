@@ -1,5 +1,6 @@
 #include "file_panel.hpp"
 #include <algorithm>
+#include <cctype>
 namespace drumfoundry::ui {
 FilePanel::FilePanel() {
   for (auto *frame : std::initializer_list<visage::Frame *>{
@@ -34,9 +35,13 @@ std::filesystem::path FilePanel::Directory() const {
 void FilePanel::Browse() {
   try {
     std::vector<std::filesystem::directory_entry> entries;
-    for (const auto &entry : std::filesystem::directory_iterator(Directory()))
-      if (entry.is_directory() || entry.path().extension() == extension_)
+    for (const auto &entry : std::filesystem::directory_iterator(Directory())) {
+      auto extension = entry.path().extension().u8string();
+      std::transform(extension.begin(), extension.end(), extension.begin(),
+                     [](unsigned char c) { return char(std::tolower(c)); });
+      if (entry.is_directory() || extension == extension_)
         entries.push_back(entry);
+    }
     std::sort(entries.begin(), entries.end(), [](const auto &a, const auto &b) {
       if (a.is_directory() != b.is_directory())
         return a.is_directory();

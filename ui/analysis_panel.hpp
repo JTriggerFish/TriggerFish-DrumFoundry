@@ -16,6 +16,8 @@ public:
   editing::Json Settings() const;
   void Poll();
   bool Ready() const { return result_ && !worker_.Busy(); }
+  double analysisShare{450. /
+                       1100}; // Presentation only; saved with view state.
   void SetAuditionRate(unsigned);
   void Play(bool reference);
   void resized() override;

@@ -80,6 +80,10 @@ std::filesystem::path FitDirectory() {
   if (const auto *base = std::getenv("LOCALAPPDATA"))
     return std::filesystem::u8path(base) / "TriggerFish" / "DrumFoundry" /
            "fits";
+#elif defined(__APPLE__)
+  if (const auto *base = std::getenv("HOME"))
+    return std::filesystem::u8path(base) / "Library" / "Application Support" /
+           "TriggerFish" / "DrumFoundry" / "fits";
 #else
   if (const auto *base = std::getenv("XDG_DATA_HOME"))
     return std::filesystem::u8path(base) / "TriggerFish" / "DrumFoundry" /

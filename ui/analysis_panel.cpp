@@ -43,7 +43,8 @@ void AnalysisPanel::SetDocument(const editing::Json &document) {
       editing::FitDirectory().parent_path() / "references" / "catalog.json";
   if (catalog_.Cells().empty() && std::filesystem::exists(catalogPath))
     catalog_.Load(catalogPath);
-  if (request_.reference.empty())
+  if (request_.reference.empty() ||
+      !std::filesystem::exists(request_.reference))
     if (const auto *cell = catalog_.Find(reference_)) {
       request_.reference = cell->path;
       reference_["localPath"] = cell->path.u8string();
@@ -129,7 +130,8 @@ editing::Json AnalysisPanel::Settings() const {
             {"frequencyLow", view_.frequencyLow},
             {"frequencyHigh", view_.frequencyHigh},
             {"differenceDb", view_.differenceDb},
-            {"renderSeconds", duration_.Value()}}}};
+            {"renderSeconds", duration_.Value()},
+            {"analysisShare", analysisShare}}}};
 }
 void AnalysisPanel::Queue() {
   if (request_.document.is_null())

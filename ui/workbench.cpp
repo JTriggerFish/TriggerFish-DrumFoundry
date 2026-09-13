@@ -31,9 +31,17 @@ void Workbench::SetupPanels() {
   }
   addChild(&right_);
   for (auto *frame : std::initializer_list<visage::Frame *>{
-           &analysis_, &modal_, &strike_, &hardness_, &velocity_, &spread_})
+           &analysis_, &modal_, &strike_, &hardness_, &velocity_, &spread_,
+           &analysisSplit_, &fixedStrike_})
     right_.addScrolledChild(frame);
   analysis_.chooseReference = [this] { OpenReferenceFile(); };
+  analysisSplit_.started = [this] { splitStart_ = analysis_.height(); };
+  analysisSplit_.dragged = [this](float delta) {
+    const double flexible = std::max(1350.f, right_.height()) - 250;
+    analysis_.analysisShare =
+        std::clamp((splitStart_ + delta) / flexible, .1, .9);
+    LayoutRight();
+  };
   analysis_.error = [this](const auto &message) { Error(message); };
   analysis_.play = bridge_.play;
   analysis_.presentation = bridge_.presentation;
@@ -126,6 +134,12 @@ void Workbench::SetupPerformance() {
       Error(e.what());
     }
   };
+  fixedStrike_.onToggle() = [this](auto *, bool) {
+    const float velocity = bridge_.velocity ? float(bridge_.velocity()) : .8f;
+    if (velocity > 0)
+      strike_.strike(velocity,
+                     float(bridge_.value(bridge_.value(100) == 0 ? 101 : 103)));
+  };
 }
 Workbench::~Workbench() { timer_.stopTimer(); }
 void Workbench::Error(const std::string &message) {
@@ -214,6 +228,7 @@ void Workbench::RefreshDocument() {
   resonance_.Load(document_, true);
   modal_.Load(document_);
   analysis_.SetDocument(document_.JsonValue());
+  LayoutRight();
   NativeFonts(*this);
   renderedEvent_ = document_.JsonValue().at("controls").at("event");
   eventDebounce_ = 0;

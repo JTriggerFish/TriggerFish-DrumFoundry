@@ -27,6 +27,7 @@ void AnalysisPanel::LoadView(const editing::Json &analysis) {
   if (view_.frequencyHigh <= view_.frequencyLow)
     throw std::invalid_argument("Invalid frequency zoom range");
   duration_.Set(read("renderSeconds", 8, .25, 60));
+  analysisShare = read("analysisShare", 450. / 1100, .1, .9);
   const char *names[]{"Mirror",     "Side by side", "Stacked",
                       "Difference", "Model",        "Reference"};
   comparison_.setText(names[int(mode)]);

@@ -17,10 +17,13 @@ bool AnalysisView::mouseWheel(const visage::MouseEvent &e) {
       frequencyLow = lo;
       frequencyHigh = hi;
     }
-  } else if (e.isCtrlDown() || e.isCmdDown())
-    span =
+  } else if (e.isCtrlDown() || e.isCmdDown()) {
+    const double fraction = (At(e.position.x, e.position.y).time - pan) / span;
+    const double next =
         std::clamp(span * std::exp(-.12 * e.precise_wheel_delta_y), .02, 60.);
-  else
+    pan += (span - next) * fraction;
+    span = next;
+  } else
     pan -= span * .05 * e.precise_wheel_delta_y;
   Refresh();
   return true;
@@ -33,6 +36,7 @@ void AnalysisView::mouseDown(const visage::MouseEvent &e) {
     return;
   }
   previous_ = e.position;
+  dragReference_ = At(e.position.x, e.position.y).reference;
   dragging_ = true;
   divider_ =
       (comparison == Comparison::Mirror || comparison == Comparison::SideBySide)
@@ -50,12 +54,17 @@ void AnalysisView::mouseDrag(const visage::MouseEvent &e) {
                 : (e.position.x - 42) / std::max(1.f, width() - 54);
     split = std::clamp(split, .1, .9);
   } else {
-    const auto a = At(previous_.x, previous_.y),
-               b = At(e.position.x, e.position.y);
+    const bool horizontal = comparison == Comparison::Mirror ||
+                            comparison == Comparison::SideBySide;
+    const double pane = horizontal ? (dragReference_ ? split : 1 - split) : 1;
+    const double direction =
+        comparison == Comparison::Mirror && dragReference_ ? -1 : 1;
+    const double delta = (previous_.x - e.position.x) * span * direction /
+                         std::max(1., (width() - 54) * pane);
     if (e.isShiftDown())
-      (a.reference ? referenceOffset : modelOffset) += a.time - b.time;
+      (dragReference_ ? referenceOffset : modelOffset) += delta;
     else
-      pan += a.time - b.time;
+      pan += delta;
   }
   previous_ = e.position;
   Refresh();

@@ -1,5 +1,6 @@
 #include "ui/controls.hpp"
 #include "ui/settings.hpp"
+#include "ui/split_bar.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -32,6 +33,20 @@ int main() {
   event.position.x += 100;
   slider.mouseDrag(event);
   Require(std::abs(slider.Value() + 27) < 1e-9);
+  SplitBar divider;
+  float movement = 0;
+  divider.dragged = [&](float delta) {
+    movement = delta;
+    divider.setBounds(0, delta, 200, 10);
+  };
+  event.window_position.y = 100;
+  divider.mouseDown(event);
+  event.window_position.y = 125;
+  divider.mouseDrag(event);
+  Require(movement == 25);
+  event.window_position.y = 100;
+  divider.mouseDrag(event);
+  Require(movement == 0);
   StrikePad pad;
   pad.setBounds(0, 0, 200, 100);
   float velocity = 0, location = 0;

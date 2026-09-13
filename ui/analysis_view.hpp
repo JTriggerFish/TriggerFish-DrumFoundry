@@ -43,7 +43,7 @@ private:
   void Readout(visage::Canvas &);
   std::shared_ptr<const analysis::Result> result_;
   visage::HeatMapData heatmap_;
-  bool dragging_{}, divider_{};
+  bool dragging_{}, divider_{}, dragReference_{};
   visage::Point previous_;
   visage::Point pointer_;
   bool hover_{};

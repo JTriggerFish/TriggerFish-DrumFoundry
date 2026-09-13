@@ -47,10 +47,16 @@ int main(int argc, char **argv) {
   {
     auto document = request.document;
     document["reference"] = nullptr;
-    document["controls"]["analysis"]["view"] = {
-        {"comparison", 3},      {"pan", .25},          {"span", 2},
-        {"split", .4},          {"modelOffset", .003}, {"differenceDb", 12},
-        {"renderSeconds", .25}, {"frequencyLow", 100}, {"frequencyHigh", 5000}};
+    document["controls"]["analysis"]["view"] = {{"comparison", 3},
+                                                {"pan", .25},
+                                                {"span", 2},
+                                                {"split", .4},
+                                                {"modelOffset", .003},
+                                                {"differenceDb", 12},
+                                                {"renderSeconds", .25},
+                                                {"frequencyLow", 100},
+                                                {"frequencyHigh", 5000},
+                                                {"analysisShare", 450. / 1100}};
     ui::AnalysisPanel panel;
     panel.SetDocument(document);
     Require(panel.Settings().at("view") ==

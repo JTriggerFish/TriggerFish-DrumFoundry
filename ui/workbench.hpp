@@ -7,6 +7,7 @@
 #include "meta_panel.hpp"
 #include "modal_panel.hpp"
 #include "parameter_panel.hpp"
+#include "split_bar.hpp"
 
 namespace drumfoundry::ui {
 // Shared content, independent of CLAP windows and standalone device ownership.
@@ -21,6 +22,7 @@ public:
 
 private:
   void Poll();
+  void LayoutRight();
   void SelectPreset();
   void Change(unsigned, double);
   void SetupPanels();
@@ -36,6 +38,7 @@ private:
   visage::UiButton preset_{"Kick"}, settings_{"Settings"}, stop_{"Stop"},
       limiter_{"Limiter ON"}, referencePlay_{"Play reference"},
       modelPlay_{"Play render"};
+  visage::UiButton fixedStrike_{"Strike"};
   Slider master_{"Master", -60, 0, -12, " dB"};
   Slider hardness_{"Tip hardness", 0, 1, .5};
   Slider velocity_{"Audition velocity", 0, 1, .8};
@@ -50,6 +53,8 @@ private:
   ParameterPanel excitation_, resonance_;
   visage::ScrollableFrame right_;
   AnalysisPanel analysis_;
+  SplitBar analysisSplit_;
+  float splitStart_{};
   ModalPanel modal_;
   HistoryBar history_;
   visage::Frame fileShade_;

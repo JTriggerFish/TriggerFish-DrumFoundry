@@ -74,7 +74,10 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   one-second-knee display, two permanent endpoints and up to eight total knots.
   Series/taper/document and headless pointer-gesture tests accompany the port.
 - Right-hand content scrolls as one column; analysis, strike and modal design
-  keep their ordering. Reference analysis, persistence and meta gestures follow.
+  keep their ordering. The divider below analysis changes its height; larger
+  windows expand the analysis/editor area to use available height. Its division
+  is stored with the view, while the two left control columns remain independent.
+  A fixed-velocity Strike button complements the continuous 2D playing surface.
 - Named snapshots persist as independent fit JSON documents under the user's
   application-data `TriggerFish/DrumFoundry/fits` folder. Each records its parent
   ID and retains reference identity and analysis settings. Saved snapshots can
