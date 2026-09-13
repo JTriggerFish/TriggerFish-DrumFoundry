@@ -59,9 +59,18 @@ void LiveSpectrum::draw(visage::Canvas &c) {
                        : "10k",
           x(hz) - 10, top + h + 2, 32, 18);
   }
-  if (!running_ || !spectrum_.Rate())
+  DrawTrace(c, left, top, w, h, 0xff9fcaff);
+}
+void LiveSpectrum::DrawTrace(visage::Canvas &c, float left, float top, float w,
+                             float h, unsigned colour, bool filled) const {
+  if (!running_ || !spectrum_.Rate() || w < 1 || h < 1)
     return;
+  const auto y = [&](double db) {
+    return top + h * float(std::clamp(-db / 96, 0., 1.));
+  };
   visage::Path curve;
+  if (filled)
+    curve.moveTo(left, top + h);
   const auto &bins = spectrum_.Decibels();
   const double binHz = double(spectrum_.Rate()) / analysis::LiveSpectrum::Size;
   // Peak-pool into log-frequency columns so narrow ridges are never skipped.
@@ -74,12 +83,17 @@ void LiveSpectrum::draw(visage::Canvas &c) {
     float db = -120;
     for (unsigned i = first; i < end; ++i)
       db = std::max(db, bins[i]);
-    if (!column)
+    if (!column && !filled)
       curve.moveTo(left, y(db));
     else
       curve.lineTo(left + column, y(db));
   }
-  c.setColor(0xff9fcaff);
-  c.fill(curve.stroke(1.5f));
+  c.setColor(colour);
+  if (filled) {
+    curve.lineTo(left + w, top + h);
+    curve.close();
+    c.fill(curve);
+  } else
+    c.fill(curve.stroke(1.5f));
 }
 } // namespace drumfoundry::ui

@@ -10,6 +10,9 @@ public:
   LiveSpectrum();
   void Poll(const Bridge &);
   void draw(visage::Canvas &) override;
+  unsigned Rate() const { return spectrum_.Rate(); }
+  void DrawTrace(visage::Canvas &, float left, float top, float width,
+                 float height, unsigned colour, bool filled = false) const;
 
 private:
   analysis::LiveSpectrum spectrum_;

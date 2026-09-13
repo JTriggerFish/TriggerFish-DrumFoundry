@@ -15,6 +15,7 @@ add_library(drumfoundry_ui STATIC ui/controls.cpp ui/workbench.cpp ui/layout.cpp
 target_sources(drumfoundry_ui PRIVATE ui/slider_text.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/help_bubble.cpp ui/parameter_help.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/live_spectrum.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/eq_plot.cpp ui/eq_gestures.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/decay_editor.cpp ui/decay_gestures.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/modal_plot.cpp ui/modal_gestures.cpp ui/modal_paint.cpp
   ui/modal_panel.cpp ui/modal_layout.cpp ui/series_panel.cpp)

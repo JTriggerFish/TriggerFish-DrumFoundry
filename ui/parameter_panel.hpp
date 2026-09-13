@@ -4,6 +4,7 @@
 #include <visage_ui/scroll_bar.h>
 
 namespace drumfoundry::ui {
+class LiveSpectrum;
 // Scroll independently from analysis/strike controls. All scalar controls come
 // from engine metadata; specialized curve editors replace their scalar rows.
 class ParameterPanel : public visage::ScrollableFrame {
@@ -13,11 +14,18 @@ public:
   std::function<void()> committed;
   std::function<void(const std::string &)> error;
   std::function<void(bool size)> meta;
-  visage::Frame
+  LiveSpectrum
       *outputSpectrum{}; // Borrowed from the workbench, never DSP-owned.
+  std::function<unsigned()> previewRate;
+  void RefreshSpectrum() {
+    if (preview_)
+      preview_->redraw();
+  }
 
 private:
   void AddParameter(editing::Document &, const editing::Parameter &);
+  void AddOutputPreview(editing::Document &);
+  void SyncValues(editing::Document &);
   struct Row {
     Row(std::unique_ptr<visage::Frame> item, int h)
         : owner(std::move(item)), frame(owner.get()), height(h) {}
@@ -27,6 +35,8 @@ private:
     int height;
   };
   std::vector<Row> rows_;
+  std::vector<std::pair<Slider *, std::string>> sliders_;
+  visage::Frame *preview_{};
   std::shared_ptr<int> generation_;
 };
 } // namespace drumfoundry::ui

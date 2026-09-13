@@ -1,5 +1,6 @@
 #include "parameter_panel.hpp"
 #include "decay_editor.hpp"
+#include "eq_plot.hpp"
 #include <algorithm>
 #include <exception>
 
@@ -20,6 +21,8 @@ private:
 } // namespace
 void ParameterPanel::Load(editing::Document &document, bool right) {
   generation_ = std::make_shared<int>(0);
+  preview_ = nullptr;
+  sliders_.clear();
   for (auto &row : rows_)
     removeScrolledChild(row.frame);
   rows_.clear();
@@ -37,10 +40,8 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     auto heading = std::make_unique<Heading>(section);
     addScrolledChild(heading.get());
     rows_.push_back({std::move(heading), 40});
-    if (section == "Output" && outputSpectrum) {
-      addScrolledChild(outputSpectrum);
-      rows_.emplace_back(*outputSpectrum, 164);
-    }
+    if (section == "Output" && outputSpectrum)
+      AddOutputPreview(document);
     if (meta &&
         (section == "Bloom / energy travel" ||
          (section == "Output" && document.Recipe() == "metal.cymbal.v1"))) {
@@ -81,6 +82,7 @@ void ParameterPanel::AddParameter(editing::Document &document,
   auto change = [this, &document, key = p.key](double v) {
     try {
       document.Set(key, v);
+      RefreshSpectrum();
     } catch (const std::exception &e) {
       if (error)
         error(e.what());
@@ -124,9 +126,36 @@ void ParameterPanel::AddParameter(editing::Document &document,
       if (committed)
         committed();
     };
+    sliders_.push_back({slider.get(), p.key});
     addScrolledChild(slider.get());
     rows_.push_back({std::move(slider), 48});
   }
+}
+void ParameterPanel::AddOutputPreview(editing::Document &document) {
+  if (editing::HasOutputEq(document)) {
+    auto eq = std::make_unique<EqPlot>(document, outputSpectrum);
+    eq->previewRate = previewRate;
+    eq->changed = [this, &document] { SyncValues(document); };
+    eq->committed = [this] {
+      if (committed)
+        committed();
+    };
+    eq->error = [this](const auto &text) {
+      if (error)
+        error(text);
+    };
+    preview_ = eq.get();
+    addScrolledChild(preview_);
+    rows_.emplace_back(std::move(eq), 190);
+  } else {
+    preview_ = outputSpectrum;
+    addScrolledChild(preview_);
+    rows_.emplace_back(*outputSpectrum, 164);
+  }
+}
+void ParameterPanel::SyncValues(editing::Document &document) {
+  for (const auto &[slider, key] : sliders_)
+    slider->Set(document.Value(key));
 }
 void ParameterPanel::resized() {
   visage::ScrollableFrame::resized();

@@ -161,6 +161,17 @@ the existing 30 Hz refresh rate, with cached FFT state; offline spectrograms
 remain on their independent worker. Tests cover tone/DC calibration, block-size
 invariance, concurrent tap wraparound and equality to actual host output.
 
+Where the recipe has the final radiation EQ, that display becomes a three-handle
+EQ plot with the live output as its background. High-pass and low-pass handles
+move horizontally; the colour handle moves frequency and gain. The ordinary
+four sliders remain visible and synchronized, including numeric entry. Bypass
+leaves a flat total response; double-click resets the selected handle. There is
+no additional Q, gain or hidden shaping parameter. The curve uses the same DSP
+parameter builder and biquad designs, at the live device rate (otherwise the
+preview-render rate). Tests compare it with the actual filter's impulse response
+at four sample rates and exercise graph-to-JSON editing. The curve axis is EQ dB;
+the background retains its separate fixed 0 to -96 dBFS/bin scale.
+
 ## Dependency references
 
 - [Visage](https://github.com/VitalAudio/visage/tree/828037000d0893647ab29b66ae9c4a241c90f671):

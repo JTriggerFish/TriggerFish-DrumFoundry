@@ -296,7 +296,9 @@ void SetLocationProjections(const Parameters &modes,
   }
 }
 
-RadiationFilterParameters OutputEq(
+} // namespace
+
+RadiationFilterParameters CrashOutputEqParameters(
     const CrashCymbalFitParameters &fit) noexcept {
   RadiationFilterParameters result{};
   result.lowCutHz =
@@ -312,8 +314,6 @@ RadiationFilterParameters OutputEq(
   result.highCutQ = .70710678f;
   return result;
 }
-
-} // namespace
 
 CrashCymbalParameters DefaultCrashCymbalParameters(
     const float sampleRate, const CrashCymbalFitParameters &fit) {
@@ -336,7 +336,7 @@ CrashCymbalParameters DefaultCrashCymbalParameters(
       std::clamp(fit.bloomPhaseDiffusion, 0.f, 1.f),
       ModalFieldSeed ^ 0x43415343u, fit.bloomSpectralDiffusion,
       std::clamp(fit.bloomEnergySensitivity, 0.f, 2.f)};
-  result.outputEq = OutputEq(fit);
+  result.outputEq = CrashOutputEqParameters(fit);
   return result;
 }
 

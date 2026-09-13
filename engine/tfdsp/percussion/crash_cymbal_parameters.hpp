@@ -118,6 +118,9 @@ struct CrashCymbalPreparedParameters {
   float sampleRate{48000.f};
 };
 
+// Shared by synthesis and the native response display; no duplicate EQ mapping.
+RadiationFilterParameters CrashOutputEqParameters(
+    const CrashCymbalFitParameters &fit) noexcept;
 CrashCymbalParameters DefaultCrashCymbalParameters(
     float sampleRate, const CrashCymbalFitParameters &fit = {});
 CrashCymbalPreparedParameters PrepareCrashCymbalParameters(

@@ -16,6 +16,10 @@ public:
   editing::Json Settings() const;
   void Poll();
   bool Ready() const { return result_ && !worker_.Busy(); }
+  unsigned RenderRate() const {
+    return result_ && result_->model.sampleRate ? result_->model.sampleRate
+                                                : 48000;
+  }
   double analysisShare{450. /
                        1100}; // Presentation only; saved with view state.
   void SetAuditionRate(unsigned);

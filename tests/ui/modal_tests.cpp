@@ -12,6 +12,8 @@ int main(int argc, char **argv) {
   std::ifstream input(argv[1]);
   editing::Document d;
   d.Load(editing::Json::parse(input));
+  extern void EqTests(editing::Document);
+  EqTests(d);
   editing::ReplaceModes(d, {});
   ui::ModalPlot plot;
   plot.setBounds(0, 0, 800, 300);
