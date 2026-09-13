@@ -31,15 +31,22 @@ void Slider::Edit(double value) {
   if (changed)
     changed(value_);
 }
+double Slider::Position(double value) const {
+  return position ? position(value) : (value - low_) / (high_ - low_);
+}
+double Slider::ValueAt(double p) const {
+  p = std::clamp(p, 0., 1.);
+  return valueAt ? valueAt(p) : low_ + (high_ - low_) * p;
+}
 void Slider::draw(visage::Canvas &c) {
   Label(c, label_, 0, 0, width() * .65f, 22);
   char text[48];
-  std::snprintf(text, sizeof(text), "%.2f%s", value_, unit_.c_str());
+  std::snprintf(text, sizeof(text), "%.4g%s", value_, unit_.c_str());
   Label(c, text, width() * .67f, 0, width() * .33f, 22);
   const float track = std::max(1.f, width() - 12.f);
   c.setColor(0xff303c49);
   c.roundedRectangle(6, 30, track, 4, 2);
-  const float x = 6 + track * float((value_ - low_) / (high_ - low_));
+  const float x = 6 + track * float(Position(value_));
   c.setColor(0xff9fcaff);
   c.roundedRectangle(6, 30, x - 6, 4, 2);
   c.circle(x - 5, 27, 10);
@@ -50,15 +57,18 @@ void Slider::mouseDown(const visage::MouseEvent &e) {
   if (e.repeatClickCount() == 2)
     Edit(initial_);
   else if (!e.isShiftDown())
-    Edit(low_ +
-         (high_ - low_) * (e.position.x - 6) / std::max(1.f, width() - 12.f));
+    Edit(ValueAt((e.position.x - 6) / std::max(1.f, width() - 12.f)));
   dragX_ = e.position.x;
-  dragValue_ = value_;
+  dragValue_ = Position(value_);
 }
 void Slider::mouseDrag(const visage::MouseEvent &e) {
   const double fine = e.isShiftDown() ? .1 : 1.;
-  Edit(dragValue_ + (e.position.x - dragX_) / std::max(1.f, width() - 12.f) *
-                        (high_ - low_) * fine);
+  Edit(ValueAt(dragValue_ +
+               (e.position.x - dragX_) / std::max(1.f, width() - 12.f) * fine));
+}
+void Slider::mouseUp(const visage::MouseEvent &e) {
+  if (e.isLeftButton() && committed)
+    committed();
 }
 void StrikePad::draw(visage::Canvas &c) {
   c.setColor(0xff17202a);

@@ -59,6 +59,7 @@ bool Plugin::Load(const clap_istream_t *stream) {
   Voice validated(static_cast<float>(sampleRate_), state.at("document"));
   auto document = validated.Document();
   document_ = std::move(document);
+  ++documentRevision_;
   documentPreset_ = static_cast<int>(next[0]);
   for (std::size_t i = 0; i < next.size(); ++i)
     values_[i].store(next[i]);

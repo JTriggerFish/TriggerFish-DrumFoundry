@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <nlohmann/json.hpp>
 #include <string>
 
 namespace drumfoundry::ui {
@@ -13,5 +14,8 @@ struct Bridge {
   std::function<void()> service;
   std::function<void()> settings;
   std::function<std::string()> status;
+  std::function<nlohmann::json()> document;
+  std::function<void(const nlohmann::json &)> applyDocument;
+  std::function<unsigned()> revision;
 };
 } // namespace drumfoundry::ui

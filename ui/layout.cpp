@@ -16,8 +16,10 @@ void Workbench::resized() {
   for (unsigned i = 0; i < implements_.size(); ++i)
     implements_[i].setBounds(left + 16 + i * (buttonWidth + 8),
                              height() * .5f + 116, buttonWidth, 28);
-  location_.setBounds(32 + col, 154, col, 44);
-  mute_.setBounds(32 + col, 210, col, 44);
+  location_.setBounds(16, 134, col, 44);
+  mute_.setBounds(32 + col, 134, col, 44);
+  excitation_.setBounds(16, 188, col, height() - 255);
+  resonance_.setBounds(32 + col, 188, col, height() - 255);
   strike_.setBounds(left + 16, height() * .5f, width() - left - 32, 110);
 }
 void Workbench::draw(visage::Canvas &c) {

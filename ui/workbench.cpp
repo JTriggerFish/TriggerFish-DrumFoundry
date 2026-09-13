@@ -10,8 +10,12 @@ constexpr const char *names[]{"Kick",  "Snare", "Hi-hat",
 Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   for (auto *frame : std::initializer_list<visage::Frame *>{
            &preset_, &settings_, &stop_, &limiter_, &master_, &hardness_,
-           &location_, &mute_, &strike_})
+           &location_, &mute_, &strike_, &excitation_, &resonance_})
     addChild(frame);
+  for (auto *panel : {&excitation_, &resonance_}) {
+    panel->committed = [this] { ApplyDocument(); };
+    panel->error = [this](const auto &text) { Error(text); };
+  }
   for (unsigned i = 0; i < implements_.size(); ++i) {
     addChild(&implements_[i]);
     implements_[i].onToggle() = [this, i](auto *, bool) {
@@ -72,6 +76,10 @@ void Workbench::Poll() {
   try {
     if (bridge_.service)
       bridge_.service();
+    if (bridge_.document &&
+        (reloadDocument_ || documentPreset_ != int(bridge_.value(100)) ||
+         (bridge_.revision && documentRevision_ != bridge_.revision())))
+      RefreshDocument();
     preset_.setText(names[std::clamp(int(bridge_.value(100)), 0, 5)]);
     master_.Set(bridge_.value(105));
     hardness_.Set(bridge_.value(101));
@@ -95,6 +103,27 @@ void Workbench::Poll() {
     redraw();
   } catch (const std::exception &e) {
     Error(e.what());
+  }
+}
+void Workbench::RefreshDocument() {
+  document_.Load(bridge_.document());
+  documentPreset_ = int(bridge_.value(100));
+  documentRevision_ = bridge_.revision ? bridge_.revision() : 0;
+  reloadDocument_ = false;
+  excitation_.Load(document_, false);
+  resonance_.Load(document_, true);
+}
+void Workbench::ApplyDocument() {
+  try {
+    auto next = document_.JsonValue();
+    // Preserve the current performance controls rather than restoring the
+    // gesture that happened to be active when the panel was populated.
+    next["controls"]["event"] = bridge_.document().at("controls").at("event");
+    bridge_.applyDocument(next);
+    documentRevision_ = bridge_.revision ? bridge_.revision() : 0;
+  } catch (const std::exception &e) {
+    Error(e.what());
+    reloadDocument_ = true;
   }
 }
 } // namespace drumfoundry::ui

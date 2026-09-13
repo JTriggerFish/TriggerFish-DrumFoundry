@@ -57,7 +57,16 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   Hardware-free smoke captures include the settings overlay; validation uses
   fake device callbacks in native tests. Real device handling is the tested
   RtAudio/RtMidi host, not a second implementation.
-- Full patch editing and analysis editors remain next.
+- Patch editing: native descriptor-driven controls, two independently scrollable
+  columns and the web workbench's low-range tapers. JSON edits validate before
+  publication; failed edits report an error and restore the valid document.
+  This first structural-edit path applies on slider release and resets the
+  voice through the host restart lifecycle. It does not yet promise uninterrupted
+  tails during structural edits. Performance gestures remain real-time.
+- `engine/editing` owns native document/value/scaling/presentation helpers,
+  separately from DSP and Visage. Tests check all six fits, parameter round trips,
+  taper bounds and transactional rejection. Graphical modal/T60 editors replace
+  the temporary scalar rows in the next chunk; analysis and snapshots follow.
 
 ## References
 

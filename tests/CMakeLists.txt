@@ -22,6 +22,12 @@ set(DRUMFOUNDRY_DSP_TESTS
   percussion_turbulence_tests
   percussion_wire_tests
 )
+add_executable(editing_document_tests editing/document_tests.cpp)
+target_link_libraries(editing_document_tests PRIVATE drumfoundry_editing)
+if(MINGW)
+  target_link_options(editing_document_tests PRIVATE -static -static-libgcc -static-libstdc++)
+endif()
+add_test(NAME editing_document_tests COMMAND editing_document_tests ${PROJECT_SOURCE_DIR}/presets)
 foreach(name IN LISTS DRUMFOUNDRY_DSP_TESTS)
   add_executable(${name} dsp/${name}.cpp)
   target_link_libraries(${name} PRIVATE drumfoundry_engine)

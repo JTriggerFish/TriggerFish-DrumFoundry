@@ -25,10 +25,16 @@ public:
   void draw(visage::Canvas &) override;
   void mouseDown(const visage::MouseEvent &) override;
   void mouseDrag(const visage::MouseEvent &) override;
+  void mouseUp(const visage::MouseEvent &) override;
   std::function<void(double)> changed;
+  std::function<void()> committed;
+  // Optional unit-preserving taper; the displayed/saved value never changes.
+  std::function<double(double)> position, valueAt;
 
 private:
   void Edit(double value);
+  double Position(double value) const;
+  double ValueAt(double position) const;
   std::string label_, unit_;
   double low_, high_, initial_, value_, dragValue_{};
   float dragX_{};

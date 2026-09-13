@@ -23,7 +23,7 @@ file(CONFIGURE OUTPUT "${PROJECT_BINARY_DIR}/generated/builtin_presets.hpp"
 add_library(drumfoundry_clap_objects OBJECT
   adapters/clap/factory.cpp adapters/clap/plugin.cpp adapters/clap/parameters.cpp
   adapters/clap/processing.cpp adapters/clap/state.cpp adapters/clap/extensions.cpp
-  adapters/clap/editor_events.cpp)
+  adapters/clap/editor_events.cpp adapters/clap/edit_document.cpp)
 if(DRUMFOUNDRY_BUILD_UI)
   target_sources(drumfoundry_clap_objects PRIVATE adapters/clap/gui.cpp adapters/clap/gui_extension.cpp)
   target_compile_definitions(drumfoundry_clap_objects PUBLIC DRUMFOUNDRY_UI=1)

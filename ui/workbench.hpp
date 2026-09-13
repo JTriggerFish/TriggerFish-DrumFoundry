@@ -1,6 +1,7 @@
 #pragma once
 #include "bridge.hpp"
 #include "controls.hpp"
+#include "parameter_panel.hpp"
 
 namespace drumfoundry::ui {
 // Shared content, independent of CLAP windows and standalone device ownership.
@@ -16,6 +17,8 @@ private:
   void Poll();
   void SelectPreset();
   void Change(unsigned, double);
+  void RefreshDocument();
+  void ApplyDocument();
   Bridge bridge_;
   visage::EventTimer timer_;
   visage::UiButton preset_{"Kick"}, settings_{"Settings"}, stop_{"Stop"},
@@ -28,6 +31,11 @@ private:
   Slider location_{"Strike location", 0, 1, 0};
   Slider mute_{"Mute / closure", 0, 1, 0};
   StrikePad strike_;
+  editing::Document document_;
+  ParameterPanel excitation_, resonance_;
+  int documentPreset_{-1};
+  unsigned documentRevision_{};
+  bool reloadDocument_{};
   std::string error_, status_;
   double reduction_{}, latency_{};
 };

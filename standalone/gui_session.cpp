@@ -1,4 +1,5 @@
 #include "gui_session.hpp"
+#include "adapters/clap/plugin.hpp"
 #include "device_catalog.hpp"
 #include <algorithm>
 #include <stdexcept>
@@ -28,6 +29,18 @@ ui::SettingsBridge GuiSession::Settings() {
 }
 ui::Bridge GuiSession::Connect() {
   ui::Bridge bridge;
+  auto &plugin = clap_adapter::Plugin::Get(host_.Api());
+  bridge.document = [&plugin] { return plugin.EditableDocument(); };
+  bridge.revision = [&plugin] { return plugin.DocumentRevision(); };
+  bridge.applyDocument = [this, &plugin](const auto &document) {
+    // Validation occurs before stopping a working stream. Publication is main
+    // thread only; audio owns its existing Voice until Stop joins its callback.
+    plugin.EditDocument(document);
+    if (audio_) {
+      audio_->Stop();
+      audio_->Start();
+    }
+  };
   bridge.value = [this](unsigned id) { return host_.Value(id); };
   bridge.change = [this](unsigned id, double value) {
     if (id == 100 || id == 106 || !audio_) {

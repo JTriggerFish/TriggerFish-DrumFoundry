@@ -65,6 +65,11 @@ public:
   uint32_t LatencySamples() const noexcept { return latency_; }
   bool Save(const clap_ostream_t *);
   bool Load(const clap_istream_t *);
+  // Main-thread document editing. Host restart publishes the prepared patch;
+  // performance automation remains on its separate sample-timed path.
+  Json EditableDocument() const;
+  void EditDocument(Json);
+  unsigned DocumentRevision() const { return documentRevision_; }
   const void *Extension(const char *) const noexcept;
   bool QueueEdit(clap_id, double) noexcept;
   bool QueueStrike(float velocity, float location) noexcept;
@@ -96,6 +101,7 @@ private:
   Json
       document_; // Main-thread-only saved/desired patch, never read in Process.
   int documentPreset_{};
+  unsigned documentRevision_{};
   uint32_t latency_{}, maximumFrames_{};
   double sampleRate_{48000}, masterGain_{}, masterTarget_{}, masterStep_{};
   double reductionHold_{};

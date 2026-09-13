@@ -53,5 +53,18 @@ int main() {
     Require(value == 0);
   plugin.processing = false;
   plugin.Deactivate();
+  const auto before = plugin.EditableDocument();
+  auto edited = before;
+  edited["controls"]["event"]["hardness"] = .25;
+  plugin.EditDocument(edited);
+  Require(plugin.DocumentRevision() == 1 && plugin.Value(Hardness) == .25);
+  Require(plugin.EditableDocument() == edited);
+  bool rejected = false;
+  try {
+    plugin.EditDocument({{"schema", "invalid"}});
+  } catch (...) {
+    rejected = true;
+  }
+  Require(rejected && plugin.EditableDocument() == edited);
   return 0;
 }
