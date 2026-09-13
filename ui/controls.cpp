@@ -14,6 +14,13 @@ void NativeFonts(visage::Frame &frame) {
   for (auto *child : frame.children())
     NativeFonts(*child);
 }
+void ControlErrors(visage::Frame &frame,
+                   const std::function<void(const std::string &)> &error) {
+  if (auto *slider = dynamic_cast<Slider *>(&frame))
+    slider->error = error;
+  for (auto *child : frame.children())
+    ControlErrors(*child, error);
+}
 void Label(visage::Canvas &c, const std::string &text, float x, float y,
            float w, float h, unsigned color) {
   c.setColor(color);
@@ -28,6 +35,7 @@ void Slider::Set(double value) {
     return;
   value = std::clamp(value, low_, high_);
   if (value_ != value) {
+    CloseText(); // An external/preset change invalidates an unfinished entry.
     value_ = value;
     redraw();
   }
@@ -85,8 +93,15 @@ void Slider::draw(visage::Canvas &c) {
   c.circle(x - 5, 27, 10);
 }
 void Slider::mouseDown(const visage::MouseEvent &e) {
+  if (e.button_id == visage::kMouseButtonRight) {
+    dragging_ = false;
+    BeginText();
+    return;
+  }
   if (!e.isLeftButton())
     return;
+  CloseText();
+  dragging_ = true;
   if (e.repeatClickCount() == 2)
     Edit(initial_);
   else if (!e.isShiftDown())
@@ -95,12 +110,16 @@ void Slider::mouseDown(const visage::MouseEvent &e) {
   dragValue_ = Position(value_);
 }
 void Slider::mouseDrag(const visage::MouseEvent &e) {
+  if (!dragging_)
+    return;
   const double fine = e.isShiftDown() ? .1 : 1.;
   Edit(ValueAt(dragValue_ +
                (e.position.x - dragX_) / std::max(1.f, width() - 12.f) * fine));
 }
 void Slider::mouseUp(const visage::MouseEvent &e) {
-  if (e.isLeftButton() && committed)
+  const bool commit = dragging_ && e.isLeftButton();
+  dragging_ = false;
+  if (commit && committed)
     committed();
 }
 void StrikePad::draw(visage::Canvas &c) {

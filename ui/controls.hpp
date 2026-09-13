@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <memory>
 #include <visage/ui.h>
 #include <visage/widgets.h>
 
@@ -7,6 +8,8 @@ namespace drumfoundry::ui {
 visage::Font Font(float size = 13);
 // Typography only: retain Visage's stock widget behaviour and drawing.
 void NativeFonts(visage::Frame &);
+void ControlErrors(visage::Frame &,
+                   const std::function<void(const std::string &)> &);
 void Label(visage::Canvas &, const std::string &, float x, float y, float w,
            float h, unsigned color = 0xffcad4df);
 
@@ -18,6 +21,10 @@ public:
          std::string unit = "");
   void Set(double value);
   void SetDefault(double value);
+  // Explicit text entry is strict: invalid/out-of-range input never changes
+  // sound.
+  bool SubmitText(const std::string &text);
+  void resized() override;
   double Value() const { return value_; }
   void SetLabel(std::string label) {
     if (label_ != label) {
@@ -31,16 +38,22 @@ public:
   void mouseUp(const visage::MouseEvent &) override;
   std::function<void(double)> changed;
   std::function<void()> committed;
+  std::function<void(const std::string &)> error;
+  bool integer{}; // Count controls reject fractional typed values.
   // Optional unit-preserving taper; the displayed/saved value never changes.
   std::function<double(double)> position, valueAt;
 
 private:
+  void BeginText();
+  void CloseText();
   void Edit(double value);
   double Position(double value) const;
   double ValueAt(double position) const;
   std::string label_, unit_;
   double low_, high_, initial_, value_, dragValue_{};
   float dragX_{};
+  bool dragging_{};
+  std::unique_ptr<visage::TextEditor> text_;
 };
 
 class StrikePad : public visage::Frame {

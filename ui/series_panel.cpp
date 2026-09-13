@@ -22,6 +22,7 @@ SeriesPanel::SeriesPanel() {
       };
       slider->valueAt = [](double p) { return 8 * std::pow(1000., p); };
     } else if (i == 1 || i == 3) {
+      slider->integer = true;
       slider->valueAt = [a = low[i], b = high[i]](double p) {
         return std::round(a + p * (b - a));
       };

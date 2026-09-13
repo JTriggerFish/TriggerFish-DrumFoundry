@@ -33,6 +33,34 @@ int main() {
   event.position.x += 100;
   slider.mouseDrag(event);
   Require(std::abs(slider.Value() + 27) < 1e-9);
+  slider.mouseUp(event);
+  event.position.x = 0;
+  slider.mouseDrag(event);
+  Require(std::abs(slider.Value() + 27) < 1e-9);
+  unsigned entries = 0, rejected = 0;
+  slider.committed = [&] { ++entries; };
+  slider.error = [&](const auto &) { ++rejected; };
+  Require(slider.SubmitText(" -1.25e1 "));
+  Require(slider.Value() == -12.5 && notified == -12.5 && entries == 1);
+  for (const auto *invalid : {"", "nan", "inf", "-12dB", "-61", "1", "2,3"})
+    Require(!slider.SubmitText(invalid));
+  Require(slider.Value() == -12.5 && entries == 1 && rejected == 7);
+  slider.integer = true;
+  Require(!slider.SubmitText("-2.5"));
+  Require(slider.SubmitText("-3"));
+  event.button_id = visage::kMouseButtonRight;
+  slider.mouseDown(event);
+  Require(slider.children().size() == 1);
+  auto *entry = dynamic_cast<visage::TextEditor *>(slider.children().front());
+  Require(entry && entry->isVisible());
+  entry->setText("-7");
+  entry->onEscapeKey().callback();
+  Require(!entry->isVisible() && slider.Value() == -3);
+  slider.mouseDown(event);
+  entry->setText("-8");
+  entry->onEnterKey().callback();
+  Require(!entry->isVisible() && slider.Value() == -8);
+  event.button_id = visage::kMouseButtonLeft;
   SplitBar divider;
   float movement = 0;
   divider.dragged = [&](float delta) {

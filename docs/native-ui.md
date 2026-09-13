@@ -42,6 +42,11 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   sliders with double-click reset/fine drag, strike pad, limiter/status/error
   readouts and standalone `--gui` path. `--ui-smoke` captures a real GPU frame and
   closes without opening devices. Interaction tests do not require a display.
+- Right-click any slider for native numeric entry in its physical units (Hz,
+  seconds, dB, etc.). Enter applies; Escape cancels. Out-of-range, nonfinite and
+  fractional count values report an error without changing the sound. Double-
+  click still resets and Shift-drag adjusts finely. External value changes cancel
+  an unfinished entry so it cannot later overwrite a newly loaded setting.
 - CLAP embedding: shared content via the standard GUI extension, native Windows/
   Cocoa/X11 parents, host resizing and Linux FD dispatch. UI controls use bounded
   queues; the audio/flush consumer applies them and emits host parameter events.

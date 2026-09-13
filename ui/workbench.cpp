@@ -16,6 +16,7 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   SetupFiles();
   SetupPerformance();
   NativeFonts(*this);
+  ControlErrors(*this, [this](const auto &text) { Error(text); });
   timer_.onTimerCallback() = [this] { Poll(); };
   timer_.startTimer(33);
   Poll();
@@ -64,6 +65,7 @@ void Workbench::SetupPanels() {
     excitation_.Load(document_, false);
     resonance_.Load(document_, true);
     modal_.Refresh();
+    ControlErrors(*this, [this](const auto &text) { Error(text); });
   };
   meta_.committed = [this] { ApplyDocument(); };
   meta_.error = [this](const auto &text) { Error(text); };
@@ -230,6 +232,7 @@ void Workbench::RefreshDocument() {
   analysis_.SetDocument(document_.JsonValue());
   LayoutRight();
   NativeFonts(*this);
+  ControlErrors(*this, [this](const auto &text) { Error(text); });
   renderedEvent_ = document_.JsonValue().at("controls").at("event");
   eventDebounce_ = 0;
 }
