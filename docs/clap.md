@@ -1,8 +1,8 @@
 # Native CLAP integration
 
 The default build is a headless development shell. `./dev.ps1 ui` additionally
-builds the staged Visage editor, shared with the standalone; see
-[native-ui.md](native-ui.md). Neither is the finished instrument editor yet. It
+builds the Visage workbench, shared with the standalone; see
+[native-ui.md](native-ui.md). Both remain development previews. It
 links the same `drumfoundry_engine` used by Python; it contains no alternate DSP,
 Python, Node, Wasm or web server. Windows uses the existing MinGW64 launcher.
 
@@ -41,7 +41,7 @@ seed remains in the instrument document. No fitting values are changed.
 
 The host's generic editor exposes the selector, five strike controls, master
 level, limiter, gain reduction and actual latency. These are an initial host
-surface, **not** the complete future modal editor. Kick ignores location as in
+surface, **not** the full native workbench's design controls. Kick ignores location as in
 the core. Mute currently affects metallic voices only. Full JSON plus these
 explicit performance overrides are stored in CLAP project state.
 Gesture spread is appended at ID109; IDs100–108 remain unchanged. Earlier preview
@@ -54,8 +54,8 @@ then the optional linked stereo limiter. Both output channels carry the same
 mono signal; no widening or gain matching is inserted. The limiter is on by
 default with 1 ms lookahead, or zero latency when bypassed. See
 [output-limiter.md](output-limiter.md) for its ceiling and detector design.
-Gain reduction is a positive dB readout held briefly for host polling. The future
-Visage editor must make protection, latency and reduction visibly persistent.
+Gain reduction is a positive dB readout held briefly for host polling. The
+Visage workbench keeps protection, latency and reduction visible in its header.
 
 Instrument changes, limiter bypass and loaded states request a host restart
 when active. The old configuration keeps playing until the host stops audio.
@@ -94,6 +94,7 @@ clap-validator validate build/native/TriggerFishDrumFoundry.clap
 Real DAW smoke testing remains necessary before treating this as a release.
 
 The [console standalone](standalone.md) now hosts this same adapter with native
-audio/MIDI devices. Next: real-DAW smoke tests, the Visage editor, shared native
-editing helpers and graphical device management. The existing C API and Python
+audio/MIDI devices. The Visage editor, shared native editing helpers and graphical
+device management are implemented. Next: real-DAW GUI smoke tests and seamless
+structural publication. The existing C API and Python
 render/fitting paths remain raw and limiter-free.

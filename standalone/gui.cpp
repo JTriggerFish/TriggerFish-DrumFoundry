@@ -1,4 +1,5 @@
 #include "gui.hpp"
+#include "gui_capture.hpp"
 #include "gui_session.hpp"
 #include "ui/workbench.hpp"
 #include <algorithm>
@@ -64,48 +65,15 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
       editor.Error(e.what());
     }
   }
-  visage::EventTimer finish;
-  bool captured = false;
-  int attempts = 0;
-  int captureStage = 0;
-  if (smoke) {
-    finish.onTimerCallback() = [&] {
-      if (!editor.AnalysisReady()) {
-        if (++attempts >= 40) {
-          finish.stopTimer();
-          window.window()->close();
-        }
-        return;
-      }
-      const auto &shot = window.takeScreenshot();
-      if (shot.width() > 0 && shot.height() > 0) {
-        if (captureStage == 0) {
-          shot.save("build/ui-smoke.png");
-          shade.setVisible(true);
-          settings.setVisible(true);
-        } else if (captureStage == 2) {
-          shot.save("build/ui-settings-smoke.png");
-          settings.setVisible(false);
-          editor.OpenRouting();
-        } else if (captureStage == 4) {
-          shot.save("build/ui-routing-smoke.png");
-          captured = true;
-        }
-        ++captureStage;
-      }
-      if (captured || ++attempts >= 44) {
-        finish.stopTimer();
-        window.window()->close();
-      }
-    };
-    finish.startTimer(1500);
-  }
+  std::unique_ptr<GuiCapture> capture;
+  if (smoke)
+    capture = std::make_unique<GuiCapture>(window, editor, shade, settings);
   window.show(1440, 900);
   window.runEventLoop();
   smokeAudio.stopTimer();
   if (smoke)
     host.Stop();
-  if (smoke && !captured)
+  if (smoke && !capture->Complete())
     throw std::runtime_error("UI screenshot did not complete");
 }
 } // namespace drumfoundry::standalone

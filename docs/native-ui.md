@@ -121,7 +121,9 @@ The optional UI target includes WAV decoding, reference SHA256 verification,
 offline native Voice rendering and centred STFT analysis on a cancellable worker.
 It never reads the live voice. Reference decode/hash/STFT results are cached by
 file identity, channel and transform. Reference audition resampling is cached
-separately by the decoded source and device rate. Performance edits are briefly debounced;
+separately by the decoded source and device rate. Performance and design edits
+are briefly debounced: a roughly 130 ms pause during a drag can update the
+offline preview before release. The live voice is still replaced only on release;
 the last completed plot stays visible until a replacement is ready.
 
 Visage GPU heatmaps show mirror (default), side-by-side, stacked, individual or

@@ -1,8 +1,8 @@
 # Standalone device-test application
 
-The first standalone is a **console-controlled audio/MIDI application**, not yet
-the Visage editor. It exercises the actual CLAP adapter with real device callbacks.
-An optional `./dev.ps1 ui` build now adds the staged native workbench and
+The standalone can be built as a **console audio/MIDI application** or with the
+shared Visage editor. Both use the actual CLAP adapter with real device callbacks.
+The optional `./dev.ps1 ui` build adds the native workbench and
 audio/MIDI settings panel; see [native-ui.md](native-ui.md). That build opens
 the window with no arguments, while console commands remain available.
 The plugin and executable link the same compiled adapter objects; no synthesis,
@@ -45,7 +45,7 @@ Limiter defaults on, with the same fixed 1 ms lookahead and explicit -12 dB mast
 as the CLAP shell. There is no second limiter, normalization or sample-rate
 conversion in the host. The driver-reported latency and plugin lookahead are
 shown separately; neither is presented as a measured end-to-end keyboard latency.
-The console provides a `status` readout, not yet a continuously painted GUI meter.
+The console provides a `status` readout; the Visage build adds persistent live meters.
 
 Structural changes stop/join device processing before preparing the plugin again.
 This resets resonating state and discards pending notes, preserving queued
@@ -124,9 +124,9 @@ These measurements precede the deadline/restart-queue review fixes. The original
 relative sleeps ran slightly longer than requested; callback counts are retained
 as recorded, not presented as precise wall-clock timing.
 
-## Next interface
+## Native interface
 
-Visage will supply the native settings/device chooser, strike surface, persistent
-limiter meters and full instrument editor. It should call this host layer, while
-the CLAP editor uses the same native parameter/editing model. No browser server or
-second DSP renderer is needed.
+Visage supplies the settings/device chooser, strike surface, persistent limiter
+meters, modal/T60 editors, snapshots and reference analysis. It calls this host
+layer, while CLAP embeds the same workbench. There is no browser server or second
+DSP renderer. See [native-ui.md](native-ui.md) for interaction and testing details.

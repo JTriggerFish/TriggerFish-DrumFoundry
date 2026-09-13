@@ -45,7 +45,7 @@ target_include_directories(drumfoundry_standalone_host PUBLIC ${PROJECT_SOURCE_D
 target_link_libraries(drumfoundry_standalone_host PUBLIC drumfoundry_devices drumfoundry_clap_sdk)
 add_executable(drumfoundry_standalone standalone/main.cpp standalone/console.cpp)
 if(DRUMFOUNDRY_BUILD_UI)
-  target_sources(drumfoundry_standalone PRIVATE standalone/gui.cpp standalone/gui_smoke.cpp
+  target_sources(drumfoundry_standalone PRIVATE standalone/gui.cpp standalone/gui_smoke.cpp standalone/gui_capture.cpp
     standalone/gui_session.cpp standalone/device_catalog.cpp)
   target_compile_definitions(drumfoundry_standalone PRIVATE DRUMFOUNDRY_UI=1)
   target_link_libraries(drumfoundry_standalone PRIVATE drumfoundry_ui)

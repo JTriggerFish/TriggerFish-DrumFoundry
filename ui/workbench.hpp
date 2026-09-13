@@ -10,6 +10,7 @@
 #include "meta_panel.hpp"
 #include "modal_panel.hpp"
 #include "parameter_panel.hpp"
+#include "preview_tracker.hpp"
 #include "routing_panel.hpp"
 #include "split_bar.hpp"
 
@@ -27,10 +28,14 @@ public:
 
 private:
   void Poll();
+  void PollPreview();
+  void PollPerformance();
   void LayoutRight();
   void SelectPreset();
   void Change(unsigned, double);
   void SetupPanels();
+  void SetupAnalysis();
+  void SetupMetas();
   void SetupFiles();
   void SetupPerformance();
   void SetupRouting();
@@ -80,8 +85,7 @@ private:
   int documentPreset_{-1};
   unsigned documentRevision_{};
   bool reloadDocument_{};
-  editing::Json renderedEvent_;
-  unsigned eventDebounce_{};
+  PreviewTracker preview_;
   std::string error_, status_;
   double reduction_{}, latency_{};
 };

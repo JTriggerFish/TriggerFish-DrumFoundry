@@ -77,8 +77,10 @@ Cross-platform execution is delegated to CI; do not claim it passed until it run
   floating-point sample-rate representation. Loss formulas are unchanged.
 - Migration signatures and read-only full-PCM comparisons are now source-controlled.
 
-These changes do not retune presets or modify DSP mathematics. Future preset
-editing tools and host/UI lifecycle work remain separate migration stages.
+These changes do not retune presets or modify DSP mathematics. Subsequent stages
+added CLAP/standalone hosting and the shared native workbench, including editable
+curves/modes, reference analysis, snapshots and hold-decay assistance; see
+[native-ui.md](native-ui.md). The six source calibrations remain unchanged.
 
 ## Reference design documents
 
@@ -89,5 +91,5 @@ The original design history remains available at the pinned source revision:
 - [Kick architecture](https://github.com/JTriggerFish/TriggerFish-VCV/blob/9f0d2e2ce0be3d51ff5e4ff45b0da5c2d7aaa621/docs/TfPercussion-kick-architecture.md)
 - [Analysis toolkit](https://github.com/JTriggerFish/TriggerFish-VCV/blob/9f0d2e2ce0be3d51ff5e4ff45b0da5c2d7aaa621/docs/TfPercussion-analysis-toolkit.md)
 
-See [engine.md](engine.md) for what remains before CLAP/Visage. Do not remove the
+See [engine.md](engine.md) for remaining runtime work. Do not remove the
 old workbench until native editing and platform parity have been verified.

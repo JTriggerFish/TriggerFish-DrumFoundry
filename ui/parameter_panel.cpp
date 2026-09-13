@@ -122,7 +122,9 @@ void ParameterPanel::AddParameter(editing::Document &document,
     auto slider = std::make_unique<Slider>(editing::ControlName(p), p.minimum,
                                            p.maximum, p.initial, " " + p.unit);
     slider->Set(document.Value(p.key));
-    slider->help = ParameterHelp(p.key) + " " + slider->help;
+    slider->help = ParameterHelp(p.key) + " " + slider->help +
+                   " Release to update the live voice; paused drags update the "
+                   "offline preview.";
     slider->position = [p](double v) { return editing::Position(p, v); };
     slider->valueAt = [p](double v) { return editing::ValueAt(p, v); };
     slider->changed = change;

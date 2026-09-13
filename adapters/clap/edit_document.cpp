@@ -2,6 +2,7 @@
 #include "plugin.hpp"
 #ifdef DRUMFOUNDRY_UI
 #include "editing/routes.hpp"
+#include "ui/analysis_validation.hpp"
 #endif
 #include <cmath>
 #include <stdexcept>
@@ -73,8 +74,11 @@ void Plugin::PrepareEditorPreset() {
 }
 Json Plugin::EditableDocument() const { return CaptureDesired().document; }
 void Plugin::EditDocument(Json document) {
-  Voice validated(static_cast<float>(sampleRate_),
-                  WithFitEnvelope(std::move(document)));
+  document = WithFitEnvelope(std::move(document));
+#ifdef DRUMFOUNDRY_UI
+  ui::ValidateAnalysisDocument(document);
+#endif
+  Voice validated(static_cast<float>(sampleRate_), std::move(document));
   auto next = validated.Document();
   const auto recipe = Instrument(next).at("recipe").get<std::string>();
   const int selected = static_cast<int>(Value(Preset));

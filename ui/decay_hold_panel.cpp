@@ -1,4 +1,5 @@
 #include "decay_hold_panel.hpp"
+#include "preview_tracker.hpp"
 #include <iomanip>
 #include <sstream>
 namespace drumfoundry::ui {
@@ -21,10 +22,7 @@ DecayHoldPanel::DecayHoldPanel() {
   cancel_.onToggle() = [this](auto *, bool) { Cancel(); };
 }
 editing::Json DecayHoldPanel::Sound(const editing::Json &d) {
-  auto patch = d.at("instrument");
-  for (auto &node : patch.at("nodes"))
-    node.erase("editor");
-  return {{"instrument", patch}, {"event", d.at("controls").at("event")}};
+  return SoundIdentity(d);
 }
 void DecayHoldPanel::Cancel() {
   worker_.Cancel();

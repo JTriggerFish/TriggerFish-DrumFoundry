@@ -1,6 +1,7 @@
 #include "editing/files.hpp"
 #include "ui/analysis_panel.hpp"
 #include "ui/analysis_view.hpp"
+#include "ui/preview_tracker.hpp"
 #include "workbench/analysis/worker.hpp"
 #include <chrono>
 #include <cmath>
@@ -52,6 +53,19 @@ int main(int argc, char **argv) {
   analysis::Worker worker;
   analysis::Request request;
   request.document = editing::ReadFit(argv[1]);
+  ui::PreviewTracker tracker;
+  tracker.Reset(request.document);
+  Require(!tracker.Advance(request.document));
+  auto dragged = request.document;
+  dragged["controls"]["event"]["strength"] = .123;
+  Require(!tracker.Advance(dragged));
+  for (unsigned i = 0; i < 3; ++i)
+    Require(!tracker.Advance(dragged));
+  Require(tracker.Advance(dragged));
+  Require(!tracker.Advance(dragged));
+  dragged["instrument"]["nodes"][0]["editor"]["x"] = 89;
+  for (unsigned i = 0; i < 5; ++i)
+    Require(!tracker.Advance(dragged));
   {
     auto document = request.document;
     document["reference"] = nullptr;

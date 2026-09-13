@@ -3,10 +3,11 @@
 A constructive modular percussion synthesizer: cymbals, gongs, kicks, membranes
 and snares built from reusable native DSP components.
 
-This repository contains the **native engine, offline development tools and an
-optional headless CLAP preview**. A console-controlled standalone is available
-for audio/MIDI device testing. The optional Visage editor is being ported in
-stages; see [native-ui.md](docs/native-ui.md) for the current scope.
+This repository contains the **native engine, CLAP plugin and standalone**,
+with an optional shared Visage workbench and offline Python development tools.
+The workbench includes modal/T60 editing, reference comparison, native rendering,
+live strikes and fit snapshots. See [native-ui.md](docs/native-ui.md) for scope
+and remaining limitations. These are development previews, not signed releases.
 
 ## Build
 
@@ -29,8 +30,9 @@ Pinned, hash-checked Eigen and JSON headers are downloaded on first configure.
 
 Builds `TriggerFishDrumFoundry.clap` with six embedded presets, MIDI strikes,
 host controls and project-state saving. The optional output limiter defaults to
-on with 1 ms latency, reported to the host. No plugin GUI yet;
-use a host's generic parameter editor. See [CLAP integration](docs/clap.md).
+on with 1 ms latency, reported to the host. These commands build the headless
+variant; use `ui` / `ui-dist` below for the Visage editor.
+See [CLAP integration](docs/clap.md).
 The CLAP SDK is fetched only for host builds; Python remains unnecessary.
 
 ## Standalone device testing
@@ -38,16 +40,24 @@ The CLAP SDK is fetched only for host builds; Python remains unnecessary.
 `./dev.ps1 standalone-test` builds the same CLAP adapter into a small native
 audio/MIDI application. Windows includes ASIO and WASAPI; MIDI inputs and device
 buffers are selectable. Run with `--help` for options; see
-[standalone.md](docs/standalone.md). This first host is console-controlled, not
-the planned Visage editor. Ordinary engine and CLAP-only builds remain separate.
+[standalone.md](docs/standalone.md). These commands build the console variant;
+the same audio/MIDI host powers the optional graphical workbench below.
 
 ## Native workbench preview
 
-The initial native window builds with `./dev.ps1 ui`. Run
-`build/native/TriggerFishDrumFoundry --gui` (add `.exe` on Windows) for silent
-inspection, or add the same explicit audio/MIDI arguments as the console host.
-This first chunk has performance controls; modal editing and analysis are still
-being migrated. Core and headless targets remain independent of Visage.
+```powershell
+./dev.ps1 ui-test
+./dev.ps1 ui-dist
+./build/native/TriggerFishDrumFoundry.exe
+```
+
+Omit `.exe` on Linux/macOS. The standalone opens without acquiring a device;
+choose audio/MIDI, rate and buffer in **Settings**, then Apply & start. The same
+editor is embedded in the UI-enabled CLAP binary. Core/headless targets remain
+independent of Visage, and Python is never needed by the workbench.
+
+Commands select the build variant: after a headless build/test command, run
+`./dev.ps1 ui` again before launching the editor from `build/native`.
 
 ## Optional Python rendering and fitting
 
