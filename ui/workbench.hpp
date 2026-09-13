@@ -1,0 +1,32 @@
+#pragma once
+#include "bridge.hpp"
+#include "controls.hpp"
+
+namespace drumfoundry::ui {
+// Shared content, independent of CLAP windows and standalone device ownership.
+class Workbench : public visage::Frame {
+public:
+  explicit Workbench(Bridge bridge);
+  ~Workbench() override;
+  void resized() override;
+  void draw(visage::Canvas &) override;
+  void Error(const std::string &message);
+
+private:
+  void Poll();
+  void SelectPreset();
+  void Change(unsigned, double);
+  Bridge bridge_;
+  visage::EventTimer timer_;
+  visage::UiButton preset_{"Kick"}, settings_{"Settings"}, stop_{"Stop"},
+      limiter_{"Limiter ON"};
+  Slider master_{"Master", -60, 0, -12, " dB"};
+  Slider hardness_{"Tip hardness", 0, 1, .5};
+  Slider implement_{"Implement", 0, 1, .5};
+  Slider location_{"Strike location", 0, 1, 0};
+  Slider mute_{"Mute / closure", 0, 1, 0};
+  StrikePad strike_;
+  std::string error_, status_;
+  double reduction_{}, latency_{};
+};
+} // namespace drumfoundry::ui

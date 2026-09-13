@@ -5,7 +5,8 @@ and snares built from reusable native DSP components.
 
 This repository contains the **native engine, offline development tools and an
 optional headless CLAP preview**. A console-controlled standalone is available
-for audio/MIDI device testing. The Visage editor is not implemented yet.
+for audio/MIDI device testing. The optional Visage editor is being ported in
+stages; see [native-ui.md](docs/native-ui.md) for the current scope.
 
 ## Build
 
@@ -39,6 +40,14 @@ audio/MIDI application. Windows includes ASIO and WASAPI; MIDI inputs and device
 buffers are selectable. Run with `--help` for options; see
 [standalone.md](docs/standalone.md). This first host is console-controlled, not
 the planned Visage editor. Ordinary engine and CLAP-only builds remain separate.
+
+## Native workbench preview
+
+The initial native window builds with `./dev.ps1 ui`. Run
+`build/native/TriggerFishDrumFoundry --gui` (add `.exe` on Windows) for silent
+inspection, or add the same explicit audio/MIDI arguments as the console host.
+This first chunk has performance controls; modal editing and analysis are still
+being migrated. Core and headless targets remain independent of Visage.
 
 ## Optional Python rendering and fitting
 

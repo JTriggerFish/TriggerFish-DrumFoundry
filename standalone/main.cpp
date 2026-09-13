@@ -1,5 +1,8 @@
 #include "console.hpp"
 #include "midi.hpp"
+#ifdef DRUMFOUNDRY_UI
+#include "gui.hpp"
+#endif
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
@@ -9,7 +12,7 @@ namespace {
 struct Options {
   drumfoundry::standalone::AudioSettings audio;
   std::string midi{"all"}, preset{"kick"};
-  bool list{}, midiList{}, smoke{}, audition{};
+  bool list{}, midiList{}, smoke{}, audition{}, gui{}, uiSmoke{};
   unsigned seconds{};
 };
 unsigned Integer(const std::string &text, unsigned low, unsigned high) {
@@ -38,6 +41,10 @@ Options Parse(int argc, char **argv) {
       options.smoke = true;
     else if (arg == "--audition")
       options.audition = true;
+    else if (arg == "--gui")
+      options.gui = true;
+    else if (arg == "--ui-smoke")
+      options.uiSmoke = true;
     else {
       if (++i >= argc)
         throw std::runtime_error("Missing value for " + arg);
@@ -71,7 +78,10 @@ void Help() {
          "kick|snare|hihat|crash|ride|gong]\n"
       << "  [--test-seconds 5] [--audition]\n"
       << "--smoke: hardware-free integration check\n"
-      << "No GUI yet. Without --test-seconds, runs an interactive control "
+      << "--gui: native editor (./dev.ps1 ui); omit --device to inspect "
+         "silently\n"
+      << "--ui-smoke: open/capture/close editor without audio hardware\n"
+      << "Without --gui or --test-seconds, runs an interactive control "
          "console.\n"
       << "Timed device tests are silent unless --audition or live MIDI is "
          "used.\n";
@@ -97,6 +107,15 @@ int main(int argc, char **argv) {
       return 0;
     }
     PluginHost host;
+#ifdef DRUMFOUNDRY_UI
+    if (options.uiSmoke || (options.gui && options.audio.device.empty())) {
+      RunGui(host, nullptr, options.uiSmoke);
+      return 0;
+    }
+#else
+    if (options.gui || options.uiSmoke)
+      throw std::runtime_error("Build the Visage editor with ./dev.ps1 ui");
+#endif
     AudioDevice audio(host, options.audio);
     if (options.list) {
       audio.List();
@@ -109,7 +128,11 @@ int main(int argc, char **argv) {
     MidiInputs midi(host, options.midi);
     audio.Start();
     std::cout << audio.Status() << '\n' << host.Status() << '\n';
-    if (!options.seconds)
+    if (options.gui) {
+#ifdef DRUMFOUNDRY_UI
+      RunGui(host, &audio);
+#endif
+    } else if (!options.seconds)
       Console(host, audio);
     else {
       const auto started = std::chrono::steady_clock::now();

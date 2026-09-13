@@ -29,6 +29,9 @@ Git configuration or install system tools. Configure your own Git identity.
 | `./dev.ps1 standalone` | Build the optional console audio/MIDI application |
 | `./dev.ps1 standalone-test` | Native tests plus hardware-free standalone checks |
 | `./dev.ps1 standalone-dist` | Package standalone under `dist/standalone` |
+| `./dev.ps1 ui` | Optional Visage workbench build, including standalone |
+| `./dev.ps1 ui-test` | UI control tests plus the native suites |
+| `./dev.ps1 ui-dist` | Package native UI preview under `dist/ui` |
 | `./dev.ps1 setup` | Locked Python environment and local Git hooks |
 | `./dev.ps1 python-test` | Native binding, fitting and analysis tests |
 | `./dev.ps1 test-fitting-tools` | Alias for the development tests |
