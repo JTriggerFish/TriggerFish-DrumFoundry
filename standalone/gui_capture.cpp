@@ -14,7 +14,9 @@ void GuiCapture::Tick() {
       liveCaptured_ = true;
     }
   }
-  if (!editor_.AnalysisReady()) {
+  // Only the analysis screenshot needs a completed capture. Subsequent
+  // settings/routing screenshots must not wait on new periodic smoke strikes.
+  if (stage_ == 0 && !editor_.AnalysisReady()) {
     if (++attempts_ >= 40) {
       timer_.stopTimer();
       window_.window()->close();
