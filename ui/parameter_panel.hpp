@@ -12,6 +12,7 @@ public:
   void resized() override;
   std::function<void()> committed;
   std::function<void(const std::string &)> error;
+  std::function<void(bool size)> meta;
 
 private:
   void AddParameter(editing::Document &, const editing::Parameter &);

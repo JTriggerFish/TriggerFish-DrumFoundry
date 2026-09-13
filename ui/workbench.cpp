@@ -23,6 +23,10 @@ void Workbench::SetupPanels() {
   for (auto *panel : {&excitation_, &resonance_}) {
     panel->committed = [this] { ApplyDocument(); };
     panel->error = [this](const auto &text) { Error(text); };
+    panel->meta = [this](bool size) {
+      meta_.Open(document_, size);
+      metaShade_.setVisible(true);
+    };
   }
   addChild(&right_);
   for (auto *frame : std::initializer_list<visage::Frame *>{
@@ -35,6 +39,24 @@ void Workbench::SetupPanels() {
   modelPlay_.onToggle() = [this](auto *, bool) { analysis_.Play(false); };
   modal_.committed = [this] { ApplyDocument(); };
   modal_.error = [this](const auto &text) { Error(text); };
+  addChild(&metaShade_, false);
+  metaShade_.setOnTop(true);
+  metaShade_.addChild(&meta_);
+  metaShade_.onDraw() = [this](visage::Canvas &c) {
+    c.setColor(0x4005090f);
+    c.fill(0, 0, width(), height());
+  };
+  meta_.onVisibilityChange() = [this] {
+    if (!meta_.isVisible())
+      metaShade_.setVisible(false);
+  };
+  meta_.changed = [this] {
+    excitation_.Load(document_, false);
+    resonance_.Load(document_, true);
+    modal_.Refresh();
+  };
+  meta_.committed = [this] { ApplyDocument(); };
+  meta_.error = [this](const auto &text) { Error(text); };
 }
 void Workbench::SetupFiles() {
   addChild(&history_);
@@ -162,6 +184,7 @@ void Workbench::Poll() {
   }
 }
 void Workbench::RefreshDocument() {
+  metaShade_.setVisible(false);
   document_.Load(bridge_.document());
   documentPreset_ = int(bridge_.value(100));
   documentRevision_ = bridge_.revision ? bridge_.revision() : 0;

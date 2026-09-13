@@ -30,6 +30,8 @@ void Workbench::resized() {
   history_.setBounds(16, height() - 100, width() - 32, 34);
   fileShade_.setBounds(localBounds());
   files_.setBounds((width() - 640) / 2, (height() - 300) / 2, 640, 300);
+  metaShade_.setBounds(localBounds());
+  meta_.setBounds((width() - 700) / 2, 110, 700, 280);
 }
 void Workbench::draw(visage::Canvas &c) {
   const float left = std::min(640.f, width() * .46f);

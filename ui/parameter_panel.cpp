@@ -37,6 +37,20 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     auto heading = std::make_unique<Heading>(section);
     addScrolledChild(heading.get());
     rows_.push_back({std::move(heading), 40});
+    if (meta &&
+        (section == "Bloom / energy travel" ||
+         (section == "Output" && document.Recipe() == "metal.cymbal.v1"))) {
+      const bool size = section == "Output";
+      auto tool = std::make_unique<visage::UiButton>(size ? "Size meta…"
+                                                          : "Bloom timing…");
+      tool->setFont(Font());
+      tool->onToggle() = [this, size](auto *, bool) {
+        if (meta)
+          meta(size);
+      };
+      addScrolledChild(tool.get());
+      rows_.push_back({std::move(tool), 38});
+    }
     if (section == "Modal T60") {
       auto editor = std::make_unique<DecayEditor>(document);
       editor->committed = [this] {

@@ -82,6 +82,14 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   folder picker; no shell command or browser filesystem permission is involved.
   Writes validate first and exclusively create a new file, never overwriting a
   previous fit. Native tests check round-trip persistence and overwrite rejection.
+- Bloom timing and Size meta are native in-window tools, opened from their
+  parameter sections. Sliders preview ordinary controls; release applies the
+  patch, and Cancel restores the captured baseline. Bloom timing retains the
+  web formula (rate × 2^-p, excitation tilt − 6p, centre × 2^(-p/4)). Size meta
+  retains the old explicit design endpoints, not the current calibrated fits;
+  neutral is the authoritative descriptor defaults for its affected controls.
+  Endpoints and interpolation live in `engine/editing`, with validation tests.
+  Neither tool adds voice parameters. The hold-decay optimizer remains to port.
 
 ## Native analysis preview
 

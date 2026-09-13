@@ -47,9 +47,10 @@ unlimited, and the future UI must expose bypass, latency and gain reduction.
 
 ## Remaining work before plugin/UI
 
-- Port the UI's model-editing helpers (series generation, Size meta, bloom timing
-  and hold-decay tools), with equivalence tests. Existing expanded presets do not
-  require them to render; do not reimplement them independently in Visage/Python.
+- Port the remaining hold-decay tool with equivalence tests. Series generation,
+  Size meta and bloom timing now share native helpers in `engine/editing`.
+  Existing expanded presets do not require these design-time tools to render;
+  do not reimplement them independently in Visage/Python.
 - Prepare safe audio-thread publication of structural changes, retirement of old
   state, parameter smoothing and sample-accurate host events.
 - Full CLAP parameter editing and multiple-editor lifecycle; Visage editor and

@@ -4,6 +4,7 @@
 #include "controls.hpp"
 #include "file_panel.hpp"
 #include "history_bar.hpp"
+#include "meta_panel.hpp"
 #include "modal_panel.hpp"
 #include "parameter_panel.hpp"
 
@@ -50,6 +51,8 @@ private:
   HistoryBar history_;
   visage::Frame fileShade_;
   FilePanel files_;
+  visage::Frame metaShade_;
+  MetaPanel meta_;
   int documentPreset_{-1};
   unsigned documentRevision_{};
   bool reloadDocument_{};

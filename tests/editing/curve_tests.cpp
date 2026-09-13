@@ -1,4 +1,5 @@
 #include "editing/curves.hpp"
+#include "editing/meta.hpp"
 #include "editing/modes.hpp"
 #include <cmath>
 #include <fstream>
@@ -13,6 +14,24 @@ int main(int argc, char **argv) {
   std::ifstream input(argv[1]);
   Document d;
   d.Load(Json::parse(input));
+  auto timing = BloomTiming(d, 0);
+  for (const auto &[key, value] : timing.values)
+    Require(value == d.Value(key));
+  timing = BloomTiming(d, 1);
+  Require(std::abs(timing.values[0].second - d.Value("bloom_rate") * .5) <
+          1e-12);
+  Require(std::abs(timing.values[1].second - (d.Value("body_brightness") - 6)) <
+          1e-12);
+  const auto neutral = SizeMeta(d, .5);
+  for (const auto &[key, value] : neutral.values)
+    Require(std::abs(value - d.Description(key).initial) < 1e-10);
+  for (double at : {0., .25, .75, 1.}) {
+    auto sized = d;
+    sized.SetMany(SizeMeta(d, at).values);
+    Document checked;
+    checked.Load(sized.JsonValue());
+    Require(checked.JsonValue() == sized.JsonValue());
+  }
   for (double s : {.02, .1, 1., 5., 15., 30.})
     Require(std::abs(DecaySeconds(DecayPosition(s)) - s) < 1e-10);
   for (int i = 1; i < 7; ++i)
