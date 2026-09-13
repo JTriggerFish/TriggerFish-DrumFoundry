@@ -11,4 +11,7 @@ struct Audio {
 // explicit and retained by the workbench; analysis renders at this sample rate.
 Audio ReadWave(const std::filesystem::path &, Channel = Channel::MonoAverage);
 std::string FileHash(const std::filesystem::path &);
+// Whole-clip, off-thread band-limited conversion for audition only; no
+// leveling.
+std::vector<float> Resample(const Audio &, unsigned rate);
 } // namespace drumfoundry::analysis

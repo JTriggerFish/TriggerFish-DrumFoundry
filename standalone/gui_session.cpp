@@ -30,6 +30,12 @@ ui::SettingsBridge GuiSession::Settings() {
 ui::Bridge GuiSession::Connect() {
   ui::Bridge bridge;
   auto &plugin = clap_adapter::Plugin::Get(host_.Api());
+  bridge.sampleRate = [&plugin] { return plugin.AuditionRate(); };
+  bridge.play = [&plugin](auto pcm, unsigned rate, double gain) {
+    if (!plugin.Audition(std::move(pcm), rate, gain))
+      throw std::runtime_error("Select an audio device in Settings; wait for "
+                               "the render if its rate changed");
+  };
   bridge.document = [&plugin] { return plugin.EditableDocument(); };
   bridge.revision = [&plugin] { return plugin.DocumentRevision(); };
   bridge.applyDocument = [this, &plugin](const auto &document) {

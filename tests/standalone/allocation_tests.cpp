@@ -1,4 +1,7 @@
 #include "plugin_host.hpp"
+#ifdef DRUMFOUNDRY_UI
+#include "adapters/clap/plugin.hpp"
+#endif
 #include <cstdlib>
 #include <iostream>
 #include <new>
@@ -6,6 +9,7 @@
 namespace {
 bool watching{};
 std::size_t allocations{};
+std::size_t deallocations{};
 } // namespace
 // The actual CLAP adapter is statically linked, so its ordinary heap
 // allocations (including strike/parameter handling) are observed, not just host
@@ -18,10 +22,14 @@ void *operator new(std::size_t size) {
   throw std::bad_alloc();
 }
 void *operator new[](std::size_t size) { return ::operator new(size); }
-void operator delete(void *p) noexcept { std::free(p); }
-void operator delete[](void *p) noexcept { std::free(p); }
-void operator delete(void *p, std::size_t) noexcept { std::free(p); }
-void operator delete[](void *p, std::size_t) noexcept { std::free(p); }
+void operator delete(void *p) noexcept {
+  if (watching && p)
+    ++deallocations;
+  std::free(p);
+}
+void operator delete[](void *p) noexcept { ::operator delete(p); }
+void operator delete(void *p, std::size_t) noexcept { ::operator delete(p); }
+void operator delete[](void *p, std::size_t) noexcept { ::operator delete(p); }
 
 int main() {
   drumfoundry::standalone::PluginHost host;
@@ -66,5 +74,31 @@ int main() {
   }
   if (allocations)
     std::cerr << "Audio path allocated " << allocations << " times\n";
-  return allocations || host.failures ? 1 : 0;
+#ifdef DRUMFOUNDRY_UI
+  host.SetStopped(105, 0);
+  host.SetStopped(106, 0);
+  host.Prepare(48000, 128);
+  auto &plugin = drumfoundry::clap_adapter::Plugin::Get(host.Api());
+  const auto pcm = std::make_shared<const std::vector<float>>(512, .25f);
+  if (!plugin.Audition(pcm, 48000, 2) || plugin.Audition(pcm, 44100, 1))
+    return 1;
+  std::array<float, 256> audition{};
+  watching = true;
+  host.Process(audition.data(), 128);
+  watching = false;
+  for (float sample : audition)
+    if (sample != .5f)
+      return 1;
+  host.controls.Push({true, 0, 0, {0xb0, 120, 0}});
+  watching = true;
+  host.Process(audition.data(), 128);
+  watching = false;
+  for (float sample : audition)
+    if (sample != 0)
+      return 1;
+  host.Stop();
+#endif
+  if (deallocations)
+    std::cerr << "Audio path freed memory " << deallocations << " times\n";
+  return allocations || deallocations || host.failures ? 1 : 0;
 }

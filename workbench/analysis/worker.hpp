@@ -14,6 +14,7 @@ struct Request {
   std::string expectedHash;
   Channel channel{Channel::MonoAverage};
   double duration{8};
+  unsigned auditionRate{48000};
 };
 struct Result {
   Json document;
@@ -22,6 +23,8 @@ struct Result {
   double elapsedMs{};
   std::string error;
   std::string referenceHash;
+  unsigned auditionRate{};
+  std::vector<float> modelPlayback, referencePlayback;
 };
 // Latest-request-wins worker; owns an independent Voice, never the live voice.
 // Cancellation is checked at render blocks and FFT frames. Results are

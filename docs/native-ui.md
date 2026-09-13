@@ -99,7 +99,7 @@ Both sides use the same reference floor. Wheel pans both sides reversibly;
 Ctrl-wheel zooms, Shift-drag aligns either side, and the divider is draggable.
 FFT size, window, render duration, colour range, explicit reference gain and mono/
 left/right channel selection are native controls. Saved fits retain the channel.
-Reference playback and full view-state persistence are the next integration step.
+Full view-state persistence is a remaining integration step.
 
 The optional, one-time `tools/import_workbench_references.py` helper copies the
 old workbench's curated allow-list into the user's application-data
@@ -110,6 +110,17 @@ committed. A native hierarchical menu offers the curated instrument/cell grid,
 and Other WAV opens the native picker. Selecting a reference does not secretly
 alter synthesis settings or normalize gain.
 
+Play reference and Play render audition the exact PCM represented by the plots,
+through the host master and optional 1 ms limiter. File gain is explicit; model
+gain is already in its rendered PCM. A separate off-thread libsamplerate sinc
+conversion prepares audition buffers for the active device rate without changing
+analysis samples. Live pad/MIDI strikes interrupt audition and process the actual
+Voice in real time. Stop halts both paths. Bounded immutable slots avoid audio-
+thread allocation, reference-count destruction, locks or filesystem work. Native
+host tests verify gain, stop, rate mismatch and allocation/deallocation freedom.
+Neither offline rendering nor audition preparation opens a device; standalone
+Settings still owns device selection, while CLAP uses its host's output.
+
 ## Dependency references
 
 - [Visage](https://github.com/VitalAudio/visage/tree/828037000d0893647ab29b66ae9c4a241c90f671):
@@ -118,3 +129,5 @@ alter synthesis settings or normalize gain.
   lifecycle, parent embedding, scale and resizing.
 - [dr_wav](https://github.com/mackron/dr_libs): pinned native WAV decoder.
 - [PicoSHA2](https://github.com/okdshin/PicoSHA2): pinned native file hashing.
+- [libsamplerate whole-buffer API](https://libsndfile.github.io/libsamplerate/api_simple.html):
+  pinned BSD-licensed sinc conversion, only for off-thread audition preparation.

@@ -22,6 +22,16 @@ int main(int argc, char **argv) {
   Require(analysis::Analyze(tone, {4096, 512, "hann"}, [] {
             return true;
           }).frames == 0);
+  Require(analysis::Resample(tone, 48000) == tone.samples);
+  const auto converted = analysis::Resample(tone, 44100);
+  Require(std::abs(double(converted.size()) - 44100) <= 1);
+  double squaredError = 0;
+  for (unsigned i = 1000; i < 40000; ++i) {
+    const double expected =
+        .5 * std::sin(2 * 3.14159265358979323846 * 750 * i / 44100);
+    squaredError += std::pow(converted[i] - expected, 2);
+  }
+  Require(std::sqrt(squaredError / 39000) < 1e-5);
   ui::AnalysisView view;
   view.setBounds(0, 0, 800, 300);
   visage::MouseEvent e;

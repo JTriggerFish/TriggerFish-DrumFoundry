@@ -93,6 +93,12 @@ Result Worker::Execute(const Request &request, unsigned revision) {
   progress_ = .9f;
   if (cancelled())
     return {};
+  result.auditionRate = request.auditionRate;
+  result.modelPlayback = Resample(result.model, request.auditionRate);
+  if (cancelled())
+    return {};
+  if (!result.reference.samples.empty())
+    result.referencePlayback = Resample(result.reference, request.auditionRate);
   result.elapsedMs = std::chrono::duration<double, std::milli>(
                          std::chrono::steady_clock::now() - start)
                          .count();

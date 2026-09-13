@@ -55,6 +55,10 @@ bool Plugin::Activate(double rate, uint32_t minimum, uint32_t maximum) {
   voice_ = std::move(next);
   limiter_ = std::move(protection);
   sampleRate_ = rate;
+#ifdef DRUMFOUNDRY_UI
+  audition_.Stop();
+  auditionRate_ = unsigned(std::lround(rate));
+#endif
   maximumFrames_ = maximum;
   for (std::size_t i = 0; i < controls.size(); ++i)
     values_[i].store(controls[i]);
@@ -76,6 +80,10 @@ bool Plugin::Activate(double rate, uint32_t minimum, uint32_t maximum) {
   return true;
 }
 void Plugin::Deactivate() noexcept {
+#ifdef DRUMFOUNDRY_UI
+  audition_.Stop();
+  auditionRate_ = 0;
+#endif
   processing = active = false;
   voice_.reset(); // Only after the host has stopped calling Process.
   // These are active-output readouts, not saved synthesis parameters.
@@ -84,6 +92,9 @@ void Plugin::Deactivate() noexcept {
   values_[Reduction - Preset].store(0);
 }
 void Plugin::Reset() noexcept {
+#ifdef DRUMFOUNDRY_UI
+  audition_.Stop();
+#endif
   if (voice_)
     voice_->Reset();
   limiter_.Reset();

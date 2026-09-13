@@ -32,7 +32,8 @@ private:
   Bridge bridge_;
   visage::EventTimer timer_;
   visage::UiButton preset_{"Kick"}, settings_{"Settings"}, stop_{"Stop"},
-      limiter_{"Limiter ON"};
+      limiter_{"Limiter ON"}, referencePlay_{"Play reference"},
+      modelPlay_{"Play render"};
   Slider master_{"Master", -60, 0, -12, " dB"};
   Slider hardness_{"Tip hardness", 0, 1, .5};
   std::array<visage::UiButton, 3> implements_{{visage::UiButton("Brush"),

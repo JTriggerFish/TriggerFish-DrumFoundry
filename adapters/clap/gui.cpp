@@ -7,6 +7,12 @@ namespace {
 ui::Bridge Connect(Plugin &plugin) {
   ui::Bridge bridge;
   bridge.value = [&plugin](unsigned id) { return plugin.Value(id); };
+  bridge.sampleRate = [&plugin] { return plugin.AuditionRate(); };
+  bridge.play = [&plugin](auto pcm, unsigned rate, double gain) {
+    if (!plugin.Audition(std::move(pcm), rate, gain))
+      throw std::runtime_error(
+          "Audio is stopped, still preparing, or audition queue is full");
+  };
   bridge.document = [&plugin] { return plugin.EditableDocument(); };
   bridge.service = [&plugin] { plugin.PrepareEditorPreset(); };
   bridge.applyDocument = [&plugin](const auto &document) {
@@ -34,6 +40,15 @@ ui::Bridge Connect(Plugin &plugin) {
   return bridge;
 }
 } // namespace
+bool Plugin::Audition(std::shared_ptr<const std::vector<float>> pcm,
+                      unsigned rate, double gain) {
+  if (!rate || rate != auditionRate_ ||
+      !audition_.Submit(std::move(pcm), rate, gain))
+    return false;
+  if (host_->request_process)
+    host_->request_process(host_);
+  return true;
+}
 const char *Editor::Api() {
 #if defined(_WIN32)
   return CLAP_WINDOW_API_WIN32;

@@ -10,7 +10,7 @@ constexpr const char *names[]{"Kick",  "Snare", "Hi-hat",
 Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   for (auto *frame : std::initializer_list<visage::Frame *>{
            &preset_, &settings_, &stop_, &limiter_, &master_, &location_,
-           &mute_, &excitation_, &resonance_})
+           &mute_, &excitation_, &resonance_, &referencePlay_, &modelPlay_})
     addChild(frame);
   SetupPanels();
   SetupFiles();
@@ -30,6 +30,9 @@ void Workbench::SetupPanels() {
     right_.addScrolledChild(frame);
   analysis_.chooseReference = [this] { OpenReferenceFile(); };
   analysis_.error = [this](const auto &message) { Error(message); };
+  analysis_.play = bridge_.play;
+  referencePlay_.onToggle() = [this](auto *, bool) { analysis_.Play(true); };
+  modelPlay_.onToggle() = [this](auto *, bool) { analysis_.Play(false); };
   modal_.committed = [this] { ApplyDocument(); };
   modal_.error = [this](const auto &text) { Error(text); };
 }
@@ -115,6 +118,8 @@ void Workbench::Poll() {
     if (bridge_.service)
       bridge_.service();
     analysis_.Poll();
+    if (bridge_.sampleRate)
+      analysis_.SetAuditionRate(bridge_.sampleRate());
     if (bridge_.document &&
         (reloadDocument_ || documentPreset_ != int(bridge_.value(100)) ||
          (bridge_.revision && documentRevision_ != bridge_.revision())))

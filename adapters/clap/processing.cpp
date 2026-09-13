@@ -40,6 +40,10 @@ void Plugin::Event(const clap_event_header_t *header) noexcept {
       return;
     const auto kind = e.data[0] & 0xf0;
     if (kind == 0x90 && e.data[2]) {
+#ifdef DRUMFOUNDRY_UI
+      audition_
+          .Stop(); // Live strikes interrupt one-shot reference/render audition.
+#endif
       auto strike = voice_->Event();
       strike.strength = e.data[2] / 127.f;
       strike.hardness = static_cast<float>(audioValues_[Hardness - Preset]);
@@ -55,7 +59,12 @@ void Plugin::Render(float *left, float *right, uint32_t frames) noexcept {
   voice_->Process(left, frames);
   for (uint32_t i = 0; i < frames; ++i) {
     masterGain_ += masterStep_ * (masterTarget_ - masterGain_);
-    const float source = static_cast<float>(left[i] * masterGain_);
+    float sample = left[i];
+#ifdef DRUMFOUNDRY_UI
+    if (audition_.Active())
+      sample = audition_.Next();
+#endif
+    const float source = static_cast<float>(sample * masterGain_);
     const auto output = limiter_.ProcessFrame({source, source});
     left[i] = output[0];
     right[i] = output[1];
@@ -75,6 +84,10 @@ clap_process_status Plugin::Process(const clap_process_t *p) noexcept {
     return CLAP_PROCESS_ERROR;
   }
   limiter_.ClearMeters();
+#ifdef DRUMFOUNDRY_UI
+  if (audition_.Begin(unsigned(std::lround(sampleRate_))))
+    voice_->Reset();
+#endif
   DrainEditor(p->out_events, true);
   uint32_t cursor = 0;
   const auto count = p->in_events ? p->in_events->size(p->in_events) : 0;

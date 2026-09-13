@@ -1,7 +1,9 @@
 #pragma once
 #include <functional>
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
+#include <vector>
 
 namespace drumfoundry::ui {
 // Main-thread UI boundary. Hosts enqueue performance edits; structural edits
@@ -17,5 +19,9 @@ struct Bridge {
   std::function<nlohmann::json()> document;
   std::function<void(const nlohmann::json &)> applyDocument;
   std::function<unsigned()> revision;
+  std::function<unsigned()> sampleRate;
+  std::function<void(std::shared_ptr<const std::vector<float>>, unsigned,
+                     double)>
+      play;
 };
 } // namespace drumfoundry::ui

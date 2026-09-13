@@ -7,6 +7,8 @@ void Workbench::resized() {
   const float left = std::min(640.f, width() * .46f);
   preset_.setBounds(16, 48, 150, 30);
   stop_.setBounds(174, 48, 80, 30);
+  referencePlay_.setBounds(270, 48, 112, 30);
+  modelPlay_.setBounds(390, 48, 100, 30);
   limiter_.setBounds(width() - 270, 48, 125, 30);
   settings_.setBounds(width() - 130, 10, 114, 28);
   master_.setBounds(width() - 510, 42, 220, 44);

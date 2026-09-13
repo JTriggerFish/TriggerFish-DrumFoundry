@@ -17,7 +17,7 @@ target_sources(drumfoundry_ui PRIVATE ui/modal_plot.cpp ui/modal_gestures.cpp ui
   ui/modal_panel.cpp ui/modal_layout.cpp ui/series_panel.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/file_panel.cpp ui/history_bar.cpp ui/workbench_files.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/analysis_view.cpp ui/analysis_axes.cpp ui/analysis_gestures.cpp ui/analysis_panel.cpp ui/analysis_menus.cpp)
-target_sources(drumfoundry_ui PRIVATE ui/reference_menu.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/reference_menu.cpp ui/analysis_playback.cpp)
 target_include_directories(drumfoundry_ui PUBLIC ${PROJECT_SOURCE_DIR})
 target_link_libraries(drumfoundry_ui PUBLIC visage drumfoundry_editing drumfoundry_analysis PRIVATE VisageEmbeddedFonts)
 install(FILES ${visage_SOURCE_DIR}/LICENSE DESTINATION licenses/visage)

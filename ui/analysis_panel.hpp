@@ -15,10 +15,15 @@ public:
   editing::Json Reference() const;
   editing::Json Settings() const;
   void Poll();
+  void SetAuditionRate(unsigned);
+  void Play(bool reference);
   void resized() override;
   void draw(visage::Canvas &) override;
   std::function<void()> chooseReference;
   std::function<void(const std::string &)> error;
+  std::function<void(std::shared_ptr<const std::vector<float>>, unsigned,
+                     double)>
+      play;
 
 private:
   void Queue();
