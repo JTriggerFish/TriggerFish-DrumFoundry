@@ -18,6 +18,7 @@ set(DRUMFOUNDRY_ENGINE_SOURCES
   engine/runtime/session.cpp
   engine/runtime/voice.cpp
   engine/patch/document.cpp
+  engine/patch/fit_envelope.cpp
   engine/patch/topology.cpp
   engine/patch/ownership.cpp
   engine/patch/validation.cpp

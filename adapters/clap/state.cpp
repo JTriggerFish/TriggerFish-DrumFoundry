@@ -7,13 +7,14 @@ bool Plugin::Save(const clap_ostream_t *stream) {
   if (!stream || !stream->write)
     return false;
   Json parameters = Json::object();
-  const auto controls = DesiredControls();
+  const auto desired = CaptureDesired();
+  const auto &controls = desired.controls;
   for (clap_id id = Preset; id < ParameterEnd; ++id)
     if (!Controls[id - Preset].readonly)
       parameters[std::to_string(id)] = controls[id - Preset];
   const auto data = Json{
       {"schema", "triggerfish.drumfoundry.clap-state/v1"},
-      {"document", EditableDocument()},
+      {"document", desired.document},
       {"parameters",
        parameters}}.dump();
   std::size_t offset = 0;
@@ -61,7 +62,8 @@ bool Plugin::Load(const clap_istream_t *stream) {
   // Validate and expand off the audio thread. The active voice stays untouched
   // until the host stops processing and activates the replacement
   // configuration.
-  Voice validated(static_cast<float>(sampleRate_), state.at("document"));
+  Voice validated(static_cast<float>(sampleRate_),
+                  WithFitEnvelope(state.at("document")));
   auto document = validated.Document();
   if (!hasSpread)
     next[ContactSpread - Preset] = validated.Event().contactSpread;

@@ -179,6 +179,13 @@ preview-render rate). Tests compare it with the actual filter's impulse response
 at four sample rates and exercise graph-to-JSON editing. The curve axis is EQ dB;
 the background retains its separate fixed 0 to -96 dBFS/bin scale.
 
+Factory presets are explicit load actions, including reselecting the currently
+edited preset. The title shows the actual loaded fit name; recipe-specific
+strike/mute behavior follows the document, not the factory slot it originated
+from. Raw patches gain explicit default strike and analysis metadata on import;
+their parameters and rendered sound are preserved. State saves capture the
+selected document and host controls together, including during rapid selection.
+
 ## Hold decay
 
 The bloom section retains the optional **Hold decay** switch (on initially),

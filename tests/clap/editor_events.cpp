@@ -10,6 +10,8 @@ void Require(bool result) {
     throw std::runtime_error("CLAP editor event regression");
 }
 int main(int argc, char **argv) {
+  extern void DocumentHostTests();
+  DocumentHostTests();
   Require(argc == 2);
   std::ifstream source(argv[1]);
   NativeStrikeParity(drumfoundry::Json::parse(source));

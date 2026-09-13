@@ -75,6 +75,7 @@ public:
   Json EditableDocument() const;
   void PrepareEditorPreset();
   void EditDocument(Json);
+  void SelectFactory(unsigned index);
   void EditPresentation(const Json &reference, const Json &analysis);
   double PreviewStrength() const { return previewStrength_.load(); }
   void SetPreviewStrength(double);
@@ -106,8 +107,12 @@ private:
   void Render(float *left, float *right, uint32_t frames) noexcept;
   void StrikeVoice(float velocity) noexcept;
   void RequestRestart() noexcept;
-  Json DesiredDocument() const;
-  std::array<double, ParameterCount> DesiredControls() const;
+  struct DesiredState {
+    Json document;
+    std::array<double, ParameterCount> controls;
+  };
+  DesiredState CaptureDesired() const;
+  void PublishDocument(const Voice &validated, int preset);
   const clap_host_t *host_{};
   const clap_host_params_t *hostParams_{};
   const clap_host_latency_t *hostLatency_{};
@@ -120,6 +125,8 @@ private:
       document_; // Main-thread-only saved/desired patch, never read in Process.
   int documentPreset_{};
   unsigned documentRevision_{};
+  bool fixedBeater_{}; // Active recipe property, never inferred from a preset
+                       // slot.
   uint32_t latency_{}, maximumFrames_{};
   double sampleRate_{48000}, masterGain_{}, masterTarget_{}, masterStep_{};
   double reductionHold_{};

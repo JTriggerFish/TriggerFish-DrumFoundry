@@ -156,7 +156,8 @@ void Workbench::SetupPerformance() {
     const float velocity = bridge_.velocity ? float(bridge_.velocity()) : .8f;
     if (velocity > 0)
       strike_.strike(velocity,
-                     float(bridge_.value(bridge_.value(100) == 0 ? 101 : 103)));
+                     float(bridge_.value(
+                         document_.Recipe() == "drum.kick.v1" ? 101 : 103)));
   };
 }
 Workbench::~Workbench() { timer_.stopTimer(); }
@@ -175,7 +176,16 @@ void Workbench::SelectPreset() {
   visage::PopupMenu menu;
   for (int i = 0; i < 6; ++i)
     menu.addOption(i, names[i]).select(bridge_.value(100) == i);
-  menu.onSelection() = [this](int index) { Change(100, index); };
+  menu.onSelection() = [this](int index) {
+    try {
+      if (bridge_.selectFactory)
+        bridge_.selectFactory(unsigned(index));
+      else
+        Change(100, index);
+    } catch (const std::exception &e) {
+      Error(e.what());
+    }
+  };
   menu.show(&preset_);
 }
 void Workbench::Poll() {
@@ -192,14 +202,17 @@ void Workbench::Poll() {
     if (bridge_.sampleRate)
       analysis_.SetAuditionRate(bridge_.sampleRate());
     analysis_.Poll();
-    if (holdDecay_.NeedsPoll() && bridge_.document &&
-        !document_.JsonValue().is_null())
-      holdDecay_.Poll(CaptureDocument());
     // Host automation and UI performance changes use the same analysis path.
     // Briefly debounce drags; don't cancel a render on every timer tick.
     if (bridge_.document) {
       auto latest = bridge_.document();
       const auto &event = latest.at("controls").at("event");
+      if (holdDecay_.NeedsPoll()) {
+        auto sound = document_.JsonValue();
+        sound["controls"]["event"] = event;
+        holdDecay_.Poll(
+            sound); // Reference hashing must not block/cancel this tool.
+      }
       if (event != renderedEvent_) {
         renderedEvent_ = event;
         eventDebounce_ = 4;
@@ -207,7 +220,7 @@ void Workbench::Poll() {
         analysis_.UpdateModel(latest);
       }
     }
-    preset_.setText(names[std::clamp(int(bridge_.value(100)), 0, 5)]);
+    preset_.setText("Factory presets…");
     master_.Set(bridge_.value(105));
     hardness_.Set(bridge_.value(101));
     spread_.Set(bridge_.value(109));
@@ -219,11 +232,11 @@ void Workbench::Poll() {
     hardness_.SetLabel(implement < .25   ? "Bristle stiffness"
                        : implement < .75 ? "Mallet firmness"
                                          : "Tip hardness");
-    const bool kick = bridge_.value(100) == 0;
+    const bool kick = document_.Recipe() == "drum.kick.v1";
     strike_.SetKick(kick);
-    strike_.SetMembrane(bridge_.value(100) == 1);
+    strike_.SetMembrane(document_.Recipe().find("drum.") == 0 && !kick);
     location_.setVisible(!kick);
-    mute_.setVisible(bridge_.value(100) >= 2);
+    mute_.setVisible(document_.Recipe() == "metal.cymbal.v1");
     location_.Set(bridge_.value(103));
     mute_.Set(bridge_.value(104));
     limiter_.setText(bridge_.value(106) >= .5 ? "Limiter ON" : "UNPROTECTED");

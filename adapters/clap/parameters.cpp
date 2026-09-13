@@ -13,7 +13,7 @@ bool InRange(clap_id id, double value) noexcept {
 }
 } // namespace
 const std::array<Control, ParameterCount> Controls{{
-    {"Instrument", "Preset", 0, 5, 0, true, false},
+    {"Factory preset", "Preset", 0, 5, 0, true, false},
     {"Hardness", "Strike", 0, 1, .5, false, false},
     {"Implement (brush–mallet–stick)", "Strike", 0, 1, .5, false, false},
     {"Location (fixed for kick)", "Strike", 0, 1, 0, false, false},

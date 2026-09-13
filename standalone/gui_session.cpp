@@ -43,6 +43,13 @@ ui::Bridge GuiSession::Connect() {
                                "the render if its rate changed");
   };
   bridge.document = [&plugin] { return plugin.EditableDocument(); };
+  bridge.selectFactory = [this, &plugin](unsigned index) {
+    plugin.SelectFactory(index);
+    if (audio_) {
+      audio_->Stop();
+      audio_->Start();
+    }
+  };
   bridge.presentation = [&plugin](const auto &ref, const auto &analysis) {
     plugin.EditPresentation(ref, analysis);
   };

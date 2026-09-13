@@ -20,6 +20,9 @@ ui::Bridge Connect(Plugin &plugin) {
           "Audio is stopped, still preparing, or audition queue is full");
   };
   bridge.document = [&plugin] { return plugin.EditableDocument(); };
+  bridge.selectFactory = [&plugin](unsigned index) {
+    plugin.SelectFactory(index);
+  };
   bridge.presentation = [&plugin](const auto &ref, const auto &analysis) {
     plugin.EditPresentation(ref, analysis);
   };

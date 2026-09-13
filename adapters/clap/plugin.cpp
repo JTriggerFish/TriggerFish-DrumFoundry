@@ -28,42 +28,51 @@ bool Plugin::Init() {
   }
   return true;
 }
-Json Plugin::DesiredDocument() const {
-  const int index = static_cast<int>(Value(Preset));
-  return index == documentPreset_ ? document_ : ParseJson(PresetJson.at(index));
-}
-std::array<double, ParameterCount> Plugin::DesiredControls() const {
-  std::array<double, ParameterCount> result{};
+Plugin::DesiredState Plugin::CaptureDesired() const {
+  DesiredState state;
+  auto &result = state.controls;
   for (clap_id id = Preset; id < ParameterEnd; ++id)
     result[id - Preset] = Value(id);
-  if (static_cast<int>(result[0]) != documentPreset_) {
+  const int index = static_cast<int>(result[0]);
+  state.document =
+      index == documentPreset_ ? document_ : ParseJson(PresetJson.at(index));
+  auto &event = state.document["controls"]["event"];
+  const bool kick =
+      state.document.at("instrument").at("recipe") == "drum.kick.v1";
+  if (index != documentPreset_) {
     // Selecting an instrument restores its saved gesture, not a generic stick
     // that would silently turn the mallet gong into a different sound.
-    const auto document = DesiredDocument();
-    const auto strike =
-        ReadStrike(document.at("controls").at("event"), result[0] == 0);
+    const auto strike = ReadStrike(event, kick);
     result[Hardness - Preset] = strike.hardness;
     result[Implement - Preset] = strike.implement;
     result[Location - Preset] = strike.location;
     result[Mute - Preset] = strike.constraint;
     result[ContactSpread - Preset] = strike.contactSpread;
-  }
-  return result;
+  } else
+    event["strength"] = previewStrength_.load();
+  event["hardness"] = result[Hardness - Preset];
+  event["implement"] = result[Implement - Preset];
+  event["location"] = kick ? 0 : result[Location - Preset];
+  event["constraint"] = result[Mute - Preset];
+  event["contactSpread"] = result[ContactSpread - Preset];
+  return state;
 }
 bool Plugin::Activate(double rate, uint32_t minimum, uint32_t maximum) {
   if (active || minimum < 1 || maximum < minimum || maximum > 1048576)
     return false;
+  const auto desired = CaptureDesired();
+  const auto &controls = desired.controls;
   auto next =
-      std::make_unique<Voice>(static_cast<float>(rate), DesiredDocument());
-  const auto controls = DesiredControls();
+      std::make_unique<Voice>(static_cast<float>(rate), desired.document);
   output::Limiter protection;
-  protection.Prepare(rate, 2, Value(Protection) >= .5);
+  protection.Prepare(rate, 2, controls[Protection - Preset] >= .5);
   auto stored = next->Document();
-  if (int(Value(Preset)) != documentPreset_)
+  if (int(controls[0]) != documentPreset_)
     previewStrength_ =
         stored.at("controls").at("event").at("strength").get<double>();
   document_ = std::move(stored);
-  documentPreset_ = static_cast<int>(Value(Preset));
+  fixedBeater_ = document_.at("instrument").at("recipe") == "drum.kick.v1";
+  documentPreset_ = static_cast<int>(controls[0]);
   voice_ = std::move(next);
   limiter_ = std::move(protection);
   sampleRate_ = rate;

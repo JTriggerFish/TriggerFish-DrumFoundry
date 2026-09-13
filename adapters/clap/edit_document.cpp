@@ -1,3 +1,4 @@
+#include "builtin_presets.hpp"
 #include "plugin.hpp"
 #ifdef DRUMFOUNDRY_UI
 #include "editing/routes.hpp"
@@ -26,7 +27,10 @@ void Plugin::SetPreviewStrength(double velocity) {
 #ifdef DRUMFOUNDRY_UI
 void Plugin::EditLayout(const Json &positions) {
   PrepareEditorPreset();
-  auto next = DesiredDocument();
+  if (int(Value(Preset)) != documentPreset_)
+    throw std::runtime_error(
+        "Instrument changed while editing layout; please retry");
+  auto next = document_;
   editing::ApplyNodePositions(next, positions);
   if (next == document_)
     return;
@@ -36,7 +40,10 @@ void Plugin::EditLayout(const Json &positions) {
 #endif
 void Plugin::EditPresentation(const Json &reference, const Json &analysis) {
   PrepareEditorPreset();
-  auto next = DesiredDocument();
+  if (int(Value(Preset)) != documentPreset_)
+    throw std::runtime_error(
+        "Instrument changed while editing presentation; please retry");
+  auto next = document_;
   next["reference"] = reference;
   next["controls"]["analysis"] = analysis;
   ValidateEnvelope(next);
@@ -45,14 +52,16 @@ void Plugin::EditPresentation(const Json &reference, const Json &analysis) {
   if (next == document_)
     return;
   document_ = std::move(next);
-  documentPreset_ = int(Value(Preset));
   Dirty(host_);
 }
 void Plugin::PrepareEditorPreset() {
   if (static_cast<int>(Value(Preset)) == documentPreset_)
     return;
-  const auto controls = DesiredControls();
-  Voice validated(static_cast<float>(sampleRate_), DesiredDocument());
+  const auto desired = CaptureDesired();
+  const auto &controls = desired.controls;
+  Voice validated(static_cast<float>(sampleRate_), desired.document);
+  if (Value(Preset) != controls[0])
+    return; // A newer selection is pending.
   document_ = validated.Document();
   documentPreset_ = static_cast<int>(controls[0]);
   for (clap_id id = Hardness; id <= Mute; ++id)
@@ -62,29 +71,28 @@ void Plugin::PrepareEditorPreset() {
       document_.at("controls").at("event").at("strength").get<double>();
   ++documentRevision_;
 }
-Json Plugin::EditableDocument() const {
-  auto document = DesiredDocument();
-  const auto controls = DesiredControls();
-  auto &event = document["controls"]["event"];
-  event["hardness"] = controls[Hardness - Preset];
-  event["implement"] = controls[Implement - Preset];
-  event["constraint"] = controls[Mute - Preset];
-  event["contactSpread"] = controls[ContactSpread - Preset];
-  if (int(controls[0]) == documentPreset_)
-    event["strength"] = previewStrength_.load();
-  if (controls[0] != 0)
-    event["location"] = controls[Location - Preset];
-  return document;
-}
+Json Plugin::EditableDocument() const { return CaptureDesired().document; }
 void Plugin::EditDocument(Json document) {
-  Voice validated(static_cast<float>(sampleRate_), std::move(document));
+  Voice validated(static_cast<float>(sampleRate_),
+                  WithFitEnvelope(std::move(document)));
   auto next = validated.Document();
   const auto recipe = Instrument(next).at("recipe").get<std::string>();
+  const int selected = static_cast<int>(Value(Preset));
   const int preset = recipe == "drum.kick.v1"    ? 0
                      : recipe == "drum.snare.v1" ? 1
-                     : Value(Preset) >= 2 ? static_cast<int>(Value(Preset))
-                                          : 3;
+                     : selected >= 2             ? selected
+                                                 : 3;
+  PublishDocument(validated, preset);
+}
+void Plugin::SelectFactory(unsigned index) {
+  Voice validated(static_cast<float>(sampleRate_),
+                  ParseJson(PresetJson.at(index)));
+  PublishDocument(validated, int(index));
+}
+void Plugin::PublishDocument(const Voice &validated, int preset) {
   const auto strike = validated.Event();
+  auto next = validated.Document();
+  const double strength = next.at("controls").at("event").at("strength");
   document_ = std::move(next);
   documentPreset_ = preset;
   values_[Preset - Preset].store(preset);
@@ -93,8 +101,7 @@ void Plugin::EditDocument(Json document) {
   values_[Location - Preset].store(strike.location);
   values_[Mute - Preset].store(strike.constraint);
   values_[ContactSpread - Preset].store(strike.contactSpread);
-  previewStrength_ =
-      document_.at("controls").at("event").at("strength").get<double>();
+  previewStrength_ = strength;
   ++documentRevision_;
   if (active)
     RequestRestart();

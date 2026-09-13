@@ -23,4 +23,8 @@ Strike ReadStrike(const Json &event, bool fixedBeater = false);
 void ValidateStrike(const Strike &);
 Json DescribeParameters(const detail::Session &);
 Json DefaultPatch(const std::string &recipe);
+// Add explicit strike/presentation defaults when opening a raw patch in a host.
+// Existing fits pass through unchanged; the core Voice still accepts raw
+// patches.
+Json WithFitEnvelope(Json);
 } // namespace drumfoundry

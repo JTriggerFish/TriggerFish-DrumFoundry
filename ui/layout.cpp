@@ -67,6 +67,9 @@ void Workbench::draw(visage::Canvas &c) {
   c.setColor(0xff10151c);
   c.fill(0, 0, width(), height());
   Label(c, "TRIGGERFISH  /  DrumFoundry", 16, 6, 520, 30, 0xffe8b755);
+  if (!document_.JsonValue().is_null())
+    Label(c, document_.JsonValue().value("name", "Imported patch"), 290, 6,
+          width() - 450, 30);
   c.setColor(0xff293440);
   c.fill(0, 98, width(), 1);
   c.fill(left, 98, 1, height() - 140);

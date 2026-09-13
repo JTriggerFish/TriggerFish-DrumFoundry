@@ -57,8 +57,7 @@ void Plugin::DrainEditor(const clap_output_events_t *out, bool notes) noexcept {
     return; // Flush must not swallow manual strikes before activation.
   for (unsigned n = 0; n < 255 && editorNotes_.Pop(event); ++n) {
     if ((event.bytes[0] & 0xf0) == 0x90)
-      SetParameter(audioValues_[Preset - Preset] == 0 ? Hardness : Location,
-                   event.value);
+      SetParameter(fixedBeater_ ? Hardness : Location, event.value);
     if (event.strikeVelocity > 0) {
       StrikeVoice(event.strikeVelocity);
       continue;
