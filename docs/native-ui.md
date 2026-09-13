@@ -63,6 +63,10 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   menus, explicit Apply/start and release. UI builds open this workbench on
   double-click; they do not open an audio device until selected. ASIO discovery
   reads driver registration names, never probes unrelated vendor DLLs.
+  Apply remembers API/device/MIDI/rate/buffer between sessions, without opening
+  devices on next launch. MIDI failures leave audio available and display the
+  named port plus backend error in a wrapped, scrollable message. Details and
+  the preference-file location are in [standalone.md](standalone.md).
   Hardware-free smoke captures include the settings overlay; validation uses
   fake device callbacks in native tests. Real device handling is the tested
   RtAudio/RtMidi host, not a second implementation.

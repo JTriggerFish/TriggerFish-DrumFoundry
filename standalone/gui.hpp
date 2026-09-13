@@ -4,6 +4,7 @@
 namespace drumfoundry::standalone {
 // Empty device starts silently; settings explicitly open/release audio and
 // MIDI.
-void RunGui(PluginHost &, const ui::DeviceConfiguration &, bool smoke = false);
+void RunGui(PluginHost &, const ui::DeviceConfiguration &, bool smoke = false,
+            unsigned overrides = 0);
 void PluginGuiSmoke(PluginHost &);
 } // namespace drumfoundry::standalone

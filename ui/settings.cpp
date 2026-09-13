@@ -2,17 +2,18 @@
 #include <stdexcept>
 
 namespace drumfoundry::ui {
-void ValidateDeviceConfiguration(const DeviceConfiguration &config) {
-  if (config.api.empty() || config.device.empty())
-    throw std::invalid_argument("Choose an audio API and output device first");
-  if (config.rate < 8000 || config.rate > 384000 || config.buffer < 16 ||
-      config.buffer > 16384)
-    throw std::invalid_argument("Unsupported sample rate or buffer size");
-  if (config.midi.empty())
-    throw std::invalid_argument("Choose a MIDI input, all or none");
-}
 SettingsPanel::SettingsPanel(SettingsBridge bridge, DeviceConfiguration config)
     : bridge_(std::move(bridge)), config_(std::move(config)) {
+  addChild(&messageView_);
+  messageView_.onScroll() = [this](auto *) { messageView_.redraw(); };
+  messageText_.setFont(Font());
+  messageText_.setMultiLine(true);
+  messageText_.setJustification(visage::Font::kTopLeft);
+  messageView_.onDraw() = [this](visage::Canvas &c) {
+    c.setColor(0xffefb178);
+    c.text(&messageText_, 0, -messageView_.yPosition(),
+           messageView_.width() - 12, messageHeight_);
+  };
   for (auto *button :
        {&api_, &device_, &midi_, &rate_, &buffer_, &apply_, &stop_, &close_}) {
     addChild(button);
@@ -70,9 +71,11 @@ SettingsPanel::SettingsPanel(SettingsBridge bridge, DeviceConfiguration config)
 void SettingsPanel::Apply() {
   Guard([&] {
     ValidateDeviceConfiguration(config_);
-    bridge_.apply(config_);
-    message_ =
-        "Audio started. Actual buffer and latency appear in the status bar.";
+    message_ = bridge_.apply(config_);
+    if (message_.empty())
+      message_ = "Audio started. Selections remembered for next session.";
+    else if (error)
+      error(message_);
   });
 }
 void SettingsPanel::Guard(const std::function<void()> &action) {
@@ -83,13 +86,25 @@ void SettingsPanel::Guard(const std::function<void()> &action) {
     if (error)
       error(message_);
   }
+  UpdateMessage();
+  messageView_.setYPosition(0);
   redraw();
+}
+void SettingsPanel::UpdateMessage() {
+  messageText_.setText(message_);
+  const auto text = visage::String(message_).toUtf32();
+  const auto lines = Font().lineBreaks(
+      text.c_str(), int(text.size()), std::max(1.f, messageView_.width() - 12));
+  messageHeight_ = float(lines.size() + 1) * 20;
+  messageView_.setScrollableHeight(messageHeight_);
+  messageView_.redraw();
 }
 void SettingsPanel::Choose(visage::UiButton &button,
                            std::vector<std::string> names,
                            std::function<void(std::string)> select) {
   if (names.empty()) {
     message_ = "No matching devices found.";
+    UpdateMessage();
     redraw();
     return;
   }
@@ -117,6 +132,8 @@ void SettingsPanel::resized() {
   close_.setBounds(width() - 100, 14, 76, 28);
   apply_.setBounds(24, 308, 180, 32);
   stop_.setBounds(220, 308, 170, 32);
+  messageView_.setBounds(24, 382, width() - 48, height() - 396);
+  UpdateMessage();
 }
 void SettingsPanel::draw(visage::Canvas &c) {
   c.setColor(0xff1b2430);
@@ -126,9 +143,7 @@ void SettingsPanel::draw(visage::Canvas &c) {
   for (const auto *label : {"Audio API", "Output device", "MIDI input",
                             "Sample rate", "Buffer size"})
     Label(c, label, 24, 62 + 46 * row++, 118, 32);
-  Label(c,
-        "ASIO devices open only on Apply. Close other exclusive users first.",
+  Label(c, "Selections are saved on Apply. Devices stay closed on next launch.",
         24, 354, width() - 48, 24);
-  Label(c, message_, 24, 382, width() - 48, 44, 0xffefb178);
 }
 } // namespace drumfoundry::ui

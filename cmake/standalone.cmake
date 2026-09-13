@@ -10,7 +10,8 @@ FetchContent_Declare(rtmidi
   SOURCE_SUBDIR unused)
 FetchContent_MakeAvailable(rtaudio rtmidi)
 include(cmake/rtaudio-probe.cmake)
-add_library(drumfoundry_devices STATIC ${PROJECT_BINARY_DIR}/generated/RtAudio.cpp ${rtmidi_SOURCE_DIR}/RtMidi.cpp)
+include(cmake/rtmidi-errors.cmake)
+add_library(drumfoundry_devices STATIC ${PROJECT_BINARY_DIR}/generated/RtAudio.cpp ${PROJECT_BINARY_DIR}/generated/RtMidi.cpp)
 target_include_directories(drumfoundry_devices SYSTEM PUBLIC ${rtaudio_SOURCE_DIR} ${rtmidi_SOURCE_DIR})
 find_package(Threads REQUIRED)
 target_link_libraries(drumfoundry_devices PUBLIC Threads::Threads)
@@ -46,7 +47,7 @@ target_link_libraries(drumfoundry_standalone_host PUBLIC drumfoundry_devices dru
 add_executable(drumfoundry_standalone standalone/main.cpp standalone/console.cpp)
 if(DRUMFOUNDRY_BUILD_UI)
   target_sources(drumfoundry_standalone PRIVATE standalone/gui.cpp standalone/gui_smoke.cpp standalone/gui_capture.cpp
-    standalone/gui_session.cpp standalone/device_catalog.cpp)
+    standalone/gui_session.cpp standalone/device_catalog.cpp standalone/settings_store.cpp)
   target_compile_definitions(drumfoundry_standalone PRIVATE DRUMFOUNDRY_UI=1)
   target_link_libraries(drumfoundry_standalone PRIVATE drumfoundry_ui)
 endif()

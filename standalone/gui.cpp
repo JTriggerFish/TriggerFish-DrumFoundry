@@ -1,16 +1,37 @@
 #include "gui.hpp"
 #include "gui_capture.hpp"
 #include "gui_session.hpp"
+#include "settings_store.hpp"
 #include "ui/workbench.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <visage/app.h>
 
 namespace drumfoundry::standalone {
-void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
-            bool smoke) {
+void RunGui(PluginHost &host, const ui::DeviceConfiguration &cli, bool smoke,
+            unsigned overrides) {
+  auto config = cli;
+  std::string settingsError;
+  if (!smoke) {
+    try {
+      if (const auto saved = ReadSettings(SettingsPath()))
+        config = MergeSettings(*saved, cli, overrides);
+    } catch (const std::exception &e) {
+      settingsError =
+          std::string("Could not restore audio/MIDI settings: ") + e.what();
+    }
+  }
   GuiSession session(host);
-  ui::SettingsPanel settings(session.Settings(), config);
+  auto settingsBridge = session.Settings();
+  if (smoke) {
+    // Manual clicks during a screenshot test must remain hardware/file-free.
+    settingsBridge.apply = [](const auto &) {
+      return std::string("Device-free UI test: opening devices and saving "
+                         "settings are disabled.");
+    };
+    settingsBridge.stop = [] {};
+  }
+  ui::SettingsPanel settings(std::move(settingsBridge), config);
   ui::NativeFonts(settings);
   visage::Frame shade;
   shade.onDraw() = [&](visage::Canvas &c) {
@@ -43,6 +64,8 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
   window.setTitle("TriggerFish DrumFoundry");
   window.setMinimumDimensions(1000, 640);
   ui::Workbench editor(std::move(bridge));
+  if (!settingsError.empty())
+    editor.Error(settingsError);
   settings.error = [&](const std::string &error) { editor.Error(error); };
   window.addChild(&editor);
   window.addChild(&shade, false);
@@ -55,12 +78,15 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
   window.onResize() = [&] {
     editor.setBounds(window.localBounds());
     shade.setBounds(window.localBounds());
-    settings.setBounds((window.width() - 640) / 2, (window.height() - 440) / 2,
-                       640, 440);
+    settings.setBounds((window.width() - 640) / 2, (window.height() - 520) / 2,
+                       640, 520);
   };
-  if (!smoke && !config.device.empty()) {
+  // Restored choices do not implicitly acquire an exclusive device.
+  if (!smoke && (overrides & Device) && !config.device.empty()) {
     try {
-      session.Apply(config);
+      const auto warning = session.Apply(config);
+      if (!warning.empty())
+        editor.Error(warning);
     } catch (const std::exception &e) {
       editor.Error(e.what());
     }

@@ -1,31 +1,53 @@
 #include "gui_session.hpp"
 #include "adapters/clap/plugin.hpp"
 #include "device_catalog.hpp"
+#include "settings_store.hpp"
 #include <algorithm>
 #include <stdexcept>
 namespace drumfoundry::standalone {
 void GuiSession::Stop() {
   midi_.reset();
   audio_.reset();
+  midiStatus_.clear();
 }
-void GuiSession::Apply(const ui::DeviceConfiguration &config) {
+std::string GuiSession::Apply(const ui::DeviceConfiguration &config) {
   ui::ValidateDeviceConfiguration(config);
-  Stop(); // Never compete with the old device for an exclusive ASIO driver.
+  // Remember the requested input even if disconnected, so retry needs no setup.
+  std::string warning;
   try {
-    auto audio = std::make_unique<AudioDevice>(
-        host_,
-        AudioSettings{config.api, config.device, config.rate, config.buffer});
-    auto midi = std::make_unique<MidiInputs>(host_, config.midi);
-    audio->Start();
-    audio_ = std::move(audio);
-    midi_ = std::move(midi);
-  } catch (const RtMidiError &e) {
-    throw std::runtime_error(e.getMessage());
+    WriteSettings(SettingsPath(), config);
+  } catch (const std::exception &e) {
+    warning = std::string("Settings not saved: ") + e.what();
   }
+  Stop(); // Never compete with the old device for an exclusive ASIO driver.
+  auto audio = std::make_unique<AudioDevice>(
+      host_,
+      AudioSettings{config.api, config.device, config.rate, config.buffer});
+  audio->Start();
+  audio_ = std::move(audio); // MIDI errors must not destroy working audio.
+  std::string midiWarning;
+  try {
+    midi_ = std::make_unique<MidiInputs>(host_, config.midi, true);
+    midiWarning = midi_->Warning();
+  } catch (const RtMidiError &e) {
+    midiWarning = e.getMessage();
+  } catch (const std::exception &e) {
+    midiWarning = e.what();
+  }
+  midiStatus_ =
+      " | MIDI: " + std::to_string(midi_ ? midi_->Count() : 0) + " inputs";
+  if (!midiWarning.empty()) {
+    midiStatus_ += " (open failed; see Settings)";
+    if (!warning.empty())
+      warning += "\n";
+    warning += "Audio running. " + midiWarning;
+  }
+  return warning;
 }
 ui::SettingsBridge GuiSession::Settings() {
   return {AudioApis, MidiDevices, AudioDevices,
-          [this](const auto &config) { Apply(config); }, [this] { Stop(); }};
+          [this](const auto &config) { return Apply(config); },
+          [this] { Stop(); }};
 }
 ui::Bridge GuiSession::Connect() {
   ui::Bridge bridge;
@@ -95,7 +117,7 @@ ui::Bridge GuiSession::Connect() {
       audio_->Start();
   };
   bridge.status = [this] {
-    return audio_ ? audio_->Status()
+    return audio_ ? audio_->Status() + midiStatus_
                   : "Audio stopped — select a device in Settings";
   };
   return bridge;

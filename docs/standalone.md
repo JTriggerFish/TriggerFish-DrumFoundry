@@ -50,20 +50,29 @@ The console provides a `status` readout; the Visage build adds persistent live m
 Structural changes stop/join device processing before preparing the plugin again.
 This resets resonating state and discards pending notes, preserving queued
 parameter edits before applying the new selection. Live gesture/master controls are queued into the
-next audio block. Device reconfiguration does not persist a config file or change
-system device defaults. Errors print in the console; callback fault, overflow and
+next audio block. The native GUI remembers device choices as described below;
+console device tests do not change them or system device defaults.
+Errors print in the console; callback fault, overflow and
 xrun counters are included in diagnostics. Device tests return a failing exit
 status for xruns, dropped events, device/process errors or no callbacks. Timed
 tests use monotonic deadlines, avoiding cumulative sleep rounding.
 
 ## MIDI and audio-thread boundary
 
-`--midi all` opens available inputs (up to 32), `none` disables them, or a name
-substring selects matching inputs. Opening failures are reported. All note-on
+`--midi all` opens available inputs (up to 32), `none` disables them, or an exact
+name selects one input. Console abbreviations must match one port unambiguously.
+Opening failures identify the port; other successful inputs remain open in `all`
+mode. In the GUI a MIDI failure leaves audio running, so manual strikes and
+reference playback remain usable. Windows diagnostics retain the WinMM error
+number and OS explanation rather than replacing them with a generic message.
+`--midi-check --midi "SL GRAND 1"` opens/closes only that input, without audio,
+and returns failure if it cannot open. This is a driver diagnostic, not a test
+of MIDI note delivery. All note-on
 keys/channels strike the selected instrument with linear velocity; CC120/123
 reset it. No pitch mapping, sustain or hi-hat pedal-CC mapping is implemented yet.
-Device rescanning/hot-plug UI is a later step: restart the application after
-connecting a new input.
+The MIDI menu rescans when opened; Apply retries the current selection after a
+device reconnect. Port identities currently use backend names, not persistent
+hardware IDs; if the OS renames/reorders a device, select its new name.
 
 Each input has its own bounded SPSC event queue, with a separate control queue.
 RtMidi callbacks copy three-byte messages into those queues. The audio callback
@@ -130,3 +139,27 @@ Visage supplies the settings/device chooser, strike surface, persistent limiter
 meters, modal/T60 editors, snapshots and reference analysis. It calls this host
 layer, while CLAP embeds the same workbench. There is no browser server or second
 DSP renderer. See [native-ui.md](native-ui.md) for interaction and testing details.
+
+### Remembered audio/MIDI settings
+
+The GUI saves the requested audio API, output device, MIDI input, sample rate and
+buffer on **Apply & start**, including when a disconnected device needs retrying.
+On the next launch these selections return, but devices remain closed until
+Apply: restoring preferences must not seize an exclusive ASIO/MIDI device from
+a DAW. Explicit GUI command-line device options override remembered fields;
+`--device` also requests immediate start. Smoke/console tests neither restore
+nor write preferences. Release device does not erase them.
+
+Settings use a separate `audio-midi.json` beside the application-data `fits`
+directory (Windows: `%LOCALAPPDATA%/TriggerFish/DrumFoundry/audio-midi.json`).
+Writes replace atomically; invalid/unreadable files produce a visible warning
+and fall back to startup defaults. They never alter fit JSON, DSP levels,
+limiter settings, system defaults or the selected instrument.
+
+During the 2026-09-13 MIDI investigation, opening both SL GRAND WinMM ports
+directly, outside DrumFoundry and without ASIO, returned **MMRESULT 7**
+(`MMSYSERR_NOMEM`) while approximately 18 GB RAM was free. This reproduces a
+device/backend failure but does not establish its cause; reconnect/retry is
+needed to verify recovery. No driver reset or unrelated process termination
+was performed. App-side handling is separately covered by injected port-failure
+tests, exact-name selection tests and settings persistence tests.

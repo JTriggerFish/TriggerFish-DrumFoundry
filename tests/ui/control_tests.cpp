@@ -97,7 +97,10 @@ int main() {
   Require(velocity == .75f && location == .25f);
   unsigned applies = 0, errors = 0;
   SettingsBridge settings;
-  settings.apply = [&](const DeviceConfiguration &) { ++applies; };
+  settings.apply = [&](const DeviceConfiguration &) {
+    ++applies;
+    return std::string{};
+  };
   SettingsPanel invalid(settings, {"test", "", "all", 48000, 128});
   invalid.error = [&](const std::string &) { ++errors; };
   invalid.Apply();
@@ -105,5 +108,16 @@ int main() {
   SettingsPanel valid(settings, {"test", "device", "all", 48000, 128});
   valid.Apply();
   Require(applies == 1);
+  settings.apply = [&](const DeviceConfiguration &) {
+    ++applies;
+    return std::string("Audio running. MIDI unavailable");
+  };
+  SettingsPanel partial(settings, {"test", "device", "all", 48000, 128});
+  partial.error = [&](const std::string &text) {
+    Require(text == "Audio running. MIDI unavailable");
+    ++errors;
+  };
+  partial.Apply();
+  Require(applies == 2 && errors == 2);
   return 0;
 }

@@ -1,5 +1,6 @@
 #include "console.hpp"
 #include "midi.hpp"
+#include "settings_store.hpp"
 #ifdef DRUMFOUNDRY_UI
 #include "gui.hpp"
 #endif
@@ -12,9 +13,10 @@ namespace {
 struct Options {
   drumfoundry::standalone::AudioSettings audio;
   std::string midi{"all"}, preset{"kick"};
-  bool list{}, midiList{}, smoke{}, audition{}, gui{}, uiSmoke{},
+  bool list{}, midiList{}, midiCheck{}, smoke{}, audition{}, gui{}, uiSmoke{},
       pluginGuiSmoke{};
   unsigned seconds{};
+  unsigned deviceOverrides{};
 };
 unsigned Integer(const std::string &text, unsigned low, unsigned high) {
   std::size_t end = 0;
@@ -38,6 +40,8 @@ Options Parse(int argc, char **argv) {
       options.list = true;
     else if (arg == "--midi-list")
       options.midiList = true;
+    else if (arg == "--midi-check")
+      options.midiCheck = true;
     else if (arg == "--smoke")
       options.smoke = true;
     else if (arg == "--audition")
@@ -52,6 +56,17 @@ Options Parse(int argc, char **argv) {
       if (++i >= argc)
         throw std::runtime_error("Missing value for " + arg);
       const std::string value = argv[i];
+      using namespace drumfoundry::standalone;
+      if (arg == "--api")
+        options.deviceOverrides |= Api;
+      if (arg == "--device")
+        options.deviceOverrides |= Device;
+      if (arg == "--midi")
+        options.deviceOverrides |= Midi;
+      if (arg == "--rate")
+        options.deviceOverrides |= Rate;
+      if (arg == "--buffer")
+        options.deviceOverrides |= Buffer;
       if (arg == "--api")
         options.audio.api = value;
       else if (arg == "--device")
@@ -81,6 +96,8 @@ void Help() {
          "kick|snare|hihat|crash|ride|gong]\n"
       << "  [--test-seconds 5] [--audition]\n"
       << "--smoke: hardware-free integration check\n"
+      << "--midi-check --midi name: open/close only the selected MIDI input, "
+         "no audio\n"
       << "--gui: native editor (./dev.ps1 ui); omit --device to inspect "
          "silently\n"
       << "--ui-smoke: open/capture/close editor without audio hardware\n"
@@ -119,6 +136,13 @@ int main(int argc, char **argv) {
       return 0;
     }
     PluginHost host;
+    if (options.midiCheck) {
+      if (options.midi == "all" || options.midi == "none")
+        throw std::runtime_error(
+            "MIDI check requires one explicit --midi name");
+      MidiInputs midi(host, options.midi);
+      return midi.Warning().empty() && midi.Count() == 1 ? 0 : 1;
+    }
 #ifdef DRUMFOUNDRY_UI
     if (options.pluginGuiSmoke) {
       PluginGuiSmoke(host);
@@ -129,7 +153,7 @@ int main(int argc, char **argv) {
       RunGui(host,
              {options.audio.api, options.audio.device, options.midi,
               options.audio.sampleRate, options.audio.buffer},
-             options.uiSmoke);
+             options.uiSmoke, options.deviceOverrides);
       return 0;
     }
 #else
@@ -165,7 +189,8 @@ int main(int argc, char **argv) {
               << host.Status() << "\nCallbacks: " << host.callbacks.load()
               << '\n';
     const bool failed = host.failures || audio.deviceErrors ||
-                        !host.callbacks || audio.xruns || host.DroppedEvents();
+                        !host.callbacks || audio.xruns ||
+                        host.DroppedEvents() || !midi.Warning().empty();
     return failed ? 1 : 0;
   } catch (const RtMidiError &e) {
     std::cerr << "MIDI ERROR: " << e.getMessage() << '\n';
