@@ -1,6 +1,7 @@
 #pragma once
 #include "../shared/event_queue.hpp"
 #ifdef DRUMFOUNDRY_UI
+#include "../shared/audio_tap.hpp"
 #include "../shared/audition.hpp"
 #endif
 #include "output/limiter.hpp"
@@ -93,6 +94,9 @@ public:
   bool Audition(std::shared_ptr<const std::vector<float>>, unsigned rate,
                 double gain);
   unsigned AuditionRate() const { return auditionRate_.load(); }
+  host::TapRead ReadOutput(float *pcm, unsigned maximum) {
+    return outputTap_.Read(pcm, maximum);
+  }
 #endif
   clap_plugin_t api{};
   bool processing{};
@@ -123,6 +127,7 @@ private:
   std::atomic<unsigned> editorNotificationErrors_{};
 #ifdef DRUMFOUNDRY_UI
   host::Audition audition_;
+  host::AudioTap outputTap_;
   std::atomic<unsigned> auditionRate_{};
 #endif
 };

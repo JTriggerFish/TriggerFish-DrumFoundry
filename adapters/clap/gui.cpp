@@ -10,6 +10,10 @@ ui::Bridge Connect(Plugin &plugin) {
   bridge.velocity = [&plugin] { return plugin.PreviewStrength(); };
   bridge.setVelocity = [&plugin](double v) { plugin.SetPreviewStrength(v); };
   bridge.sampleRate = [&plugin] { return plugin.AuditionRate(); };
+  plugin.ReadOutput(nullptr, 0); // Opening an editor starts at current audio.
+  bridge.readOutput = [&plugin](float *pcm, unsigned count) {
+    return plugin.ReadOutput(pcm, count);
+  };
   bridge.play = [&plugin](auto pcm, unsigned rate, double gain) {
     if (!plugin.Audition(std::move(pcm), rate, gain))
       throw std::runtime_error(

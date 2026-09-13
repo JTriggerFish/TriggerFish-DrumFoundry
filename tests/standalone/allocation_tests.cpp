@@ -89,6 +89,14 @@ int main() {
   for (float sample : audition)
     if (sample != .5f)
       return 1;
+  std::array<float, 128> monitor{};
+  const auto tapped =
+      plugin.ReadOutput(monitor.data(), unsigned(monitor.size()));
+  if (tapped.samples != 128 || tapped.rate != 48000 || tapped.dropped)
+    return 1;
+  for (unsigned i = 0; i < monitor.size(); ++i)
+    if (monitor[i] != audition[2 * i])
+      return 1;
   host.controls.Push({true, 0, 0, {0xb0, 120, 0}});
   watching = true;
   host.Process(audition.data(), 128);

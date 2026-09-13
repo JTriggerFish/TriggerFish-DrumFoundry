@@ -33,6 +33,10 @@ ui::Bridge GuiSession::Connect() {
   bridge.velocity = [&plugin] { return plugin.PreviewStrength(); };
   bridge.setVelocity = [&plugin](double v) { plugin.SetPreviewStrength(v); };
   bridge.sampleRate = [&plugin] { return plugin.AuditionRate(); };
+  plugin.ReadOutput(nullptr, 0);
+  bridge.readOutput = [&plugin](float *pcm, unsigned count) {
+    return plugin.ReadOutput(pcm, count);
+  };
   bridge.play = [&plugin](auto pcm, unsigned rate, double gain) {
     if (!plugin.Audition(std::move(pcm), rate, gain))
       throw std::runtime_error("Select an audio device in Settings; wait for "

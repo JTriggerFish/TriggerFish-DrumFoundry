@@ -17,6 +17,23 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
     c.fill(0, 0, shade.width(), shade.height());
   };
   auto bridge = session.Connect();
+  // Exercise the actual CLAP output/meter path without acquiring any hardware.
+  visage::EventTimer smokeAudio;
+  std::array<float, 1024> smokePcm{};
+  unsigned smokeFrames = 0;
+  if (smoke) {
+    host.Prepare(48000, 512);
+    bridge.status = [] {
+      return "Device-free UI test — generated audio is discarded";
+    };
+    smokeAudio.onTimerCallback() = [&] {
+      if (smokeFrames % (512 * 280) == 0)
+        host.midi[0].Push({true, 0, 0, {0x90, 60, 100}});
+      host.Process(smokePcm.data(), 512);
+      smokeFrames += 512;
+    };
+    smokeAudio.startTimer(11);
+  }
   bridge.settings = [&] {
     shade.setVisible(true);
     settings.setVisible(true);
@@ -81,6 +98,9 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &config,
   }
   window.show(1440, 900);
   window.runEventLoop();
+  smokeAudio.stopTimer();
+  if (smoke)
+    host.Stop();
   if (smoke && !captured)
     throw std::runtime_error("UI screenshot did not complete");
 }

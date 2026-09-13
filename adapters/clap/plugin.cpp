@@ -70,6 +70,7 @@ bool Plugin::Activate(double rate, uint32_t minimum, uint32_t maximum) {
 #ifdef DRUMFOUNDRY_UI
   audition_.Stop();
   auditionRate_ = unsigned(std::lround(rate));
+  outputTap_.Reset(unsigned(std::lround(rate)));
 #endif
   maximumFrames_ = maximum;
   for (std::size_t i = 0; i < controls.size(); ++i)
@@ -95,6 +96,7 @@ void Plugin::Deactivate() noexcept {
 #ifdef DRUMFOUNDRY_UI
   audition_.Stop();
   auditionRate_ = 0;
+  outputTap_.Reset(0);
 #endif
   processing = active = false;
   voice_.reset(); // Only after the host has stopped calling Process.

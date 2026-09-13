@@ -5,6 +5,7 @@
 #include "file_panel.hpp"
 #include "help_bubble.hpp"
 #include "history_bar.hpp"
+#include "live_spectrum.hpp"
 #include "meta_panel.hpp"
 #include "modal_panel.hpp"
 #include "parameter_panel.hpp"
@@ -51,6 +52,7 @@ private:
   Slider mute_{"Mute / closure", 0, 1, 0};
   StrikePad strike_;
   editing::Document document_;
+  LiveSpectrum liveSpectrum_; // Outlives the panel that borrows its Frame.
   ParameterPanel excitation_, resonance_;
   visage::ScrollableFrame right_;
   AnalysisPanel analysis_;

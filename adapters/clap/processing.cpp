@@ -106,6 +106,10 @@ clap_process_status Plugin::Process(const clap_process_t *p) noexcept {
   Render(bus.data32[0] + cursor, bus.data32[1] + cursor,
          p->frames_count - cursor);
   bus.constant_mask = 0;
+#ifdef DRUMFOUNDRY_UI
+  // Current output is dual mono. Tap exactly what leaves master/protection.
+  outputTap_.Push(bus.data32[0], p->frames_count);
+#endif
   reductionHold_ = std::max(
       limiter_.Status().maximumReductionDb,
       reductionHold_ * std::exp(-double(p->frames_count) / (.3 * sampleRate_)));

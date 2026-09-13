@@ -151,6 +151,16 @@ host tests verify gain, stop, rate mismatch and allocation/deallocation freedom.
 Neither offline rendering nor audition preparation opens a device; standalone
 Settings still owns device selection, while CLAP uses its host's output.
 
+The Output section also shows a live 8192-sample Hann spectrum of the actual
+post-master/limiter dual-mono output, including reference audition. Its fixed
+0 to -96 dBFS/bin scale never follows the signal level. Peak pooling into display
+columns retains narrow ridges. The audio callback only copies PCM to a bounded
+SPSC tap; it never performs FFTs, allocates or waits. A stalled display drops its
+own data and discards stale backlog. Windowing/FFT happens on the GUI thread at
+the existing 30 Hz refresh rate, with cached FFT state; offline spectrograms
+remain on their independent worker. Tests cover tone/DC calibration, block-size
+invariance, concurrent tap wraparound and equality to actual host output.
+
 ## Dependency references
 
 - [Visage](https://github.com/VitalAudio/visage/tree/828037000d0893647ab29b66ae9c4a241c90f671):

@@ -63,6 +63,8 @@ int main(int argc, char **argv) {
             document.at("controls").at("analysis").at("view"));
   }
   ReferenceTests(request.document);
+  extern void LiveSpectrumTests();
+  LiveSpectrumTests();
   request.duration = .25;
   request.transform = {512, 128, "hann"};
   worker.Submit(request);

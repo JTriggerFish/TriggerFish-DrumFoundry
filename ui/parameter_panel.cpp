@@ -21,7 +21,7 @@ private:
 void ParameterPanel::Load(editing::Document &document, bool right) {
   generation_ = std::make_shared<int>(0);
   for (auto &row : rows_)
-    removeScrolledChild(row.frame.get());
+    removeScrolledChild(row.frame);
   rows_.clear();
   std::vector<std::string> sections;
   for (const auto &p : document.Parameters()) {
@@ -37,6 +37,10 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     auto heading = std::make_unique<Heading>(section);
     addScrolledChild(heading.get());
     rows_.push_back({std::move(heading), 40});
+    if (section == "Output" && outputSpectrum) {
+      addScrolledChild(outputSpectrum);
+      rows_.emplace_back(*outputSpectrum, 164);
+    }
     if (meta &&
         (section == "Bloom / energy travel" ||
          (section == "Output" && document.Recipe() == "metal.cymbal.v1"))) {

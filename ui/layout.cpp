@@ -63,7 +63,7 @@ void Workbench::draw(visage::Canvas &c) {
   Label(c, "RESONANCE & BLOOM", left / 2 + 8, 110, left / 2 - 20, 24);
   char meter[96];
   std::snprintf(meter, sizeof(meter), "Reduction %.1f dB  |  Lookahead %.2f ms",
-                reduction_, latency_);
+                std::max(0., reduction_), latency_);
   Label(c, meter, width() - 510, 78, 495, 18,
         reduction_ > .1 ? 0xffffc65c : 0xff8799ae);
   Label(c, status_, 16, height() - 55, width() - 32, 24, 0xff8799ae);

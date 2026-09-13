@@ -24,6 +24,7 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   Poll();
 }
 void Workbench::SetupPanels() {
+  excitation_.outputSpectrum = &liveSpectrum_;
   for (auto *panel : {&excitation_, &resonance_}) {
     panel->committed = [this] { ApplyDocument(); };
     panel->error = [this](const auto &text) { Error(text); };
@@ -169,6 +170,7 @@ void Workbench::SelectPreset() {
 void Workbench::Poll() {
   help_.Poll();
   try {
+    liveSpectrum_.Poll(bridge_);
     if (bridge_.service)
       bridge_.service();
     if (bridge_.document &&

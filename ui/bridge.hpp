@@ -1,4 +1,5 @@
 #pragma once
+#include "adapters/shared/audio_tap.hpp"
 #include <functional>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -24,6 +25,7 @@ struct Bridge {
   std::function<void(const nlohmann::json &, const nlohmann::json &)>
       presentation;
   std::function<unsigned()> sampleRate;
+  std::function<host::TapRead(float *, unsigned)> readOutput;
   std::function<void(std::shared_ptr<const std::vector<float>>, unsigned,
                      double)>
       play;
