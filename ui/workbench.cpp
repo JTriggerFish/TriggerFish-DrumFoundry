@@ -15,6 +15,8 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   SetupPanels();
   SetupFiles();
   SetupPerformance();
+  addChild(&help_, false);
+  help_.Bind(*this);
   NativeFonts(*this);
   ControlErrors(*this, [this](const auto &text) { Error(text); });
   timer_.onTimerCallback() = [this] { Poll(); };
@@ -62,10 +64,12 @@ void Workbench::SetupPanels() {
       metaShade_.setVisible(false);
   };
   meta_.changed = [this] {
+    help_.Hide();
     excitation_.Load(document_, false);
     resonance_.Load(document_, true);
     modal_.Refresh();
     ControlErrors(*this, [this](const auto &text) { Error(text); });
+    help_.Bind(*this);
   };
   meta_.committed = [this] { ApplyDocument(); };
   meta_.error = [this](const auto &text) { Error(text); };
@@ -163,6 +167,7 @@ void Workbench::SelectPreset() {
   menu.show(&preset_);
 }
 void Workbench::Poll() {
+  help_.Poll();
   try {
     if (bridge_.service)
       bridge_.service();
@@ -215,6 +220,7 @@ void Workbench::Poll() {
   }
 }
 void Workbench::RefreshDocument() {
+  help_.Hide();
   metaShade_.setVisible(false);
   document_.Load(bridge_.document());
   const auto &event = document_.JsonValue().at("controls").at("event");
@@ -233,6 +239,7 @@ void Workbench::RefreshDocument() {
   LayoutRight();
   NativeFonts(*this);
   ControlErrors(*this, [this](const auto &text) { Error(text); });
+  help_.Bind(*this);
   renderedEvent_ = document_.JsonValue().at("controls").at("event");
   eventDebounce_ = 0;
 }

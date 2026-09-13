@@ -83,7 +83,8 @@ void ParameterPanel::AddParameter(editing::Document &document,
     }
   };
   if (p.scale == 2 || p.scale == 3) {
-    auto button = std::make_unique<visage::UiButton>();
+    auto button = std::make_unique<HelpButton>();
+    button->help = ParameterHelp(p.key);
     auto *widget = button.get();
     const auto label = editing::ControlName(p) + ": ";
     widget->setText(label + editing::ChoiceName(p, int(document.Value(p.key))));
@@ -111,6 +112,7 @@ void ParameterPanel::AddParameter(editing::Document &document,
     auto slider = std::make_unique<Slider>(editing::ControlName(p), p.minimum,
                                            p.maximum, p.initial, " " + p.unit);
     slider->Set(document.Value(p.key));
+    slider->help = ParameterHelp(p.key) + " " + slider->help;
     slider->position = [p](double v) { return editing::Position(p, v); };
     slider->valueAt = [p](double v) { return editing::ValueAt(p, v); };
     slider->changed = change;

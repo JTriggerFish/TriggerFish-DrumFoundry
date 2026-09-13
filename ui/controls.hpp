@@ -1,4 +1,5 @@
 #pragma once
+#include "help.hpp"
 #include <functional>
 #include <memory>
 #include <visage/ui.h>
@@ -15,7 +16,7 @@ void Label(visage::Canvas &, const std::string &, float x, float y, float w,
 
 // Conventional horizontal slider, using Visage input and drawing primitives.
 // Double click resets; Shift-drag gives fine adjustment. Values stay in units.
-class Slider : public visage::Frame {
+class Slider : public visage::Frame, public HelpText {
 public:
   Slider(std::string label, double low, double high, double initial,
          std::string unit = "");

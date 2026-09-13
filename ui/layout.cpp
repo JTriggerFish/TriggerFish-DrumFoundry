@@ -4,6 +4,7 @@
 
 namespace drumfoundry::ui {
 void Workbench::resized() {
+  help_.Hide();
   const float left = std::min(640.f, width() * .46f);
   preset_.setBounds(16, 48, 150, 30);
   stop_.setBounds(174, 48, 80, 30);

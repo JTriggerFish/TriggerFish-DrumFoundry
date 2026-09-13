@@ -1,4 +1,5 @@
 #include "ui/controls.hpp"
+#include "ui/help_bubble.hpp"
 #include "ui/settings.hpp"
 #include "ui/split_bar.hpp"
 #include <cmath>
@@ -21,6 +22,15 @@ int main() {
   slider.changed = [&](double value) { notified = value; };
   visage::MouseEvent event;
   event.button_id = visage::kMouseButtonLeft;
+  HelpBubble help;
+  help.Bind(slider);
+  help.Bind(slider); // Rebuild traversal must not duplicate handlers.
+  event.repeat_click_count = 2;
+  slider.processMouseDown(event);
+  Require(slider.Value() == -12); // Native input survived help binding.
+  slider.processMouseUp(event);
+  Require(!ParameterHelp("field_packet_spread").empty());
+  event.repeat_click_count = 1;
   event.repeat_click_count = 2;
   slider.mouseDown(event);
   Require(notified == -12);

@@ -47,6 +47,10 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   fractional count values report an error without changing the sound. Double-
   click still resets and Shift-drag adjusts finely. External value changes cancel
   an unfinished entry so it cannot later overwrite a newly loaded setting.
+- Delayed, non-interactive help explains the audible effects of packet spacing,
+  beating, drift, shimmer, blur and bloom. Standard Visage hover/click behaviour
+  remains intact. Generic controls also explain reset, fine adjustment and
+  numeric entry. Rebuilding a preset dismisses stale help.
 - CLAP embedding: shared content via the standard GUI extension, native Windows/
   Cocoa/X11 parents, host resizing and Linux FD dispatch. UI controls use bounded
   queues; the audio/flush consumer applies them and emits host parameter events.

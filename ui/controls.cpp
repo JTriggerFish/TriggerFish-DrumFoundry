@@ -29,7 +29,13 @@ void Label(visage::Canvas &c, const std::string &text, float x, float y,
 Slider::Slider(std::string label, double low, double high, double initial,
                std::string unit)
     : label_(std::move(label)), unit_(std::move(unit)), low_(low), high_(high),
-      initial_(initial), value_(initial) {}
+      initial_(initial), value_(initial) {
+  help = label_ + (unit_.empty() ? ". " : " (" + unit_ + "). ") +
+         "Double-click resets; Shift-drag adjusts finely. Right-click to type "
+         "a value in the displayed units; Enter applies, Escape cancels.";
+  if (unit_ == " Hz")
+    help += " Type frequencies in Hz, even when the readout shows kHz.";
+}
 void Slider::Set(double value) {
   if (!std::isfinite(value))
     return;
