@@ -9,15 +9,26 @@ constexpr const char *names[]{"Kick",  "Snare", "Hi-hat",
 }
 Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   for (auto *frame : std::initializer_list<visage::Frame *>{
-           &preset_, &settings_, &stop_, &limiter_, &master_, &hardness_,
-           &location_, &mute_, &strike_, &excitation_, &resonance_})
+           &preset_, &settings_, &stop_, &limiter_, &master_, &location_,
+           &mute_, &excitation_, &resonance_})
     addChild(frame);
   for (auto *panel : {&excitation_, &resonance_}) {
     panel->committed = [this] { ApplyDocument(); };
     panel->error = [this](const auto &text) { Error(text); };
   }
+  addChild(&right_);
+  for (auto *frame : std::initializer_list<visage::Frame *>{
+           &analysis_, &modal_, &strike_, &hardness_})
+    right_.addScrolledChild(frame);
+  analysis_.onDraw() = [this](visage::Canvas &c) {
+    Label(c, "WAVEFORM / SPECTROGRAM", 0, 0, analysis_.width(), 24);
+    Label(c, "Native analysis port in progress", 0, 40, analysis_.width(), 24,
+          0xff8799ae);
+  };
+  modal_.committed = [this] { ApplyDocument(); };
+  modal_.error = [this](const auto &text) { Error(text); };
   for (unsigned i = 0; i < implements_.size(); ++i) {
-    addChild(&implements_[i]);
+    right_.addScrolledChild(&implements_[i]);
     implements_[i].onToggle() = [this, i](auto *, bool) {
       Change(102, i * .5);
     };
@@ -112,6 +123,7 @@ void Workbench::RefreshDocument() {
   reloadDocument_ = false;
   excitation_.Load(document_, false);
   resonance_.Load(document_, true);
+  modal_.Load(document_);
 }
 void Workbench::ApplyDocument() {
   try {
@@ -120,6 +132,7 @@ void Workbench::ApplyDocument() {
     // gesture that happened to be active when the panel was populated.
     next["controls"]["event"] = bridge_.document().at("controls").at("event");
     bridge_.applyDocument(next);
+    modal_.Refresh();
     documentRevision_ = bridge_.revision ? bridge_.revision() : 0;
   } catch (const std::exception &e) {
     Error(e.what());

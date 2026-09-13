@@ -68,6 +68,7 @@ public:
   // Main-thread document editing. Host restart publishes the prepared patch;
   // performance automation remains on its separate sample-timed path.
   Json EditableDocument() const;
+  void PrepareEditorPreset();
   void EditDocument(Json);
   unsigned DocumentRevision() const { return documentRevision_; }
   const void *Extension(const char *) const noexcept;

@@ -11,16 +11,20 @@ void Workbench::resized() {
   settings_.setBounds(width() - 130, 10, 114, 28);
   master_.setBounds(width() - 510, 42, 220, 44);
   const float col = (left - 48) / 2;
-  hardness_.setBounds(left + 16, height() * .5f + 152, width() - left - 32, 44);
-  const float buttonWidth = (width() - left - 48) / 3;
+  right_.setBounds(left + 16, 110, width() - left - 32, height() - 177);
+  const float contentWidth = right_.width() - 14;
+  analysis_.setBounds(0, 0, contentWidth, 230);
+  strike_.setBounds(0, 240, contentWidth, 90);
+  hardness_.setBounds(0, 374, contentWidth, 44);
+  const float buttonWidth = (contentWidth - 16) / 3;
   for (unsigned i = 0; i < implements_.size(); ++i)
-    implements_[i].setBounds(left + 16 + i * (buttonWidth + 8),
-                             height() * .5f + 116, buttonWidth, 28);
+    implements_[i].setBounds(i * (buttonWidth + 8), 338, buttonWidth, 28);
   location_.setBounds(16, 134, col, 44);
   mute_.setBounds(32 + col, 134, col, 44);
   excitation_.setBounds(16, 188, col, height() - 255);
   resonance_.setBounds(32 + col, 188, col, height() - 255);
-  strike_.setBounds(left + 16, height() * .5f, width() - left - 32, 110);
+  modal_.setBounds(0, 430, contentWidth, 650);
+  right_.setScrollableHeight(1080);
 }
 void Workbench::draw(visage::Canvas &c) {
   const float left = std::min(640.f, width() * .46f);
@@ -32,13 +36,6 @@ void Workbench::draw(visage::Canvas &c) {
   c.fill(left, 98, 1, height() - 140);
   Label(c, "EXCITATION & OUTPUT", 16, 110, left / 2 - 20, 24);
   Label(c, "RESONANCE & BLOOM", left / 2 + 8, 110, left / 2 - 20, 24);
-  Label(c, "WAVEFORM / SPECTROGRAM", left + 16, 110, width() - left - 32, 24);
-  Label(c, "Native analysis port in progress — no placeholder measurements",
-        left + 16, 150, width() - left - 32, 24, 0xff8799ae);
-  Label(c, "MODAL PACKET DESIGN", left + 16, height() * .5f + 210,
-        width() - left - 32, 24);
-  Label(c, "Modal and T60 editors are the next migration chunk", left + 16,
-        height() * .5f + 240, width() - left - 32, 24, 0xff8799ae);
   char meter[96];
   std::snprintf(meter, sizeof(meter), "Reduction %.1f dB  |  Lookahead %.2f ms",
                 reduction_, latency_);

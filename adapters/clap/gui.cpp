@@ -8,6 +8,7 @@ ui::Bridge Connect(Plugin &plugin) {
   ui::Bridge bridge;
   bridge.value = [&plugin](unsigned id) { return plugin.Value(id); };
   bridge.document = [&plugin] { return plugin.EditableDocument(); };
+  bridge.service = [&plugin] { plugin.PrepareEditorPreset(); };
   bridge.applyDocument = [&plugin](const auto &document) {
     plugin.EditDocument(document);
   };

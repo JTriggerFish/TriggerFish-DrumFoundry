@@ -65,8 +65,16 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   tails during structural edits. Performance gestures remain real-time.
 - `engine/editing` owns native document/value/scaling/presentation helpers,
   separately from DSP and Visage. Tests check all six fits, parameter round trips,
-  taper bounds and transactional rejection. Graphical modal/T60 editors replace
-  the temporary scalar rows in the next chunk; analysis and snapshots follow.
+  taper bounds and transactional rejection.
+- Native modal/T60 editors now replace their scalar rows. Mode addition/deletion,
+  dragging, noisiness width, same-direction prominence painting, harmonic guide,
+  snapping and explicit harmonic/membrane series generation use ordinary JSON
+  parameters. Unsupported recipes retain their body controls rather than exposing
+  nonfunctional painted modes. T60 uses ERB/log-time DSP interpolation with the
+  one-second-knee display, two permanent endpoints and up to eight total knots.
+  Series/taper/document and headless pointer-gesture tests accompany the port.
+- Right-hand content scrolls as one column; analysis, strike and modal design
+  keep their ordering. Reference analysis, persistence and meta gestures follow.
 
 ## References
 

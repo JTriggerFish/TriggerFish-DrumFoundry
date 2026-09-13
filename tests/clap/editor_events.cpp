@@ -66,5 +66,9 @@ int main() {
     rejected = true;
   }
   Require(rejected && plugin.EditableDocument() == edited);
+  plugin.SetParameter(Preset, 5);
+  plugin.PrepareEditorPreset();
+  Require(std::abs(plugin.Value(Hardness) - .35) < 1e-6);
+  Require(std::abs(plugin.Value(Location) - .536997846523398) < 1e-6);
   return 0;
 }

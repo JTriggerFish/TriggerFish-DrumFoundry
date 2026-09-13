@@ -1,6 +1,7 @@
 #pragma once
 #include "bridge.hpp"
 #include "controls.hpp"
+#include "modal_panel.hpp"
 #include "parameter_panel.hpp"
 
 namespace drumfoundry::ui {
@@ -33,6 +34,9 @@ private:
   StrikePad strike_;
   editing::Document document_;
   ParameterPanel excitation_, resonance_;
+  visage::ScrollableFrame right_;
+  visage::Frame analysis_;
+  ModalPanel modal_;
   int documentPreset_{-1};
   unsigned documentRevision_{};
   bool reloadDocument_{};

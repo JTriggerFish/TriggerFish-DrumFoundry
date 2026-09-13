@@ -1,6 +1,17 @@
 #include "plugin.hpp"
 
 namespace drumfoundry::clap_adapter {
+void Plugin::PrepareEditorPreset() {
+  if (static_cast<int>(Value(Preset)) == documentPreset_)
+    return;
+  const auto controls = DesiredControls();
+  Voice validated(static_cast<float>(sampleRate_), DesiredDocument());
+  document_ = validated.Document();
+  documentPreset_ = static_cast<int>(controls[0]);
+  for (clap_id id = Hardness; id <= Mute; ++id)
+    values_[id - Preset].store(controls[id - Preset]);
+  ++documentRevision_;
+}
 Json Plugin::EditableDocument() const {
   auto document = DesiredDocument();
   const auto controls = DesiredControls();

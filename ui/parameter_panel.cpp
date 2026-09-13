@@ -1,4 +1,5 @@
 #include "parameter_panel.hpp"
+#include "decay_editor.hpp"
 #include <algorithm>
 #include <exception>
 
@@ -26,6 +27,8 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     if (editing::RightColumn(p) != right)
       continue;
     const auto section = editing::Section(p);
+    if (section == "Modal anchors")
+      continue;
     if (std::find(sections.begin(), sections.end(), section) == sections.end())
       sections.push_back(section);
   }
@@ -33,6 +36,20 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     auto heading = std::make_unique<Heading>(section);
     addScrolledChild(heading.get());
     rows_.push_back({std::move(heading), 40});
+    if (section == "Modal T60") {
+      auto editor = std::make_unique<DecayEditor>(document);
+      editor->committed = [this] {
+        if (committed)
+          committed();
+      };
+      editor->error = [this](const auto &text) {
+        if (error)
+          error(text);
+      };
+      addScrolledChild(editor.get());
+      rows_.push_back({std::move(editor), 366});
+      continue;
+    }
     for (const auto &p : document.Parameters())
       if (editing::Section(p) == section && editing::RightColumn(p) == right)
         AddParameter(document, p);

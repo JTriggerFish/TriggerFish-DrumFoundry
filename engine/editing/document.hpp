@@ -21,6 +21,7 @@ public:
   const Parameter &Description(const std::string &key) const;
   double Value(const std::string &key) const;
   void Set(const std::string &key, double value);
+  void SetMany(const std::vector<std::pair<std::string, double>> &values);
   const std::string &Recipe() const { return recipe_; }
 
 private:

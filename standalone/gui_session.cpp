@@ -69,8 +69,9 @@ ui::Bridge GuiSession::Connect() {
     if (!host_.controls.Push({true, 0, 0, {0xb0, 120, 0}}))
       throw std::runtime_error("Control queue full");
   };
-  bridge.service = [this] {
+  bridge.service = [this, &plugin] {
     host_.Service();
+    plugin.PrepareEditorPreset();
     if (audio_ && host_.restart.exchange(false))
       audio_->Start();
   };

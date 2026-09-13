@@ -5,6 +5,14 @@
 #include <stdexcept>
 
 namespace drumfoundry::editing {
+namespace {
+void Validate(const Parameter &p, double value) {
+  if (!std::isfinite(value) || float(value) < float(p.minimum) ||
+      float(value) > float(p.maximum) ||
+      (p.scale >= 2 && value != std::floor(value)))
+    throw std::invalid_argument("Invalid value for " + p.key);
+}
+} // namespace
 void Document::Load(Json document) {
   Voice validated(48000, std::move(document));
   std::vector<Parameter> parameters;
@@ -36,15 +44,33 @@ double Document::Value(const std::string &key) const {
 }
 void Document::Set(const std::string &key, double value) {
   const auto &p = Description(key);
-  if (!std::isfinite(value) || float(value) < float(p.minimum) ||
-      float(value) > float(p.maximum) ||
-      (p.scale >= 2 && value != std::floor(value)))
-    throw std::invalid_argument("Invalid value for " + key);
+  Validate(p, value);
   for (auto &node : Instrument(document_).at("nodes"))
     if (node.at("id") == p.owner) {
       node["parameters"][key] = value;
       return;
     }
   throw std::logic_error("Missing parameter owner: " + p.owner);
+}
+void Document::SetMany(
+    const std::vector<std::pair<std::string, double>> &values) {
+  // Resolve and validate all destinations before any mutation. Scalar
+  // assignment into existing JSON numbers does not copy the complete patch
+  // during drags.
+  std::vector<std::pair<Json *, double>> destinations;
+  destinations.reserve(values.size());
+  for (const auto &[key, value] : values) {
+    const auto &p = Description(key);
+    Validate(p, value);
+    Json *destination = nullptr;
+    for (auto &node : Instrument(document_).at("nodes"))
+      if (node.at("id") == p.owner)
+        destination = &node.at("parameters").at(key);
+    if (!destination)
+      throw std::logic_error("Missing parameter owner: " + p.owner);
+    destinations.emplace_back(destination, value);
+  }
+  for (auto [destination, value] : destinations)
+    *destination = value;
 }
 } // namespace drumfoundry::editing
