@@ -58,6 +58,14 @@ void NativeStrikeParity(const drumfoundry::Json &document) {
 #endif
       Check(plugin.Process(&process) == CLAP_PROCESS_CONTINUE);
       direct.Process(expected, 256);
+#ifdef DRUMFOUNDRY_UI
+      float monitored[256]{};
+      const auto tap = plugin.ReadVoice(monitored, 256);
+      Check(tap.samples == 256 && tap.rate == 48000);
+      Check(tap.firstStrike == (block == 0 ? 0u : ~0u));
+      for (unsigned i = 0; i < 256; ++i)
+        Check(monitored[i] == expected[i]);
+#endif
       for (int i = 0; i < 256; ++i)
         Check(std::abs(left[i] - expected[i]) < 1e-7f && left[i] == right[i]);
     }

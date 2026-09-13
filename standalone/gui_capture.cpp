@@ -7,6 +7,13 @@ GuiCapture::GuiCapture(visage::ApplicationWindow &window, ui::Workbench &editor,
   timer_.startTimer(1500);
 }
 void GuiCapture::Tick() {
+  if (!liveCaptured_) {
+    const auto &shot = window_.takeScreenshot();
+    if (shot.width() > 0 && shot.height() > 0) {
+      shot.save("build/ui-live-smoke.png");
+      liveCaptured_ = true;
+    }
+  }
   if (!editor_.AnalysisReady()) {
     if (++attempts_ >= 40) {
       timer_.stopTimer();

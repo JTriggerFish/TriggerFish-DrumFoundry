@@ -138,45 +138,15 @@ editing::Json AnalysisPanel::Settings() const {
 void AnalysisPanel::Queue() {
   if (request_.document.is_null())
     return;
+  liveMode_ = false;
+  liveWorker_.Cancel();
+  progressive_.reset();
+  referenceContext_.reset();
   request_.duration = matchLength_ ? 0 : duration_.Value();
+  view_.renderDuration = duration_.Value();
   worker_.Submit(request_);
   status_ = "Rendering — previous plot retained";
   redraw();
-}
-void AnalysisPanel::Poll() {
-  if (auto result = worker_.Take()) {
-    if (!result->error.empty()) {
-      status_ = "Render failed — previous plot retained";
-      if (error)
-        error(result->error);
-    } else {
-      result_ = std::move(result);
-      if (matchLength_) {
-        duration_.Set(double(result_->model.samples.size()) /
-                      result_->model.sampleRate);
-        view_.span = duration_.Value();
-        view_.pan = 0;
-        matchLength_ = false;
-      }
-      view_.Set(result_);
-      if (!request_.reference.empty()) {
-        reference_["id"] = "sha256:" + result_->referenceHash;
-        reference_["sha256"] = result_->referenceHash;
-        reference_["sampleRate"] = result_->reference.sampleRate;
-        reference_["channels"] = result_->reference.sourceChannels;
-        reference_["duration"] = double(result_->reference.samples.size()) /
-                                 result_->reference.sampleRate;
-        hashPending_ = false;
-      }
-      status_ =
-          "Native render + STFT: " + std::to_string(int(result_->elapsedMs)) +
-          " ms · " + std::to_string(result_->model.sampleRate) + " Hz";
-    }
-    redraw();
-  }
-  if (worker_.Busy())
-    redraw();
-  PublishState();
 }
 void AnalysisPanel::resized() {
   const float col = (width() - 24) / 3;
@@ -193,9 +163,5 @@ void AnalysisPanel::resized() {
 }
 void AnalysisPanel::draw(visage::Canvas &c) {
   Label(c, status_, 0, height() - 26, width(), 24, 0xff8799ae);
-  if (worker_.Busy()) {
-    c.setColor(0xff8799ae);
-    c.fill(0, height() - 3, width() * worker_.Progress(), 2);
-  }
 }
 } // namespace drumfoundry::ui

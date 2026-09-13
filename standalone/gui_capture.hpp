@@ -17,6 +17,6 @@ private:
   visage::Frame &shade_, &settings_;
   visage::EventTimer timer_;
   unsigned attempts_{}, stage_{};
-  bool captured_{};
+  bool captured_{}, liveCaptured_{};
 };
 } // namespace drumfoundry::standalone

@@ -1,4 +1,5 @@
 #pragma once
+#include "progressive.hpp"
 #include "runtime/voice.hpp"
 #include "spectrum.hpp"
 #include <atomic>
@@ -34,7 +35,10 @@ public:
   Worker();
   ~Worker();
   void Submit(Request);
+  void Cancel();
   std::shared_ptr<const Result> Take();
+  std::shared_ptr<const Result> TakeContext();
+  std::vector<PreviewChunk> TakeChunks();
   float Progress() const { return progress_.load(); }
   bool Busy() const { return busy_.load(); }
 
@@ -57,6 +61,8 @@ private:
   std::condition_variable wake_;
   std::optional<Request> pending_;
   std::shared_ptr<const Result> result_;
+  std::shared_ptr<const Result> context_;
+  std::vector<PreviewChunk> chunks_;
   std::atomic<unsigned> revision_{};
   std::atomic<bool> stop_{}, busy_{};
   std::atomic<float> progress_{};

@@ -97,6 +97,10 @@ int main(int argc, char **argv) {
   ReferenceTests(request.document);
   extern void LiveSpectrumTests();
   LiveSpectrumTests();
+  extern void StreamingTests();
+  StreamingTests();
+  extern void LivePanelTests(Json);
+  LivePanelTests(request.document);
   request.duration = .25;
   request.transform = {512, 128, "hann"};
   worker.Submit(request);

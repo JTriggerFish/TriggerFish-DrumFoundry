@@ -158,8 +158,11 @@ limiter settings, system defaults or the selected instrument.
 
 During the 2026-09-13 MIDI investigation, opening both SL GRAND WinMM ports
 directly, outside DrumFoundry and without ASIO, returned **MMRESULT 7**
-(`MMSYSERR_NOMEM`) while approximately 18 GB RAM was free. This reproduces a
-device/backend failure but does not establish its cause; reconnect/retry is
-needed to verify recovery. No driver reset or unrelated process termination
-was performed. App-side handling is separately covered by injected port-failure
-tests, exact-name selection tests and settings persistence tests.
+(`MMSYSERR_NOMEM`) while approximately 18 GB RAM was free. Further inspection
+found Brave retaining over 100 handles to the keyboard's device object. After
+the user closed Brave, the same MIDI-only check opened SL GRAND successfully.
+This was competing browser MIDI ownership/resource retention, not evidence of
+RAM shortage or a failed keyboard. Avoid simultaneously enabling MIDI in the
+old browser workbench. No driver reset was needed. App-side handling is
+separately covered by injected port-failure tests, exact-name selection tests
+and settings persistence tests.

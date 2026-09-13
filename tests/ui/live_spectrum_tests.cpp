@@ -28,6 +28,11 @@ void TapTests() {
   Check(tap.Read(read.data(), 32).samples == 13);
   tap.Reset(44100);
   Check(tap.Read(read.data(), 32).rate == 44100);
+  tap.Push(samples.data(), 5);
+  tap.Push(samples.data(), 7, true);
+  tap.Push(samples.data(), 3, true);
+  info = tap.Read(read.data(), 32);
+  Check(info.samples == 15 && info.firstStrike == 5 && info.lastStrike == 12);
   std::atomic<bool> done{};
   std::thread producer([&] {
     std::array<float, 128> block{};

@@ -11,6 +11,10 @@ ui::Bridge Connect(Plugin &plugin) {
   bridge.setVelocity = [&plugin](double v) { plugin.SetPreviewStrength(v); };
   bridge.sampleRate = [&plugin] { return plugin.AuditionRate(); };
   plugin.ReadOutput(nullptr, 0); // Opening an editor starts at current audio.
+  plugin.ReadVoice(nullptr, 0);
+  bridge.readVoice = [&plugin](float *pcm, unsigned count) {
+    return plugin.ReadVoice(pcm, count);
+  };
   bridge.readOutput = [&plugin](float *pcm, unsigned count) {
     return plugin.ReadOutput(pcm, count);
   };

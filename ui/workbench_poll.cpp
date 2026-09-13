@@ -51,6 +51,13 @@ void Workbench::Poll() {
       RefreshDocument();
     if (bridge_.sampleRate)
       analysis_.SetAuditionRate(bridge_.sampleRate());
+    if (analysis_.PollLive(bridge_) && !document_.JsonValue().is_null()) {
+      auto sound = document_.JsonValue();
+      sound["controls"]["event"] =
+          bridge_.document().at("controls").at("event");
+      preview_.Reset(
+          sound); // A strike updates live analysis, not an offline replay.
+    }
     analysis_.Poll();
     PollPreview();
     PollPerformance();

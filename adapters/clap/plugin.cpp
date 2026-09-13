@@ -80,6 +80,8 @@ bool Plugin::Activate(double rate, uint32_t minimum, uint32_t maximum) {
   audition_.Stop();
   auditionRate_ = unsigned(std::lround(rate));
   outputTap_.Reset(unsigned(std::lround(rate)));
+  voiceTap_.Reset(unsigned(std::lround(rate)));
+  pendingStrike_ = false;
 #endif
   maximumFrames_ = maximum;
   for (std::size_t i = 0; i < controls.size(); ++i)
@@ -106,6 +108,8 @@ void Plugin::Deactivate() noexcept {
   audition_.Stop();
   auditionRate_ = 0;
   outputTap_.Reset(0);
+  voiceTap_.Reset(0);
+  pendingStrike_ = false;
 #endif
   processing = active = false;
   voice_.reset(); // Only after the host has stopped calling Process.

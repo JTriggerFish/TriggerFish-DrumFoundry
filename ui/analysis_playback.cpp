@@ -10,12 +10,17 @@ void AnalysisPanel::SetAuditionRate(unsigned rate) {
 }
 void AnalysisPanel::Play(bool reference) {
   try {
+    if (!reference && (worker_.Busy() || (liveMode_ && !liveComplete_)))
+      throw std::runtime_error("Wait for the current capture/render to finish, "
+                               "or use Strike to play live");
     if (!play || !result_ || result_->auditionRate != request_.auditionRate)
       throw std::runtime_error("Wait for the native audition render to finish");
     const auto &pcm =
         reference ? result_->referencePlayback : result_->modelPlayback;
     if (pcm.empty())
       throw std::runtime_error("Choose a reference sample first");
+    liveWorker_.Cancel();
+    liveMode_ = false;
     // Own only PCM, not the potentially large STFT matrices, in the audio
     // slots.
     play(std::make_shared<const std::vector<float>>(pcm), result_->auditionRate,

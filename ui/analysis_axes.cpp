@@ -48,8 +48,8 @@ void AnalysisView::Readout(visage::Canvas &c) {
   const double ref =
       result_->referenceSpectrum.At(p.time + referenceOffset, p.frequency) +
       referenceGainDb;
-  const double model =
-      result_->modelSpectrum.At(p.time + modelOffset, p.frequency);
+  const double model = ModelAt(p.time + modelOffset)
+                           .modelSpectrum.At(p.time + modelOffset, p.frequency);
   char text[160];
   std::snprintf(text, sizeof(text),
                 "%.3f s · %.1f Hz · Ref %.1f / Model %.1f dBFS · Δ %+.1f dB",
@@ -72,17 +72,19 @@ void AnalysisView::Waveform(visage::Canvas &c) {
     if (!audio.sampleRate)
       continue;
     for (int x = 0; x < pixels; ++x) {
+      const auto &segment =
+          source ? ModelAt(pan + offset + span * x / pixels).model : audio;
       const auto first =
-          int64_t((pan + offset + span * x / pixels) * audio.sampleRate);
-      const auto last =
-          int64_t((pan + offset + span * (x + 1) / pixels) * audio.sampleRate);
+          int64_t((pan + offset + span * x / pixels) * segment.sampleRate);
+      const auto last = int64_t((pan + offset + span * (x + 1) / pixels) *
+                                segment.sampleRate);
       float low = 0, high = 0;
       for (auto i = std::max<int64_t>(0, first);
            i <
-           std::min<int64_t>(audio.samples.size(), std::max(first + 1, last));
+           std::min<int64_t>(segment.samples.size(), std::max(first + 1, last));
            ++i) {
         const float v =
-            audio.samples[std::size_t(i)] * float(source ? 1 : gain);
+            segment.samples[std::size_t(i)] * float(source ? 1 : gain);
         low = std::min(low, v);
         high = std::max(high, v);
       }

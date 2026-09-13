@@ -13,6 +13,7 @@ enum class Comparison {
 class AnalysisView : public visage::Frame {
 public:
   void Set(std::shared_ptr<const analysis::Result>);
+  void SetProgress(std::shared_ptr<const analysis::Result>, double seconds);
   void Refresh();
   void ResetZoom();
   void resized() override { Refresh(); }
@@ -30,6 +31,7 @@ public:
   double rangeDb{80}, differenceDb{24}, referenceGainDb{}, referenceOffset{},
       modelOffset{};
   double span{8}, pan{}, split{.5};
+  double renderDuration{8};
   double frequencyLow{20}, frequencyHigh{20000};
 
 private:
@@ -41,7 +43,15 @@ private:
   void Waveform(visage::Canvas &);
   void Axes(visage::Canvas &);
   void Readout(visage::Canvas &);
+  void WriteEdge(visage::Canvas &);
+  const analysis::Result &ModelAt(double time) const;
+  std::shared_ptr<const analysis::Result> FreezeDisplayed() const;
+  void RefreshRegion(double begin, double end);
+  bool partial_{};
+  double dirtyBegin_{}, dirtyEnd_{};
   std::shared_ptr<const analysis::Result> result_;
+  std::shared_ptr<const analysis::Result> previousResult_;
+  double writtenSeconds_{-1};
   visage::HeatMapData heatmap_;
   bool dragging_{}, divider_{}, dragReference_{};
   visage::Point previous_;

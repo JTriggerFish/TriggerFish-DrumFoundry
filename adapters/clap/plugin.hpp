@@ -99,6 +99,9 @@ public:
   host::TapRead ReadOutput(float *pcm, unsigned maximum) {
     return outputTap_.Read(pcm, maximum);
   }
+  host::TapRead ReadVoice(float *pcm, unsigned maximum) {
+    return voiceTap_.Read(pcm, maximum);
+  }
 #endif
   clap_plugin_t api{};
   bool processing{};
@@ -136,6 +139,8 @@ private:
 #ifdef DRUMFOUNDRY_UI
   host::Audition audition_;
   host::AudioTap outputTap_;
+  host::AudioTap voiceTap_;
+  bool pendingStrike_{};
   std::atomic<unsigned> auditionRate_{};
 #endif
 };

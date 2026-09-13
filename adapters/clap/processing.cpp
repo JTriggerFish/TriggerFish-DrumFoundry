@@ -30,6 +30,7 @@ void Plugin::StrikeVoice(float velocity) noexcept {
     return;
 #ifdef DRUMFOUNDRY_UI
   audition_.Stop();
+  pendingStrike_ = true;
 #endif
   auto strike = voice_->Event();
   strike.strength = velocity;
@@ -63,6 +64,14 @@ void Plugin::Event(const clap_event_header_t *header) noexcept {
 }
 void Plugin::Render(float *left, float *right, uint32_t frames) noexcept {
   voice_->Process(left, frames);
+#ifdef DRUMFOUNDRY_UI
+  // Calibrated comparison observes the instrument before monitor gain/limiter.
+  // Reference playback belongs only to the separate live output FFT.
+  if (frames && !audition_.Active()) {
+    voiceTap_.Push(left, frames, pendingStrike_);
+    pendingStrike_ = false;
+  }
+#endif
   for (uint32_t i = 0; i < frames; ++i) {
     masterGain_ += masterStep_ * (masterTarget_ - masterGain_);
     float sample = left[i];

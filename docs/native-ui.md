@@ -123,12 +123,53 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
 
 The optional UI target includes WAV decoding, reference SHA256 verification,
 offline native Voice rendering and centred STFT analysis on a cancellable worker.
-It never reads the live voice. Reference decode/hash/STFT results are cached by
+That worker owns its own voice. Reference decode/hash/STFT results are cached by
 file identity, channel and transform. Reference audition resampling is cached
 separately by the decoded source and device rate. Performance and design edits
 are briefly debounced: a roughly 130 ms pause during a drag can update the
 offline preview before release. The live voice is still replaced only on release;
-the last completed plot stays visible until a replacement is ready.
+the previous spectrogram stays behind an advancing grey write edge. New audio
+and centred FFT frames arrive incrementally, rather than waiting for a complete
+render or showing a progress bar. The renderer is unthrottled, not paced by the
+audio device; it publishes deltas approximately every 50 ms. Reference metadata
+and playback become available before the model render completes.
+
+MIDI and pad strikes retain their actual velocity for subsequent edit previews.
+They do not launch an offline re-strike: a second bounded SPSC tap copies the
+actual mono instrument output **before monitor master/limiter**, with sample-
+aligned strike markers. A separate worker incrementally analyzes that stream.
+The first strike starts a display-length capture; repeated strikes accumulate
+on the same timeline with their actual overlaps. After the window fills, the
+next strike starts another pass over the previous plot. Editing parameters
+switches back to the faster-than-realtime preview. Reference audition is not
+mixed into the instrument capture. A completed live capture can be replayed;
+unfinished or stale model renders cannot silently substitute for it.
+
+Both paths share the same streaming FFT/window implementation. Centred frames
+wait for their right-hand samples (half a window: about 43 ms at 4096/48 kHz);
+only the true end of a capture is zero-padded. This is **display latency only**,
+not extra audio latency. GUI polling is approximately 30 Hz. No FFT, allocation
+or UI synchronization was added to the audio callback. A display overrun reports
+a gap and waits for a fresh strike, without blocking audio.
+
+Heatmap updates touch only the newly written model time strip. Reference pixels
+and the unwritten old tail retain their colours. An interrupted preview's
+background is flattened, so repeated edits do not retain unbounded history.
+Zoom/reset continues to use the selected render length, not the partially filled
+buffer length.
+
+Local MinGW release measurements (2026-09-13, factory fits, 8 seconds at 48 kHz,
+4096/512 Hann, no reference-file load): gong approximately 1.53 s, crash 2.94 s;
+first published chunk approximately 16–26 ms. At 1200×500, full heatmap preparation
+was approximately 13–18 ms; a 33 ms live strip approximately 0.55 ms. These are
+CPU-stage timings, not end-to-end display measurements; add edit debounce,
+polling, initial reference decode and screen refresh. Reproduce with
+`build/native/tests/analysis_preview_bench presets/gong_calibration.fit.json`
+(append `.exe` on Windows) after `./dev.ps1 ui-test`.
+
+Regression tests compare whole/streamed FFTs for every supported window, capture
+raw host PCM with strike markers, exercise cancellation and verify that two
+strikes remain one unmodified live capture through the actual analysis panel.
 
 Visage GPU heatmaps show mirror (default), side-by-side, stacked, individual or
 difference views. The colour ceiling comes only from the reference; without a
@@ -171,8 +212,8 @@ post-master/limiter dual-mono output, including reference audition. Its fixed
 columns retains narrow ridges. The audio callback only copies PCM to a bounded
 SPSC tap; it never performs FFTs, allocates or waits. A stalled display drops its
 own data and discards stale backlog. Windowing/FFT happens on the GUI thread at
-the existing 30 Hz refresh rate, with cached FFT state; offline spectrograms
-remain on their independent worker. Tests cover tone/DC calibration, block-size
+the existing 30 Hz refresh rate, with cached FFT state; live and offline
+spectrograms use independent workers. Tests cover tone/DC calibration, block-size
 invariance, concurrent tap wraparound and equality to actual host output.
 
 Where the recipe has the final radiation EQ, that display becomes a three-handle

@@ -3,17 +3,55 @@
 #include <cmath>
 namespace drumfoundry::ui {
 void AnalysisView::Set(std::shared_ptr<const analysis::Result> result) {
+  previousResult_.reset();
+  writtenSeconds_ = -1;
   result_ = std::move(result);
   frequencyHigh = std::min(frequencyHigh, result_->model.sampleRate * .5);
   if (frequencyLow >= frequencyHigh)
     frequencyLow = 20;
   Refresh();
 }
+void AnalysisView::SetProgress(std::shared_ptr<const analysis::Result> result,
+                               double seconds) {
+  const bool sameContext =
+      result_ && result_->referenceHash == result->referenceHash &&
+      result_->referenceSpectrum.sampleRate ==
+          result->referenceSpectrum.sampleRate &&
+      result_->referenceSpectrum.size == result->referenceSpectrum.size &&
+      result_->referenceSpectrum.hop == result->referenceSpectrum.hop &&
+      result_->model.sampleRate == result->model.sampleRate;
+  const double begin = result_ == result ? std::max(0., writtenSeconds_) : 0;
+  if (result_ != result)
+    previousResult_ = FreezeDisplayed();
+  result_ = std::move(result);
+  writtenSeconds_ = seconds;
+  frequencyHigh = std::min(frequencyHigh, result_->model.sampleRate * .5);
+  if (frequencyLow >= frequencyHigh)
+    frequencyLow = 20;
+  if (sameContext)
+    RefreshRegion(begin, seconds);
+  else
+    Refresh();
+}
+void AnalysisView::RefreshRegion(double begin, double end) {
+  partial_ = true;
+  dirtyBegin_ = begin;
+  dirtyEnd_ = end;
+  Refresh();
+  partial_ = false;
+}
+const analysis::Result &AnalysisView::ModelAt(double time) const {
+  return previousResult_ && writtenSeconds_ >= 0 && time >= writtenSeconds_
+             ? *previousResult_
+             : *result_;
+}
 void AnalysisView::ResetZoom() {
   pan = 0;
   frequencyLow = 20;
   frequencyHigh = 20000;
-  if (result_)
+  if (writtenSeconds_ >= 0)
+    span = renderDuration;
+  else if (result_)
     span = double(result_->model.samples.size()) / result_->model.sampleRate;
   Refresh();
 }
@@ -79,14 +117,20 @@ void AnalysisView::Refresh() {
       const double halfTime =
           .5 * span /
           (columns * (splitTime ? (p.reference ? split : 1 - split) : 1));
+      if (partial_ &&
+          (p.reference || p.time + modelOffset + halfTime < dirtyBegin_ ||
+           p.time + modelOffset - halfTime > dirtyEnd_))
+        continue;
       const double ref =
           result_->referenceSpectrum.Peak(p.time + referenceOffset - halfTime,
                                           p.time + referenceOffset + halfTime,
                                           frequencyLo, frequencyHi) +
           referenceGainDb;
-      const double model = result_->modelSpectrum.Peak(
-          p.time + modelOffset - halfTime, p.time + modelOffset + halfTime,
-          frequencyLo, frequencyHi);
+      const double model =
+          ModelAt(p.time + modelOffset)
+              .modelSpectrum.Peak(p.time + modelOffset - halfTime,
+                                  p.time + modelOffset + halfTime, frequencyLo,
+                                  frequencyHi);
       const double value =
           comparison == Comparison::Difference
               ? .5 + .5 * (std::max(model, floor) - std::max(ref, floor)) /
@@ -113,6 +157,7 @@ void AnalysisView::draw(visage::Canvas &c) {
   Waveform(c);
   Axes(c);
   Readout(c);
+  WriteEdge(c);
   if (comparison == Comparison::Mirror ||
       comparison == Comparison::SideBySide) {
     c.setColor(0xff8e9ead);
@@ -121,5 +166,19 @@ void AnalysisView::draw(visage::Canvas &c) {
     c.setColor(0xff8e9ead);
     c.fill(42, 62 + float(split) * (height() - 91), width() - 54, 1);
   }
+}
+void AnalysisView::WriteEdge(visage::Canvas &c) {
+  if (writtenSeconds_ < 0 || comparison == Comparison::Reference)
+    return;
+  double x = (writtenSeconds_ - modelOffset - pan) / span;
+  if (x < 0 || x > 1)
+    return;
+  if (comparison == Comparison::Mirror || comparison == Comparison::SideBySide)
+    x = split + (1 - split) * x;
+  const float top = comparison == Comparison::Stacked
+                        ? 62 + float(split) * (height() - 91)
+                        : 62;
+  c.setColor(0xffa6adb5);
+  c.fill(42 + float(x) * (width() - 54), top, 2, height() - 29 - top);
 }
 } // namespace drumfoundry::ui

@@ -41,5 +41,14 @@ void Worker::ReadReference(const Request &request, Result &result,
   result.reference = cachedAudio_;
   result.referenceHash = cachedHash_;
   result.referenceSpectrum = cachedSpectrum_;
+  if (cachedPlaybackRate_ != request.auditionRate) {
+    auto playback = Resample(result.reference, request.auditionRate);
+    if (cancelled())
+      return;
+    cachedReferencePlayback_ = std::move(playback);
+    cachedPlaybackRate_ = request.auditionRate;
+  }
+  result.referencePlayback = cachedReferencePlayback_;
+  result.auditionRate = request.auditionRate;
 }
 } // namespace drumfoundry::analysis

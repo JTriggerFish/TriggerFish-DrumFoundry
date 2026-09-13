@@ -28,6 +28,7 @@ struct Bridge {
       presentation;
   std::function<unsigned()> sampleRate;
   std::function<host::TapRead(float *, unsigned)> readOutput;
+  std::function<host::TapRead(float *, unsigned)> readVoice;
   std::function<void(std::shared_ptr<const std::vector<float>>, unsigned,
                      double)>
       play;
