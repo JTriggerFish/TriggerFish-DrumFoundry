@@ -33,15 +33,15 @@ void ModalPanel::resized() {
     frame->setVisible(available_);
 }
 void ModalPanel::draw(visage::Canvas &c) {
-  Label(c, "MODAL PACKET DESIGN", 0, 0, width(), 22, 0xffe8b755);
+  Label(c, "MODAL PACKET DESIGN", 0, 0, width(), 22, colours::Heading);
   if (!available_) {
-    Label(
-        c,
-        "This recipe uses its membrane body controls instead of painted modes.",
-        0, 34, width(), 24);
+    Label(c,
+          "This recipe uses its membrane body controls instead of painted "
+          "modes.",
+          0, 34, width(), 24);
     return;
   }
   Label(c, "Double-click: add/delete · Ctrl-drag: width · Shift: fine", 0,
-        height() - 30, width() - 130, 24, 0xff8799ae);
+        height() - 30, width() - 130, 24, colours::Muted);
 }
 } // namespace drumfoundry::ui

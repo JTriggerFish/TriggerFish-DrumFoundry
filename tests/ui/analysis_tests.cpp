@@ -24,8 +24,8 @@ int main(int argc, char **argv) {
   Require(std::abs(spectrum.Peak(.45, .55, 700, 800) + 6.0206) < .001);
   Require(spectrum.Peak(-.1, -.01, 700, 800) == -180);
   Require(spectrum.Peak(1.2, 1.3, 700, 800) == -180);
-  analysis::Spectrogram sparse{48000, 2048, 512,
-                               8,     1025, std::vector<float>(8 * 1025, -180)};
+  analysis::Spectrogram sparse{
+      48000, 2048, 512, 8, 1025, std::vector<float>(8 * 1025, -180)};
   sparse.db[4 * 1025 + 777] = -12;
   Require(sparse.At(.04, 18000) == -180);
   Require(sparse.Peak(.02, .06, 17000, 19000) == -12);
@@ -51,14 +51,15 @@ int main(int argc, char **argv) {
   view.mouseWheel(e);
   Require(std::abs(view.pan) < 1e-10);
   e.button_id = visage::kMouseButtonLeft;
-  e.position = {
-      200, 20}; // The waveform must pan in forward time, even in mirror view.
+  e.position = {200, 40}; // The plot now begins immediately below its legend.
   view.mouseDown(e);
   e.position.x += 30;
   view.mouseDrag(e);
   view.mouseUp(e);
   Require(std::abs(view.pan + view.span * 30 / (800 - 54)) < 1e-10);
   view.pan = 0;
+  extern void AnalysisGestureTests();
+  AnalysisGestureTests();
   analysis::Worker worker;
   analysis::Request request;
   request.document = editing::ReadFit(argv[1]);
@@ -78,25 +79,38 @@ int main(int argc, char **argv) {
   {
     auto document = request.document;
     document["reference"] = nullptr;
-    document["controls"]["analysis"]["view"] = {{"comparison", 3},
-                                                {"pan", .25},
-                                                {"span", 2},
-                                                {"split", .4},
-                                                {"modelOffset", .003},
-                                                {"differenceDb", 12},
-                                                {"renderSeconds", .25},
-                                                {"frequencyLow", 100},
-                                                {"frequencyHigh", 5000},
-                                                {"analysisShare", 450. / 1100},
-                                                {"leftShare", .4},
-                                                {"showSpectrogram", 1},
-                                                {"showModalEditor", 1},
-                                                {"singleColumn", 0}};
+    document["controls"]["analysis"]["view"] = {
+        {"comparison", 3},
+        {"pan", .25},
+        {"span", 2},
+        {"split", .4},
+        {"modelOffset", .003},
+        {"differenceDb", 12},
+        {"renderSeconds", .25},
+        {"frequencyLow", 100},
+        {"frequencyHigh", 5000},
+        {"analysisShare", 450. / 1100},
+        {"leftShare", .4},
+        {"showSpectrogram", 1},
+        {"showModalEditor", 1},
+        {"singleColumn", 0},
+        {"textSize", 2}};
     ui::AnalysisPanel panel;
     panel.SetDocument(document);
     Require(panel.Settings().at("view") ==
             document.at("controls").at("analysis").at("view"));
     const auto previous = panel.Settings();
+    for (double invalid : {-1., .5, 3.}) {
+      auto badText = document;
+      badText["controls"]["analysis"]["view"]["textSize"] = invalid;
+      bool rejected = false;
+      try {
+        panel.SetDocument(badText);
+      } catch (const std::exception &) {
+        rejected = true;
+      }
+      Require(rejected && panel.Settings() == previous);
+    }
     document["controls"]["analysis"]["view"]["span"] = 12;
     document["controls"]["analysis"]["view"]["frequencyHigh"] = 25;
     bool rejected = false;

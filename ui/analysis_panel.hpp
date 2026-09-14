@@ -2,13 +2,14 @@
 #include "analysis_view.hpp"
 #include "bridge.hpp"
 #include "editing/document.hpp"
+#include "play_button.hpp"
 #include "workbench/analysis/library.hpp"
 #include "workbench/analysis/live_worker.hpp"
 namespace drumfoundry::ui {
 class AnalysisPanel : public visage::Frame {
 public:
-  explicit AnalysisPanel(
-      std::filesystem::path librarySettings = analysis::LibrarySettingsPath());
+  explicit AnalysisPanel(std::filesystem::path librarySettings =
+                             analysis::LibrarySettingsPath());
   void SetDocument(const editing::Json &);
   void UpdateModel(const editing::Json &document) {
     request_.document = document;
@@ -40,10 +41,12 @@ public:
   float MinimumHeight();
   bool showSpectrogram{true}, showModalEditor{true}, singleColumn{};
   double leftShare{.4};
+  int textSize{}; // Small (current), Medium, Large; presentation only.
   void resized() override;
   void draw(visage::Canvas &) override;
   std::function<void(const std::string &)> error;
   std::function<void()> layoutChanged;
+  std::function<void()> requestReferencePlay;
   std::function<void(std::shared_ptr<const std::vector<float>>, unsigned,
                      double)>
       play;
@@ -87,6 +90,7 @@ private:
       channel_{"Mono average"};
   visage::UiButton overlap_{"Overlap"}, render_{"Render"};
   visage::UiButton referenceVisible_{"Show reference"};
+  PlayButton referencePlay_;
   visage::UiButton previousReference_{"Previous"}, nextReference_{"Next"};
   Slider duration_{"Render length", .25, 60, 8, " s"};
   Slider range_{"Colour range", 30, 120, 80, " dB"};

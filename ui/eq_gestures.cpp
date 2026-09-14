@@ -43,7 +43,7 @@ void EqPlot::mouseDown(const visage::MouseEvent &e) {
       ResetHandle(i);
       if (committed)
         committed();
-    } else if (document_.Value("output_eq_enabled") >= .5)
+    } else
       drag_ = i;
   } catch (const std::exception &ex) {
     if (error)
@@ -74,7 +74,19 @@ void EqPlot::mouseDrag(const visage::MouseEvent &e) {
 void EqPlot::mouseUp(const visage::MouseEvent &) {
   const bool commit = drag_ >= 0;
   drag_ = -1;
+  redraw();
   if (commit && committed)
     committed();
+}
+void EqPlot::mouseMove(const visage::MouseEvent &e) {
+  const int next = Hit(e.position);
+  if (hover_ != next) {
+    hover_ = next;
+    redraw();
+  }
+}
+void EqPlot::mouseExit(const visage::MouseEvent &) {
+  hover_ = -1;
+  redraw();
 }
 } // namespace drumfoundry::ui

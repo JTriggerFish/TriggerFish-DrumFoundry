@@ -35,11 +35,12 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &cli, bool smoke,
   ui::NativeFonts(settings);
   visage::Frame shade;
   shade.onDraw() = [&](visage::Canvas &c) {
-    c.setColor(0x9905090f);
+    c.setColor(ui::colours::Overlay);
     c.fill(0, 0, shade.width(), shade.height());
   };
   auto bridge = session.Connect();
-  // Exercise the actual CLAP output/meter path without acquiring any hardware.
+  // Exercise the actual CLAP output/meter path without acquiring any
+  // hardware.
   visage::EventTimer smokeAudio;
   std::array<float, 1024> smokePcm{};
   unsigned smokeFrames = 0;
@@ -65,12 +66,20 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &cli, bool smoke,
   window.setTitle("TriggerFish DrumFoundry");
   window.setMinimumDimensions(900, 600);
   ui::Workbench editor(std::move(bridge));
+  editor.textSizeChanged = [&] {
+    shade.setPalette(editor.palette());
+    ui::NativeFonts(settings);
+    settings.resized();
+  };
   if (!settingsError.empty())
     editor.Error(settingsError);
   settings.error = [&](const std::string &error) { editor.Error(error); };
   window.addChild(&editor);
+  window.setPalette(
+      editor.palette()); // Root-owned popups use this editor's text size.
   window.addChild(&shade, false);
   shade.addChild(&settings);
+  editor.textSizeChanged();
   settings.onVisibilityChange() = [&] {
     if (!settings.isVisible())
       shade.setVisible(false);
@@ -79,8 +88,8 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &cli, bool smoke,
   window.onResize() = [&] {
     editor.setBounds(window.localBounds());
     shade.setBounds(window.localBounds());
-    settings.setBounds((window.width() - 640) / 2, (window.height() - 520) / 2,
-                       640, 520);
+    settings.setBounds((window.width() - 640) / 2,
+                       (window.height() - 520) / 2, 640, 520);
   };
   // Saved selections and --device both start on launch. Use the same guarded
   // path as Apply so driver errors are visible inside Settings as well.
@@ -94,6 +103,8 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &cli, bool smoke,
     capture = std::make_unique<GuiCapture>(window, editor, shade, settings);
   window.show(smoke ? 2400 : 1440, smoke ? 1200 : 900);
   window.runEventLoop();
+  window.setPalette(
+      nullptr); // Release the borrowed palette before editor destruction.
   smokeAudio.stopTimer();
   if (smoke)
     host.Stop();

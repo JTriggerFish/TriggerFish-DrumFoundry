@@ -40,8 +40,8 @@ void AnalysisPanel::ApplyReferenceView() {
                                ? "Ref: " + reference_.value("name", "Sample")
                                : "Reference: None");
   for (auto *frame : std::initializer_list<visage::Frame *>{
-           &referenceVisible_, &referenceGain_, &channel_, &previousReference_,
-           &nextReference_})
+           &referenceVisible_, &referenceGain_, &channel_,
+           &previousReference_, &nextReference_, &referencePlay_})
     frame->setVisible(selected);
   const bool visible = selected && reference_.value("visible", true);
   referenceVisible_.setText(visible ? "Hide reference" : "Show reference");

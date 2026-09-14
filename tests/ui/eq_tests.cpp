@@ -22,13 +22,15 @@ void CheckResponse(const drumfoundry::editing::Document &d) {
         z *= step;
       }
       const auto parts = curve.At(frequency);
-      Check(std::abs(20 * std::log10(std::abs(response)) - parts[0] - parts[1] -
-                     parts[2]) < .005);
+      Check(std::abs(20 * std::log10(std::abs(response)) - parts[0] -
+                     parts[1] - parts[2]) < .005);
     }
   }
 }
 } // namespace
 void EqTests(drumfoundry::editing::Document d) {
+  extern void EqPanelTests(drumfoundry::editing::Document);
+  EqPanelTests(d);
   using namespace drumfoundry;
   Check(editing::HasOutputEq(d));
   for (const auto &p : d.Parameters()) {
@@ -80,13 +82,14 @@ void EqTests(drumfoundry::editing::Document d) {
   Check(std::abs(d.Value("output_colour_gain") + 3) < .001);
   Check(changes == 1 && commits == 1);
   d.Set("output_eq_enabled", 0);
-  const auto bypassed = d.JsonValue();
   plot.mouseDown(e);
   e.position = point(4000, 10);
   plot.mouseDrag(e);
   plot.mouseUp(e);
-  Check(d.JsonValue() == bypassed && changes == 1);
-  e.position = point(2000, -3);
+  Check(d.Value("output_eq_enabled") == 0 && changes == 2 && commits == 2);
+  Check(std::abs(d.Value("output_colour_frequency") - 4000) < .002);
+  Check(std::abs(d.Value("output_colour_gain") - 10) < .001);
+  e.position = point(4000, 10);
   e.repeat_click_count = 2;
   plot.mouseDown(e);
   Check(d.Value("output_colour_frequency") ==

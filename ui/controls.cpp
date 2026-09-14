@@ -2,7 +2,6 @@
 #include "embedded/fonts.h"
 #include <algorithm>
 #include <cmath>
-#include <cstdio>
 
 namespace drumfoundry::ui {
 visage::Font Font(float size) {
@@ -10,9 +9,12 @@ visage::Font Font(float size) {
 }
 void NativeFonts(visage::Frame &frame) {
   if (auto *button = dynamic_cast<visage::UiButton *>(&frame))
-    button->setFont(Font());
+    button->setFont(FrameFont(frame));
+  if (auto *editor = dynamic_cast<visage::TextEditor *>(&frame))
+    editor->setFont(FrameFont(frame));
   for (auto *child : frame.children())
     NativeFonts(*child);
+  frame.redraw();
 }
 void ControlErrors(visage::Frame &frame,
                    const std::function<void(const std::string &)> &error) {
@@ -22,17 +24,19 @@ void ControlErrors(visage::Frame &frame,
     ControlErrors(*child, error);
 }
 void Label(visage::Canvas &c, const std::string &text, float x, float y,
-           float w, float h, unsigned color) {
+           float w, float h, visage::theme::ColorId color) {
   c.setColor(color);
-  c.text(text, Font(), visage::Font::kLeft, x, y, w, h);
+  c.text(text, Font(13 * c.value(TextScale)), visage::Font::kLeft, x, y, w,
+         h);
 }
 Slider::Slider(std::string label, double low, double high, double initial,
                std::string unit)
-    : label_(std::move(label)), unit_(std::move(unit)), low_(low), high_(high),
-      initial_(initial), value_(initial) {
-  help = label_ + (unit_.empty() ? ". " : " (" + unit_ + "). ") +
-         "Double-click resets; Shift-drag adjusts finely. Right-click to type "
-         "a value in the displayed units; Enter applies, Escape cancels.";
+    : label_(std::move(label)), unit_(std::move(unit)), low_(low),
+      high_(high), initial_(initial), value_(initial) {
+  help =
+      label_ + (unit_.empty() ? ". " : " (" + unit_ + "). ") +
+      "Double-click resets; Shift-drag adjusts finely. Right-click to type "
+      "a value in the displayed units; Enter applies, Escape cancels.";
   if (unit_ == " Hz")
     help += " Type frequencies in Hz, even when the readout shows kHz.";
 }
@@ -63,40 +67,24 @@ double Slider::ValueAt(double p) const {
   return valueAt ? valueAt(p) : low_ + (high_ - low_) * p;
 }
 void Slider::draw(visage::Canvas &c) {
-  Label(c, label_, 0, 0, width() * .65f, 22);
-  char text[48];
-  auto unit = unit_;
-  double shown = value_;
-  if (unit == " Hz" && std::abs(shown) >= 1000) {
-    shown /= 1000;
-    unit = " kHz";
-  }
-  const double magnitude = std::abs(shown);
-  if (magnitude > 0 && magnitude < .0001)
-    std::snprintf(text, sizeof(text), "%.2g", shown);
-  else
-    std::snprintf(text, sizeof(text), "%.*f",
-                  magnitude >= 100   ? 1
-                  : magnitude >= 1   ? 2
-                  : magnitude >= .01 ? 3
-                                     : 4,
-                  shown);
-  std::string readout = text;
-  if (readout.find('.') != std::string::npos &&
-      readout.find('e') == std::string::npos) {
-    while (readout.back() == '0')
-      readout.pop_back();
-    if (readout.back() == '.')
-      readout.pop_back();
-  }
-  Label(c, readout + unit, width() * .67f, 0, width() * .33f, 22);
+  const bool stacked = height() >= 62;
+  const auto readout = Readout(value_);
+  const auto font = FrameFont(*this);
+  const float valueWidth =
+      font.stringWidth(visage::String(readout).toUtf32());
+  const float valueX = stacked ? 0 : std::max(0.f, width() - valueWidth);
+  const float captionWidth = stacked ? width() : std::max(0.f, valueX - 8);
+  Label(c, ElideText(font, label_, captionWidth), 0, 0, captionWidth, 22,
+        colours::Muted);
+  Label(c, readout, valueX, stacked ? 22 : 0, width() - valueX, 22);
   const float track = std::max(1.f, width() - 12.f);
-  c.setColor(0xff303c49);
-  c.roundedRectangle(6, 30, track, 4, 2);
+  const float trackY = stacked ? 52.f : 30.f;
+  c.setColor(colours::Track);
+  c.roundedRectangle(6, trackY, track, 4, 2);
   const float x = 6 + track * float(Position(value_));
-  c.setColor(0xff9fcaff);
-  c.roundedRectangle(6, 30, x - 6, 4, 2);
-  c.circle(x - 5, 27, 10);
+  c.setColor(colours::Accent);
+  c.roundedRectangle(6, trackY, x - 6, 4, 2);
+  c.circle(x - 5, trackY - 3, 10);
 }
 void Slider::mouseDown(const visage::MouseEvent &e) {
   if (e.button_id == visage::kMouseButtonRight) {
@@ -119,32 +107,13 @@ void Slider::mouseDrag(const visage::MouseEvent &e) {
   if (!dragging_)
     return;
   const double fine = e.isShiftDown() ? .1 : 1.;
-  Edit(ValueAt(dragValue_ +
-               (e.position.x - dragX_) / std::max(1.f, width() - 12.f) * fine));
+  Edit(ValueAt(dragValue_ + (e.position.x - dragX_) /
+                                std::max(1.f, width() - 12.f) * fine));
 }
 void Slider::mouseUp(const visage::MouseEvent &e) {
   const bool commit = dragging_ && e.isLeftButton();
   dragging_ = false;
   if (commit && committed)
     committed();
-}
-void StrikePad::draw(visage::Canvas &c) {
-  c.setColor(0xff17202a);
-  c.roundedRectangle(0, 0, width(), height(), 5);
-  Label(c, "STRIKE  /  velocity", 12, 5, width() - 24, 22);
-  Label(c, "Strong", 12, 30, 80, 20);
-  Label(c, "Light", 12, height() - 26, 80, 20);
-  Label(c,
-        kick_       ? "Soft beater     —     Hard beater"
-        : membrane_ ? "Centre     —     Edge"
-                    : "Bell     —     Bow     —     Edge",
-        width() * .35f, height() - 26, width() * .6f, 20);
-}
-void StrikePad::mouseDown(const visage::MouseEvent &e) {
-  if (!e.isLeftButton() || height() <= 0 || width() <= 0)
-    return;
-  if (strike)
-    strike(std::clamp(1.f - e.position.y / height(), .01f, 1.f),
-           std::clamp(e.position.x / width(), 0.f, 1.f));
 }
 } // namespace drumfoundry::ui

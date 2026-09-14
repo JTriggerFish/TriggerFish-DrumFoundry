@@ -11,8 +11,8 @@ SeriesPanel::SeriesPanel() {
                        "Upper-mode stretch", "Protected low modes",
                        "Falloff (dB/oct)",   "Top level (dB)",
                        "Noisiness response"};
-  const double low[]{8, 1, 0, 1, -12, -60, 0}, high[]{8000, 32, 1, 8, 24, 6, 2},
-      initial[]{55, 16, 0, 4, 6, 0, 1};
+  const double low[]{8, 1, 0, 1, -12, -60, 0},
+      high[]{8000, 32, 1, 8, 24, 6, 2}, initial[]{55, 16, 0, 4, 6, 0, 1};
   for (int i = 0; i < 7; ++i) {
     auto slider =
         std::make_unique<Slider>(labels[i], low[i], high[i], initial[i]);
@@ -117,6 +117,6 @@ void SeriesPanel::resized() {
                           col, 44);
 }
 void SeriesPanel::draw(visage::Canvas &c) {
-  Label(c, status_, 0, height() - 24, width(), 22, 0xffe8b755);
+  Label(c, status_, 0, height() - 24, width(), 22, colours::Heading);
 }
 } // namespace drumfoundry::ui

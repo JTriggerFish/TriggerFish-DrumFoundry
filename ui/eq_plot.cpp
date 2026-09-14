@@ -2,17 +2,15 @@
 #include <algorithm>
 #include <cmath>
 namespace drumfoundry::ui {
-namespace {
-constexpr unsigned colours[]{0xffdcb66c, 0xffc78ac0, 0xff74b8d6};
-}
 EqPlot::EqPlot(editing::Document &d, const LiveSpectrum *s)
     : document_(d), spectrum_(s) {
   help =
-      "Final EQ: drag gold/blue handles horizontally for high/low-pass cuts; "
-      "drag pink in two dimensions for colour frequency and gain. Double-click "
+      "Final EQ: drag the outer handles horizontally for high/low-pass cuts; "
+      "drag the colour handle for frequency and gain. Double-click "
       "a handle to reset. Values below are the same controls. Background: "
       "actual live output, fixed 0 to -96 dBFS/bin from top to bottom; curve "
-      "grid: EQ gain in dB. Bypass disables the response, not the spectrum.";
+      "grid: EQ gain in dB. Handles remain editable while bypassed; enable "
+      "the EQ below to hear those edits. Bypass never changes automatically.";
 }
 float EqPlot::X(double f) const {
   return 30 +
@@ -30,32 +28,18 @@ double EqPlot::Gain(float y) const {
   return 24 - 60 * (y - 26) / std::max(1.f, height() - 50);
 }
 void EqPlot::draw(visage::Canvas &c) {
+  const visage::theme::ColorId EqColours[]{colours::EqLow, colours::EqColour,
+                                           colours::EqHigh};
   const bool enabled = document_.Value("output_eq_enabled") >= .5;
   const double rate = spectrum_ && spectrum_->Rate() ? spectrum_->Rate()
                       : previewRate                  ? previewRate()
                                                      : 48000;
   const auto p = editing::OutputEqSettings(document_);
-  Label(c,
-        enabled ? "FINAL EQ  /  live output behind"
-                : "EQ BYPASSED  /  live output behind",
-        0, 0, width(), 20, 0xff8799ae);
+  DrawBackground(c, enabled);
   if (spectrum_)
-    spectrum_->DrawTrace(c, 30, 26, width() - 38, height() - 50, 0xff233d50,
-                         true);
-  for (double db : {-24., -12., 0., 12.}) {
-    c.setColor(db == 0 ? 0xff536778 : 0xff293440);
-    c.fill(30, Y(db), width() - 38, 1);
-    Label(c, std::to_string(int(db)), 0, Y(db) - 8, 28, 16);
-  }
-  for (double f : {100., 1000., 10000.}) {
-    c.setColor(0xff293440);
-    c.fill(X(f), 26, 1, height() - 50);
-    Label(c,
-          f == 100    ? "100"
-          : f == 1000 ? "1k"
-                      : "10k",
-          X(f) - 10, height() - 21, 32, 18);
-  }
+    spectrum_->DrawTrace(c, 30, 26, width() - 38, height() - 50,
+                         colours::Spectrum, true, .4f, 5, 22000);
+  DrawGrid(c);
   std::array<visage::Path, 4> paths;
   const editing::OutputEqResponse response(p, rate);
   const double maximum = std::min(22000., .499 * rate);
@@ -72,15 +56,15 @@ void EqPlot::draw(visage::Canvas &c) {
     }
   }
   for (unsigned i = 0; i < 4; ++i) {
-    c.setColor(i == 3 ? 0xffd5e3ef
-                      : ((enabled ? 0x99000000 : 0x33000000) |
-                         (colours[i] & 0xffffff)));
-    c.fill(paths[i].stroke(i == 3 ? 1.5f : 1.f));
+    if (i == 3) {
+      c.setColor(colours::Plot);
+      c.fill(paths[i].stroke(4));
+    }
+    c.setColor(i == 3 ? c.color(colours::Text)
+                      : c.color(EqColours[i])
+                            .withMultipliedAlpha(enabled ? .9f : .55f));
+    c.fill(paths[i].stroke(i == 3 ? 2.25f : 1.5f));
   }
-  const double frequencies[]{p.lowCutHz, p.colourFrequencyHz, p.highCutHz};
-  for (int i = 0; i < 3; ++i) {
-    c.setColor((enabled ? 0xff000000 : 0x66000000) | (colours[i] & 0xffffff));
-    c.circle(X(frequencies[i]) - 5, Y(i == 1 ? p.colourGainDb : 0) - 5, 10);
-  }
+  DrawHandles(c);
 }
 } // namespace drumfoundry::ui

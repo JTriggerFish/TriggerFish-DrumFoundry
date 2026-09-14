@@ -2,7 +2,8 @@
 #include <stdexcept>
 
 namespace drumfoundry::ui {
-SettingsPanel::SettingsPanel(SettingsBridge bridge, DeviceConfiguration config)
+SettingsPanel::SettingsPanel(SettingsBridge bridge,
+                             DeviceConfiguration config)
     : bridge_(std::move(bridge)), config_(std::move(config)) {
   addChild(&messageView_);
   messageView_.onScroll() = [this](auto *) { messageView_.redraw(); };
@@ -10,12 +11,12 @@ SettingsPanel::SettingsPanel(SettingsBridge bridge, DeviceConfiguration config)
   messageText_.setMultiLine(true);
   messageText_.setJustification(visage::Font::kTopLeft);
   messageView_.onDraw() = [this](visage::Canvas &c) {
-    c.setColor(0xffefb178);
+    c.setColor(colours::Error);
     c.text(&messageText_, 0, -messageView_.yPosition(),
            messageView_.width() - 12, messageHeight_);
   };
-  for (auto *button :
-       {&api_, &device_, &midi_, &rate_, &buffer_, &apply_, &stop_, &close_}) {
+  for (auto *button : {&api_, &device_, &midi_, &rate_, &buffer_, &apply_,
+                       &stop_, &close_}) {
     addChild(button);
     button->setFont(Font());
   }
@@ -94,11 +95,13 @@ void SettingsPanel::Guard(const std::function<void()> &action) {
   redraw();
 }
 void SettingsPanel::UpdateMessage() {
+  messageText_.setFont(FrameFont(*this));
   messageText_.setText(message_);
   const auto text = visage::String(message_).toUtf32();
-  const auto lines = Font().lineBreaks(
-      text.c_str(), int(text.size()), std::max(1.f, messageView_.width() - 12));
-  messageHeight_ = float(lines.size() + 1) * 20;
+  const auto lines =
+      FrameFont(*this).lineBreaks(text.c_str(), int(text.size()),
+                                  std::max(1.f, messageView_.width() - 12));
+  messageHeight_ = float(lines.size() + 1) * 20 * paletteValue(TextScale);
   messageView_.setScrollableHeight(messageHeight_);
   messageView_.redraw();
 }
@@ -139,9 +142,10 @@ void SettingsPanel::resized() {
   UpdateMessage();
 }
 void SettingsPanel::draw(visage::Canvas &c) {
-  c.setColor(0xff1b2430);
+  c.setColor(colours::Panel);
   c.roundedRectangle(0, 0, width(), height(), 8);
-  Label(c, "AUDIO / MIDI SETTINGS", 24, 12, width() - 140, 30, 0xffe8b755);
+  Label(c, "AUDIO / MIDI SETTINGS", 24, 12, width() - 140, 30,
+        colours::Heading);
   unsigned row = 0;
   for (const auto *label : {"Audio API", "Output device", "MIDI input",
                             "Sample rate", "Buffer size"})

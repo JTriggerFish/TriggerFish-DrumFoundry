@@ -21,10 +21,10 @@ public:
   }
   void mouseUp(const visage::MouseEvent &) override { dragging_ = false; }
   void draw(visage::Canvas &c) override {
-    c.setColor(0xff536778);
+    c.setColor(colours::Border);
     if (vertical)
-      c.roundedRectangle(width() * .5f - 1, height() * .35f, 2, height() * .3f,
-                         1);
+      c.roundedRectangle(width() * .5f - 1, height() * .35f, 2,
+                         height() * .3f, 1);
     else
       c.roundedRectangle(width() * .35f, height() * .5f - 1, width() * .3f, 2,
                          1);

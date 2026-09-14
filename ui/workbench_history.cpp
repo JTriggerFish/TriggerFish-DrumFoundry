@@ -18,7 +18,7 @@ void Workbench::SetupFiles() {
   fileShade_.setOnTop(true);
   fileShade_.addChild(&files_);
   fileShade_.onDraw() = [this](visage::Canvas &c) {
-    c.setColor(0xa005090f);
+    c.setColor(colours::Overlay);
     c.fill(0, 0, width(), height());
   };
   files_.onVisibilityChange() = [this] {

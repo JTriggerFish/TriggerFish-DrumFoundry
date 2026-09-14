@@ -1,0 +1,2 @@
+#pragma once
+inline constexpr char DefaultThemeJson[] = R"theme(@theme_json@)theme";

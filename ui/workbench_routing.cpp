@@ -7,7 +7,7 @@ void Workbench::SetupRouting() {
   routingShade_.setOnTop(true);
   routingShade_.addChild(&routes_);
   routingShade_.onDraw() = [this](visage::Canvas &c) {
-    c.setColor(0x8005090f);
+    c.setColor(colours::Overlay);
     c.fill(0, 0, width(), height());
   };
   routingToggle_.onToggle() = [this](auto *, bool) {

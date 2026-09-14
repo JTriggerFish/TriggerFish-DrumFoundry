@@ -5,8 +5,9 @@ void GuiCapture::Resize(unsigned width, unsigned height) {
   window_.window()->setNativeWindowSize(int(width * scale),
                                         int(height * scale));
 }
-GuiCapture::GuiCapture(visage::ApplicationWindow &window, ui::Workbench &editor,
-                       visage::Frame &shade, visage::Frame &settings)
+GuiCapture::GuiCapture(visage::ApplicationWindow &window,
+                       ui::Workbench &editor, visage::Frame &shade,
+                       visage::Frame &settings)
     : window_(window), editor_(editor), shade_(shade), settings_(settings) {
   timer_.onTimerCallback() = [this] { Tick(); };
   timer_.startTimer(1500);
@@ -36,17 +37,42 @@ void GuiCapture::Tick() {
       editor_.SetControlWidth(340);
     } else if (stage_ == 2) {
       shot.save("build/ui-small-smoke.png");
-      editor_.SetVisualPanels(false, false);
+      for (auto *child : editor_.children())
+        if (auto *panel = dynamic_cast<ui::ParameterPanel *>(child))
+          panel->setYPosition(180);
     } else if (stage_ == 4) {
+      shot.save("build/ui-scrolled-groups-smoke.png");
+      for (auto *child : editor_.children())
+        if (auto *panel = dynamic_cast<ui::ParameterPanel *>(child))
+          panel->setYPosition(0);
+      editor_.SetVisualPanels(false, false);
+    } else if (stage_ == 6) {
       shot.save("build/ui-compact-smoke.png");
+      editor_.SetTextSize(1);
+      editor_.SetVisualPanels(true, true);
+    } else if (stage_ == 8) {
+      shot.save("build/ui-medium-text-smoke.png");
+      editor_.SetTextSize(2);
+    } else if (stage_ == 10) {
+      shot.save("build/ui-large-text-smoke.png");
+      editor_.OpenLayout();
+    } else if (stage_ == 12) {
+      shot.save("build/ui-layout-smoke.png");
+      // Click outside the popover using the same input path as the user.
+      visage::MouseEvent click;
+      click.button_id = visage::kMouseButtonLeft;
+      click.position = {4, 4};
+      for (auto *child : editor_.children())
+        if (child->isVisible() && child->width() == editor_.width())
+          child->processMouseDown(click);
       Resize(1440, 900);
       shade_.setVisible(true);
       settings_.setVisible(true);
-    } else if (stage_ == 6) {
+    } else if (stage_ == 14) {
       shot.save("build/ui-settings-smoke.png");
       settings_.setVisible(false);
       editor_.OpenRouting();
-    } else if (stage_ == 8) {
+    } else if (stage_ == 16) {
       shot.save("build/ui-routing-smoke.png");
       captured_ = true;
     }

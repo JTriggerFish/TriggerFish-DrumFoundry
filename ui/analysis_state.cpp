@@ -22,6 +22,7 @@ void AnalysisPanel::LoadView(const editing::Json &analysis) {
   showSpectrogram = v.at("showSpectrogram").get<double>() != 0;
   showModalEditor = v.at("showModalEditor").get<double>() != 0;
   singleColumn = v.at("singleColumn").get<double>() != 0;
+  textSize = int(v.at("textSize").get<double>());
   const char *names[]{"Mirror",     "Side by side", "Stacked",
                       "Difference", "Model",        "Reference"};
   comparison_.setText(names[int(mode)]);

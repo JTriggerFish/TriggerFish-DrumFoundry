@@ -1,5 +1,7 @@
 #pragma once
 #include "help.hpp"
+#include "theme.hpp"
+#include "typography.hpp"
 #include <functional>
 #include <memory>
 #include <visage/ui.h>
@@ -12,10 +14,11 @@ void NativeFonts(visage::Frame &);
 void ControlErrors(visage::Frame &,
                    const std::function<void(const std::string &)> &);
 void Label(visage::Canvas &, const std::string &, float x, float y, float w,
-           float h, unsigned color = 0xffcad4df);
+           float h, visage::theme::ColorId color = colours::Text);
 
 // Conventional horizontal slider, using Visage input and drawing primitives.
-// Double click resets; Shift-drag gives fine adjustment. Values stay in units.
+// Double click resets; Shift-drag gives fine adjustment. Values stay in
+// units.
 class Slider : public visage::Frame, public HelpText {
 public:
   Slider(std::string label, double low, double high, double initial,
@@ -26,6 +29,8 @@ public:
   // sound.
   bool SubmitText(const std::string &text);
   void resized() override;
+  // Caption and value share a line whenever their measured text fits.
+  float PreferredHeight(float availableWidth) const;
   double Value() const { return value_; }
   void SetLabel(std::string label) {
     if (label_ != label) {
@@ -50,6 +55,7 @@ private:
   void Edit(double value);
   double Position(double value) const;
   double ValueAt(double position) const;
+  std::string Readout(double value) const;
   std::string label_, unit_;
   double low_, high_, initial_, value_, dragValue_{};
   float dragX_{};
@@ -73,10 +79,18 @@ public:
   }
   void draw(visage::Canvas &) override;
   void mouseDown(const visage::MouseEvent &) override;
+  // Axes, input and marker share this playable rectangle; margins clamp to
+  // it.
+  visage::Bounds PlayingBounds() const;
   std::function<void(float, float)> strike;
 
 private:
+  void Axes(visage::Canvas &);
+  void Marker(visage::Canvas &);
   bool kick_{};
   bool membrane_{};
+  bool struck_{};
+  float lastX_{},
+      lastY_{}; // Normalized pad coordinates, preserved on resize.
 };
 } // namespace drumfoundry::ui

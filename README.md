@@ -4,7 +4,7 @@ A modular percussion synthesizer for kicks, snares, toms, cymbals and gongs.
 Available as a CLAP plugin and standalone application for Windows, Linux and macOS.
 
 The native Visage editor combines live MIDI performance, graphical modal and
-decay editing, output EQ, waveform/spectrogram analysis and saved presets.
+decay editing, output EQ, spectrogram analysis and saved presets.
 Optional reference libraries support side-by-side sound design and calibration.
 The output limiter has a visible bypass switch and 1 ms lookahead.
 

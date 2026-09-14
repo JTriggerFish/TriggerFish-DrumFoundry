@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DrumFoundry colour scheme",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "name", "colors"],
+  "properties": {
+    "schema": {"const": "triggerfish.drumfoundry.theme/v1"},
+    "name": {"type": "string", "minLength": 1, "maxLength": 80},
+    "colors": {
+      "type": "object",
+      "minProperties": 29,
+      "maxProperties": 29,
+      "propertyNames": {
+        "enum": ["Background", "Panel", "Raised", "Border", "Grid", "Text", "Muted",
+          "Accent", "Secondary", "Heading", "Warning", "Error", "Success",
+          "Button", "ButtonHover", "Selected", "SelectedText", "Track", "Plot",
+          "Reference", "Synth", "Spectrum", "EqLow", "EqColour", "EqHigh", "Strike",
+          "AxisVelocity", "AxisPosition", "Overlay"]
+      },
+      "additionalProperties": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"}
+    }
+  }
+}

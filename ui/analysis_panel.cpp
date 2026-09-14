@@ -8,10 +8,16 @@ AnalysisPanel::AnalysisPanel(std::filesystem::path librarySettings)
     : librarySettings_(std::move(librarySettings)) {
   for (auto *frame : std::initializer_list<visage::Frame *>{
            &view_, &referenceButton_, &fft_, &window_, &comparison_, &reset_,
-           &channel_, &duration_, &range_, &referenceGain_, &referenceVisible_,
-           &overlap_, &render_, &previousReference_, &nextReference_})
+           &channel_, &duration_, &range_, &referenceGain_,
+           &referenceVisible_, &overlap_, &render_, &previousReference_,
+           &nextReference_, &referencePlay_})
     addChild(frame);
   referenceButton_.onToggle() = [this](auto *, bool) { ReferenceMenu(); };
+  referencePlay_.setVisible(false);
+  referencePlay_.onToggle() = [this](auto *, bool) {
+    if (requestReferencePlay)
+      requestReferencePlay();
+  };
   previousReference_.onToggle() = [this](auto *, bool) { StepReference(-1); };
   nextReference_.onToggle() = [this](auto *, bool) { StepReference(1); };
   referenceVisible_.onToggle() = [this](auto *, bool) {
@@ -90,7 +96,8 @@ editing::Json AnalysisPanel::Settings() const {
             {"leftShare", leftShare},
             {"showSpectrogram", showSpectrogram ? 1 : 0},
             {"showModalEditor", showModalEditor ? 1 : 0},
-            {"singleColumn", singleColumn ? 1 : 0}}}};
+            {"singleColumn", singleColumn ? 1 : 0},
+            {"textSize", textSize}}}};
 }
 void AnalysisPanel::Queue() {
   if (request_.document.is_null())
@@ -110,6 +117,7 @@ float AnalysisPanel::LayoutControls(float toolsTop) {
   ToolbarLayout reference(width(), 0, 46);
   reference.Place(referenceButton_, 184);
   if (reference_.is_object()) {
+    reference.Place(referencePlay_, 32);
     reference.Place(previousReference_, 80);
     reference.Place(nextReference_, 64);
     reference.Place(referenceVisible_, 125);
@@ -138,12 +146,14 @@ float AnalysisPanel::LayoutControls(float toolsTop) {
     return scales.Bottom();
   };
   const float controlsHeight = tools(0);
-  // Includes two waveform lanes; leave at least 150 px for the heatmap itself.
+  // Retain the view height: reclaimed space now belongs to the heatmap.
   constexpr float MinimumView = 300;
-  const float minimum = reference.Bottom() + MinimumView + 26 + controlsHeight;
+  const float minimum =
+      reference.Bottom() + MinimumView + 26 + controlsHeight;
   const float bottom = std::max(reference.Bottom() + MinimumView,
                                 toolsTop - 26 - controlsHeight);
-  view_.setBounds(0, reference.Bottom(), width(), bottom - reference.Bottom());
+  view_.setBounds(0, reference.Bottom(), width(),
+                  bottom - reference.Bottom());
   tools(bottom);
   return minimum;
 }
@@ -151,6 +161,6 @@ float AnalysisPanel::MinimumHeight() { return LayoutControls(height()); }
 void AnalysisPanel::resized() { LayoutControls(height()); }
 void AnalysisPanel::draw(visage::Canvas &c) {
   Label(c, referenceWarning_.empty() ? status_ : referenceWarning_, 0,
-        height() - 26, width(), 24, 0xff8799ae);
+        height() - 26, width(), 24, colours::Muted);
 }
 } // namespace drumfoundry::ui

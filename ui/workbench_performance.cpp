@@ -22,13 +22,6 @@ void Workbench::SetupPerformance() {
   limiter_.onToggle() = [this](auto *, bool) {
     Change(106, bridge_.value(106) < .5);
   };
-  stop_.onToggle() = [this](auto *, bool) {
-    try {
-      bridge_.stop();
-    } catch (const std::exception &e) {
-      Error(e.what());
-    }
-  };
   settings_.onToggle() = [this](auto *, bool) { OpenSettings(); };
   master_.changed = [this](double v) { Change(105, v); };
   hardness_.changed = [this](double v) { Change(101, v); };

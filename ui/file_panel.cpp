@@ -43,18 +43,20 @@ std::filesystem::path FilePanel::Directory() const {
 void FilePanel::Browse() {
   try {
     std::vector<std::filesystem::directory_entry> entries;
-    for (const auto &entry : std::filesystem::directory_iterator(Directory())) {
+    for (const auto &entry :
+         std::filesystem::directory_iterator(Directory())) {
       auto extension = entry.path().extension().u8string();
       std::transform(extension.begin(), extension.end(), extension.begin(),
                      [](unsigned char c) { return char(std::tolower(c)); });
       if (entry.is_directory() || (!folderOnly_ && extension == extension_))
         entries.push_back(entry);
     }
-    std::sort(entries.begin(), entries.end(), [](const auto &a, const auto &b) {
-      if (a.is_directory() != b.is_directory())
-        return a.is_directory();
-      return a.path().filename() < b.path().filename();
-    });
+    std::sort(entries.begin(), entries.end(),
+              [](const auto &a, const auto &b) {
+                if (a.is_directory() != b.is_directory())
+                  return a.is_directory();
+                return a.path().filename() < b.path().filename();
+              });
     visage::PopupMenu menu;
     menu.addOption(0, "../ parent folder");
     for (unsigned i = 0; i < entries.size(); ++i)
@@ -95,8 +97,8 @@ void FilePanel::Accept() {
     if (save_ && path.extension().empty())
       path += extension_;
     if (save_ && std::filesystem::exists(path))
-      throw std::runtime_error(
-          "That file already exists. Use a new name to keep the previous fit.");
+      throw std::runtime_error("That file already exists. Use a new name to "
+                               "keep the previous fit.");
     if (chosen)
       chosen(path);
     setVisible(false);
@@ -114,23 +116,24 @@ void FilePanel::resized() {
   close_.setBounds(width() - 128, height() - 48, 110, 30);
 }
 void FilePanel::draw(visage::Canvas &c) {
-  c.setColor(0xff18212b);
+  c.setColor(colours::Panel);
   c.roundedRectangle(0, 0, width(), height(), 8);
   Label(c,
         folderOnly_ ? "REFERENCE LIBRARY FOLDER"
         : save_     ? "SAVE A NEW FIT"
                     : "OPEN FILE",
-        18, 12, width() - 36, 28, 0xffe8b755);
-  Label(c, "Folder — paste a path or browse its contents", 18, 36, width() - 36,
-        22);
+        18, 12, width() - 36, 28, colours::Heading);
+  Label(c, "Folder — paste a path or browse its contents", 18, 36,
+        width() - 36, 22);
   if (!folderOnly_)
     Label(c, "Filename", 18, 140, width() - 36, 22);
-  Label(c,
-        folderOnly_
-            ? "This local folder is shared by the standalone and CLAP editor."
-        : save_
-            ? "Existing fits are kept; choose a new filename for each version."
-            : "Choose a file, then Open.",
-        18, 206, width() - 36, 28);
+  Label(
+      c,
+      folderOnly_
+          ? "This local folder is shared by the standalone and CLAP editor."
+      : save_
+          ? "Existing fits are kept; choose a new filename for each version."
+          : "Choose a file, then Open.",
+      18, 206, width() - 36, 28);
 }
 } // namespace drumfoundry::ui

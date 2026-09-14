@@ -7,7 +7,7 @@ void Workbench::LayoutRight() {
     return;
   const float w = std::max(1.f, right_.width() - 14);
   const bool narrow = w < 560;
-  const float strikeHeight = narrow ? 344.f : 210.f;
+  const float strikeHeight = narrow ? 386.f : 252.f;
   const bool modes = analysis_.showModalEditor && modal_.Available();
   modal_.setVisible(modes);
   modal_.setBounds(0, modal_.y(), w, modal_.height());
@@ -29,10 +29,10 @@ void Workbench::LayoutRight() {
   analysisSplit_.setBounds(0, analysisHeight, w, 10);
   const float top = analysisHeight + 14;
   const float padWidth =
-      narrow ? std::min(w, 360.f) : std::clamp(w * .3f, 160.f, 360.f);
-  strike_.setBounds(0, top, padWidth, 138);
+      narrow ? std::min(w, 360.f) : std::clamp(w * .3f, 280.f, 360.f);
+  strike_.setBounds(0, top, padWidth, 180);
   const float controlsX = narrow ? 0 : padWidth + 16;
-  const float controlsTop = narrow ? top + 146 : top;
+  const float controlsTop = narrow ? top + 188 : top;
   const float controlWidth = std::min(540.f, w - controlsX);
   const float buttonWidth = std::min(140.f, (controlWidth - 16) / 3);
   for (unsigned i = 0; i < implements_.size(); ++i)
@@ -40,7 +40,7 @@ void Workbench::LayoutRight() {
                              buttonWidth, 28);
   hardness_.setBounds(controlsX, controlsTop + 36, controlWidth, 44);
   spread_.setBounds(controlsX, controlsTop + 84, controlWidth, 44);
-  const float velocityTop = narrow ? controlsTop + 132 : top + 144;
+  const float velocityTop = narrow ? controlsTop + 132 : top + 186;
   const float velocityWidth = std::min(360.f, w - 116);
   velocity_.setBounds(0, velocityTop, velocityWidth, 44);
   fixedStrike_.setBounds(velocityWidth + 12, velocityTop + 7, 92, 30);

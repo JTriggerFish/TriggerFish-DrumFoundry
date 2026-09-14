@@ -27,5 +27,5 @@ private:
   visage::Point origin_, nodeOrigin_;
 };
 std::string ModuleName(const editing::Json &node);
-unsigned ModuleColour(const std::string &type);
+visage::theme::ColorId ModuleColour(const std::string &type);
 } // namespace drumfoundry::ui

@@ -12,6 +12,8 @@ public:
   void mouseDown(const visage::MouseEvent &) override;
   void mouseDrag(const visage::MouseEvent &) override;
   void mouseUp(const visage::MouseEvent &) override;
+  void mouseMove(const visage::MouseEvent &) override;
+  void mouseExit(const visage::MouseEvent &) override;
   std::function<void()> changed, committed;
   std::function<unsigned()> previewRate;
   std::function<void(const std::string &)> error;
@@ -23,8 +25,12 @@ private:
   double Gain(float) const;
   int Hit(visage::Point) const;
   void ResetHandle(int);
+  void DrawBackground(visage::Canvas &, bool enabled);
+  void DrawGrid(visage::Canvas &);
+  void DrawHandles(visage::Canvas &);
   editing::Document &document_;
   const LiveSpectrum *spectrum_;
   int drag_{-1};
+  int hover_{-1};
 };
 } // namespace drumfoundry::ui

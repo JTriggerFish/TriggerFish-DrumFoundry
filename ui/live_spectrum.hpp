@@ -4,7 +4,8 @@
 #include "workbench/analysis/live_spectrum.hpp"
 #include <chrono>
 namespace drumfoundry::ui {
-// Actual post-master/protection output, separate from the unlimited fit render.
+// Actual post-master/protection output, separate from the unlimited fit
+// render.
 class LiveSpectrum : public visage::Frame, public HelpText {
 public:
   LiveSpectrum();
@@ -12,7 +13,9 @@ public:
   void draw(visage::Canvas &) override;
   unsigned Rate() const { return spectrum_.Rate(); }
   void DrawTrace(visage::Canvas &, float left, float top, float width,
-                 float height, unsigned colour, bool filled = false) const;
+                 float height, visage::theme::ColorId colour,
+                 bool filled = false, float opacity = 1, double lowHz = 20,
+                 double highHz = 20000) const;
 
 private:
   analysis::LiveSpectrum spectrum_;

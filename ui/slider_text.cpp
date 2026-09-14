@@ -22,13 +22,15 @@ bool Slider::SubmitText(const std::string &text) {
   if (!parsed || !stream.eof() || !std::isfinite(value) || value < low_ ||
       value > high_ || (integer && value != std::round(value))) {
     if (error)
-      error(label_ +
-            (integer ? ": enter an integer from " : ": enter a number from ") +
-            Number(low_) + " to " + Number(high_) + unit_ +
-            ". Enter applies; Escape cancels.");
+      error(
+          label_ +
+          (integer ? ": enter an integer from " : ": enter a number from ") +
+          Number(low_) + " to " + Number(high_) + unit_ +
+          ". Enter applies; Escape cancels.");
     return false;
   }
-  // Hide before notifying: a commit is allowed to rebuild/delete this control.
+  // Hide before notifying: a commit is allowed to rebuild/delete this
+  // control.
   CloseText();
   Edit(value);
   if (committed)
@@ -39,13 +41,14 @@ void Slider::BeginText() {
   if (!text_) {
     text_ = std::make_unique<visage::TextEditor>();
     text_->setMultiLine(false);
-    text_->setFont(Font());
+    text_->setFont(FrameFont(*this));
     text_->setSelectOnFocus(true);
     text_->onEnterKey() = [this] { SubmitText(text_->text().toUtf8()); };
     text_->onEscapeKey() = [this] { CloseText(); };
     addChild(text_.get());
   }
-  text_->setText(Number(value_)); // Always physical units, e.g. Hz, never kHz.
+  text_->setText(
+      Number(value_)); // Always physical units, e.g. Hz, never kHz.
   text_->setVisible(true);
   resized();
   text_->requestKeyboardFocus();

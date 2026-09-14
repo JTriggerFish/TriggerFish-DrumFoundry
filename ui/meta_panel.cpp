@@ -52,7 +52,8 @@ void MetaPanel::Preview() {
              << value << "  ";
     }
     if (!edit.limited.empty())
-      text << " | " << edit.limited.size() << " controls reached their limits";
+      text << " | " << edit.limited.size()
+           << " controls reached their limits";
     status_ = text.str();
     if (changed)
       changed();
@@ -68,20 +69,21 @@ void MetaPanel::resized() {
   keep_.setBounds(width() - 108, height() - 48, 88, 28);
 }
 void MetaPanel::draw(visage::Canvas &c) {
-  c.setColor(0xff17202a);
+  c.setColor(colours::Panel);
   c.roundedRectangle(0, 0, width(), height(), 8);
   Label(c, size_ ? "Size meta" : "Bloom timing", 20, 12, width() - 40, 28,
-        0xffe8b755);
+        colours::Heading);
   Label(c,
-        size_ ? "A starting-point tool; changes modes, excitation, texture and "
-                "damping."
-              : "Moves diffusion rate and the initial excitation distribution "
-                "together.",
+        size_
+            ? "A starting-point tool; changes modes, excitation, texture and "
+              "damping."
+            : "Moves diffusion rate and the initial excitation distribution "
+              "together.",
         20, 48, width() - 40, 22);
-  Label(
-      c,
-      "Ordinary controls update below. Release to apply; Cancel restores them.",
-      20, 70, width() - 40, 22);
+  Label(c,
+        "Ordinary controls update below. Release to apply; Cancel restores "
+        "them.",
+        20, 70, width() - 40, 22);
   Label(c, status_, 20, 150, width() - 40, 65);
 }
 } // namespace drumfoundry::ui

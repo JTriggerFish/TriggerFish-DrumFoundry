@@ -94,9 +94,9 @@ void RoutingPanel::resized() {
   scroll_.setScrollableHeight(float(routes_.size() * 34));
 }
 void RoutingPanel::draw(visage::Canvas &c) {
-  c.setColor(0xff17202a);
+  c.setColor(colours::Panel);
   c.roundedRectangle(0, 0, width(), height(), 8);
-  Label(c, "INSTRUMENT ROUTING", 16, 14, width() - 140, 28, 0xffe8b755);
+  Label(c, "INSTRUMENT ROUTING", 16, 14, width() - 140, 28, colours::Heading);
   Label(c,
         "Move boxes to arrange the diagram. Switch routes below; levels stay "
         "in the parameter sections.",

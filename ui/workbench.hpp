@@ -6,6 +6,7 @@
 #include "file_panel.hpp"
 #include "help_bubble.hpp"
 #include "history_bar.hpp"
+#include "layout_panel.hpp"
 #include "live_spectrum.hpp"
 #include "meta_panel.hpp"
 #include "modal_panel.hpp"
@@ -15,7 +16,8 @@
 #include "split_bar.hpp"
 
 namespace drumfoundry::ui {
-// Shared content, independent of CLAP windows and standalone device ownership.
+// Shared content, independent of CLAP windows and standalone device
+// ownership.
 class Workbench : public visage::Frame {
 public:
   explicit Workbench(Bridge bridge);
@@ -27,6 +29,9 @@ public:
   void OpenRouting();
   void SetVisualPanels(bool spectrogram, bool modes);
   void SetControlWidth(float pixels);
+  void SetTextSize(int size);
+  void OpenLayout();
+  std::function<void()> textSizeChanged;
 
 private:
   void Poll();
@@ -36,7 +41,9 @@ private:
   float LeftWidth() const;
   bool SingleColumn() const;
   void SetupLayout();
-  void OpenLayout();
+  void ApplyTextSize();
+  void LoadTheme(const editing::Json &, bool persist);
+  void ChooseLayout(int item);
   void SelectPreset();
   void Change(unsigned, double);
   void SetupPanels();
@@ -47,16 +54,17 @@ private:
   bool EnsureAudio();
   void OpenSettings();
   void SetupRouting();
-  float LeftControlsTop() const { return 144 + (routingOpen_ ? 156.f : 0.f); }
+  float LeftControlsTop() const { return 104 + (routingOpen_ ? 156.f : 0.f); }
   void RefreshDocument();
   void ApplyDocument();
   editing::Json CaptureDocument() const;
   void OpenFitFile(bool save, const editing::Json &);
   Bridge bridge_;
+  visage::Palette
+      textPalette_; // Per-editor colours/type; outlives child frames.
   visage::EventTimer timer_;
-  visage::UiButton preset_{"Kick"}, settings_{"Settings"}, stop_{"Stop"},
-      limiter_{"Limiter ON"}, referencePlay_{"Play reference"},
-      modelPlay_{"Play render"};
+  visage::UiButton preset_{"Kick"}, settings_{"Settings"},
+      limiter_{"Limiter ON"};
   visage::UiButton fixedStrike_{"Strike"};
   Slider master_{"Master", -60, 0, -12, " dB"};
   Slider hardness_{"Tip hardness", 0, 1, .5};
@@ -77,9 +85,11 @@ private:
   AnalysisPanel analysis_;
   SplitBar analysisSplit_;
   SplitBar columnSplit_;
-  visage::UiButton layout_{"Layout ▾"}, excitationTab_{"Excitation / output"},
+  visage::UiButton excitationTab_{"Excitation / output"},
       resonanceTab_{"Resonance / bloom"};
   bool resonanceSelected_{};
+  visage::Frame layoutShade_;
+  LayoutPanel layoutPanel_;
   float columnStart_{}, flexibleHeight_{};
   float splitStart_{};
   ModalPanel modal_;

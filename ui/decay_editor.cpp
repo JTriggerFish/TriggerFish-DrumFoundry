@@ -82,10 +82,11 @@ double DecayEditor::Seconds(float y) const {
 void DecayEditor::draw(visage::Canvas &c) {
   const auto points = DecayKnots(document_);
   Label(c,
-        std::to_string(points.size()) + "/8 knots  ·  drag middle to move all",
-        0, 0, width(), 18, 0xff8799ae);
+        std::to_string(points.size()) +
+            "/8 knots  ·  drag middle to move all",
+        0, 0, width(), 18, colours::Muted);
   for (double f : {40., 1000., 15000.}) {
-    c.setColor(0xff293440);
+    c.setColor(colours::Grid);
     c.fill(X(f), 22, 1, height() - 190);
     Label(c,
           f == 40     ? "40 Hz"
@@ -94,7 +95,7 @@ void DecayEditor::draw(visage::Canvas &c) {
           X(f) - 18, height() - 163, 42, 18);
   }
   for (double s : {.1, 1., 5., 15., 30.}) {
-    c.setColor(0xff293440);
+    c.setColor(colours::Grid);
     c.fill(36, Y(s), width() - 50, 1);
     char label[16];
     std::snprintf(label, sizeof(label), "%.2g", s);
@@ -109,10 +110,10 @@ void DecayEditor::draw(visage::Canvas &c) {
     else
       curve.lineTo(x, y);
   }
-  c.setColor(0xff9fcaff);
+  c.setColor(colours::Accent);
   c.fill(curve.stroke(1.5f));
   for (auto p : points) {
-    c.setColor(p.slot == selected_ ? 0xffe8b755 : 0xff9fcaff);
+    c.setColor(p.slot == selected_ ? colours::Secondary : colours::Accent);
     if (p.boundary)
       c.fill(X(p.frequency) - 4, Y(p.seconds) - 4, 8, 8);
     else
@@ -126,7 +127,7 @@ void DecayEditor::draw(visage::Canvas &c) {
   diamond.lineTo(mx, my + 7);
   diamond.lineTo(mx - 7, my);
   diamond.close();
-  c.setColor(0xffe8b755);
+  c.setColor(colours::Heading);
   c.fill(diamond.stroke(1.5f));
 }
 } // namespace drumfoundry::ui

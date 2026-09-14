@@ -74,13 +74,14 @@ void LibraryTests(drumfoundry::Json document) {
   Check(analysis::ResolveLibrarySample(library, relative) ==
         library / fs::u8path(relative));
   Check(analysis::LibraryFolder(library).size() == 1);
-  Check(
-      analysis::LibraryFolder(library, fs::u8path("Gongs é").generic_u8string())
-          .size() == 1);
+  Check(analysis::LibraryFolder(library,
+                                fs::u8path("Gongs é").generic_u8string())
+            .size() == 1);
   for (auto path : {"../outside.wav", "/absolute.wav", "C:/absolute.wav",
                     "..\\outside.wav"})
     Reject([&] { analysis::ResolveLibrarySample(library, path); });
-  Reject([&] { analysis::LibraryRelativePath(library, root / "outside.wav"); });
+  Reject(
+      [&] { analysis::LibraryRelativePath(library, root / "outside.wav"); });
   Reject([&] { analysis::SaveLibraryRoot(root / "missing", settings); });
   Check(analysis::ReadLibraryRoot(settings) == fs::canonical(library));
   auto legacy = analysis::PortableReference(
@@ -97,10 +98,14 @@ void LibraryTests(drumfoundry::Json document) {
   Check(panel.RenderRate() ==
         48000); // A 44.1 kHz reference does not retune the renderer.
   ui::AnalysisView *view = nullptr;
+  ui::PlayButton *playButton = nullptr;
   for (auto *child : panel.children())
     if (auto *v = dynamic_cast<ui::AnalysisView *>(child))
       view = v;
+    else if (auto *p = dynamic_cast<ui::PlayButton *>(child))
+      playButton = p;
   Check(view && view->HasReference());
+  Check(playButton && playButton->isVisible());
   const auto nextSample = folder / "Second.wav";
   Wave(nextSample);
   auto gainDocument = document;
@@ -121,7 +126,9 @@ void LibraryTests(drumfoundry::Json document) {
           std::abs(gain - std::pow(10., .3)) < 1e-8);
     referencePlayed = true;
   };
-  panel.Play(true);
+  panel.requestReferencePlay = [&] { panel.Play(true); };
+  Check(playButton->isVisible());
+  playButton->onToggle().callback(playButton, false);
   Check(referencePlayed); // Hiding the plot does not disable reference audio.
   panel.StepReference(-1);
   Finish(panel);
@@ -133,7 +140,8 @@ void LibraryTests(drumfoundry::Json document) {
   Check(panel.Ready() && !view->HasReference() &&
         view->Mode() == ui::Comparison::Model);
   const auto hidden = panel.Reference();
-  Check(hidden.at("visible") == false && hidden.at("libraryPath") == relative);
+  Check(hidden.at("visible") == false &&
+        hidden.at("libraryPath") == relative);
   panel.SetReferenceVisible(true);
   Check(view->HasReference());
   fs::remove(sample);
@@ -155,6 +163,7 @@ void LibraryTests(drumfoundry::Json document) {
   Check(panel.ReferenceWarning().empty() && view->HasReference());
   panel.ClearReference();
   Finish(panel);
+  Check(!playButton->isVisible());
   Check(panel.Reference().is_null() && panel.ReferenceWarning().empty());
   document.erase("reference");
   panel.SetDocument(document);

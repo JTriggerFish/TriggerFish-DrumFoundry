@@ -5,20 +5,6 @@
 #include <exception>
 
 namespace drumfoundry::ui {
-namespace {
-class Heading : public visage::Frame {
-public:
-  explicit Heading(std::string text) : text_(std::move(text)) {}
-  void draw(visage::Canvas &c) override {
-    c.setColor(0xff293440);
-    c.fill(0, 4, width(), 1);
-    Label(c, text_, 0, 8, width(), 24, 0xffe8b755);
-  }
-
-private:
-  std::string text_;
-};
-} // namespace
 void ParameterPanel::Load(editing::Document &document, bool right) {
   generation_ = std::make_shared<int>(0);
   preview_ = nullptr;
@@ -26,6 +12,7 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
   for (auto &row : rows_)
     removeScrolledChild(row.frame);
   rows_.clear();
+  groups_.clear();
   std::vector<std::string> sections;
   for (const auto &p : document.Parameters()) {
     if (editing::RightColumn(p) != right)
@@ -33,13 +20,12 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     const auto section = editing::Section(p);
     if (section == "Modal anchors")
       continue;
-    if (std::find(sections.begin(), sections.end(), section) == sections.end())
+    if (std::find(sections.begin(), sections.end(), section) ==
+        sections.end())
       sections.push_back(section);
   }
   for (const auto &section : sections) {
-    auto heading = std::make_unique<Heading>(section);
-    addScrolledChild(heading.get());
-    rows_.push_back({std::move(heading), 40});
+    AddGroup(section);
     if (section == "Output" &&
         (outputSpectrum || editing::HasOutputEq(document)))
       AddOutputPreview(document);
@@ -80,7 +66,8 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     if (section == "Output" && editing::HasOutputEq(document)) {
       for (const auto &p : document.Parameters())
         if (editing::Section(p) == section &&
-            editing::RightColumn(p) == right && p.key.rfind("output_", 0) != 0)
+            editing::RightColumn(p) == right &&
+            p.key.rfind("output_", 0) != 0)
           AddParameter(document, p);
       for (const auto *key :
            {"output_eq_enabled", "output_low_cut", "output_colour_frequency",
@@ -111,10 +98,23 @@ void ParameterPanel::AddParameter(editing::Document &document,
     button->help = ParameterHelp(p.key);
     auto *widget = button.get();
     const auto label = editing::ControlName(p) + ": ";
-    widget->setText(label + editing::ChoiceName(p, int(document.Value(p.key))));
+    widget->setText(label +
+                    editing::ChoiceName(p, int(document.Value(p.key))));
+    if (p.scale == 2)
+      widget->setActionButton(document.Value(p.key) >= .5);
     const std::weak_ptr<int> generation = generation_;
     widget->onToggle() = [this, &document, p, widget, label, change,
                           generation](auto *, bool) {
+      if (p.scale == 2) {
+        const int value = document.Value(p.key) < .5 ? 1 : 0;
+        change(value);
+        widget->setText(label +
+                        editing::ChoiceName(p, int(document.Value(p.key))));
+        widget->setActionButton(document.Value(p.key) >= .5);
+        if (committed)
+          committed();
+        return;
+      }
       visage::PopupMenu menu;
       for (int value = int(p.minimum); value <= int(p.maximum); ++value)
         menu.addOption(value, editing::ChoiceName(p, value))
@@ -133,12 +133,14 @@ void ParameterPanel::AddParameter(editing::Document &document,
     addScrolledChild(widget);
     rows_.push_back({std::move(button), 38});
   } else {
-    auto slider = std::make_unique<Slider>(editing::ControlName(p), p.minimum,
-                                           p.maximum, p.initial, " " + p.unit);
+    auto slider =
+        std::make_unique<Slider>(editing::ControlName(p), p.minimum,
+                                 p.maximum, p.initial, " " + p.unit);
     slider->Set(document.Value(p.key));
-    slider->help = ParameterHelp(p.key) + " " + slider->help +
-                   " Release to update the live voice; paused drags update the "
-                   "offline preview.";
+    slider->help =
+        ParameterHelp(p.key) + " " + slider->help +
+        " Release to update the live voice; paused drags update the "
+        "offline preview.";
     slider->position = [p](double v) { return editing::Position(p, v); };
     slider->valueAt = [p](double v) { return editing::ValueAt(p, v); };
     slider->changed = change;
@@ -176,14 +178,5 @@ void ParameterPanel::AddOutputPreview(editing::Document &document) {
 void ParameterPanel::SyncValues(editing::Document &document) {
   for (const auto &[slider, key] : sliders_)
     slider->Set(document.Value(key));
-}
-void ParameterPanel::resized() {
-  visage::ScrollableFrame::resized();
-  int y = 0;
-  for (auto &row : rows_) {
-    row.frame->setBounds(0, y, std::max(1.f, width() - 14), row.height - 4);
-    y += row.height;
-  }
-  setScrollableHeight(float(y));
 }
 } // namespace drumfoundry::ui

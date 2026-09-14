@@ -10,8 +10,24 @@ void Require(bool condition) {
   if (!condition)
     throw std::runtime_error("UI control regression");
 }
+void ThemeTests();
 int main() {
+  ThemeTests();
   using namespace drumfoundry::ui;
+  Require(ElideText(Font(17), "Level", 200) == "Level");
+  const auto caption = ElideText(Font(17), "Long parameter caption", 70);
+  Require(caption != "Long parameter caption" &&
+          Font(17).stringWidth(visage::String(caption).toUtf32()) <= 70);
+  Require(ElideText(Font(17), "Level", 0).empty());
+  visage::Palette textPalette;
+  Slider frequency("Colour frequency", 40, 20000, 7200, " Hz");
+  frequency.setPalette(&textPalette);
+  for (int size : {0, 1, 2}) {
+    ConfigureTextSize(textPalette, size);
+    Require(frequency.PreferredHeight(530) == 44);
+    Require(frequency.PreferredHeight(100) == 66);
+    Require(frequency.PreferredHeight(530) == 44); // Widening unwraps again.
+  }
   Slider slider("Test", -60, 0, -12);
   slider.setBounds(0, 0, 212, 44);
   slider.Set(100);
@@ -103,9 +119,28 @@ int main() {
     velocity = v;
     location = x;
   };
-  event.position = {50, 25};
+  const auto area = pad.PlayingBounds();
+  event.position = {area.x() + area.width() * .25f,
+                    area.y() + area.height() * .25f};
   pad.mouseDown(event);
   Require(velocity == .75f && location == .25f);
+  for (int kind : {0, 1, 2}) {
+    pad.SetKick(kind == 0);
+    pad.SetMembrane(kind == 1);
+    for (auto point :
+         {area.topLeft(), visage::Point{area.right(), area.bottom()},
+          visage::Point{area.x() + area.width() / 2,
+                        area.y() + area.height() / 2},
+          visage::Point{0, 0}, visage::Point{200, 100}}) {
+      event.position = point;
+      pad.mouseDown(event);
+      Require(
+          velocity ==
+          std::clamp(1.f - (point.y - area.y()) / area.height(), .01f, 1.f));
+      Require(location ==
+              std::clamp((point.x - area.x()) / area.width(), 0.f, 1.f));
+    }
+  }
   unsigned applies = 0, errors = 0;
   SettingsBridge settings;
   settings.apply = [&](const DeviceConfiguration &) {

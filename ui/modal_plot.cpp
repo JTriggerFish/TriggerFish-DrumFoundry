@@ -31,9 +31,10 @@ float ModalPlot::Y(double level) const {
   return 14 + float((6 - level) / 78) * std::max(1.f, height() - 44);
 }
 double ModalPlot::Frequency(float x) const {
-  return 20 * std::pow(750., std::clamp(
-                                 double((x - 42) / std::max(1.f, width() - 60)),
-                                 0., 1.));
+  return 20 *
+         std::pow(750.,
+                  std::clamp(double((x - 42) / std::max(1.f, width() - 60)),
+                             0., 1.));
 }
 double ModalPlot::Level(float y) const {
   return std::clamp(6 - 78. * (y - 14) / std::max(1.f, height() - 44), -72.,
@@ -58,16 +59,18 @@ double ModalPlot::Spread(const Mode &m) const {
 }
 double ModalPlot::PacketFrequency(const Mode &m, double offset) const {
   if (document_->Value("field_distribution") == 4)
-    return std::clamp(m.frequency + offset * 24.7 * (1 + .00437 * m.frequency),
+    return std::clamp(m.frequency +
+                          offset * 24.7 * (1 + .00437 * m.frequency),
                       20., 15000.);
-  return InverseErb(std::clamp(Erb(m.frequency) + offset, Erb(20), Erb(15000)));
+  return InverseErb(
+      std::clamp(Erb(m.frequency) + offset, Erb(20), Erb(15000)));
 }
 void ModalPlot::draw(visage::Canvas &c) {
-  c.setColor(0xff0c1118);
+  c.setColor(colours::Plot);
   c.fill(0, 0, width(), height());
   for (double f :
        {20., 50., 100., 200., 500., 1000., 2000., 5000., 10000., 15000.}) {
-    c.setColor(0xff25303b);
+    c.setColor(colours::Grid);
     c.fill(X(f), 14, 1, height() - 44);
     char label[24];
     std::snprintf(label, sizeof(label), f >= 1000 ? "%.2gk" : "%.0f",
@@ -75,7 +78,7 @@ void ModalPlot::draw(visage::Canvas &c) {
     Label(c, label, X(f) - 16, height() - 25, 36, 22);
   }
   for (double level : {6., 0., -24., -48., -72.}) {
-    c.setColor(0xff25303b);
+    c.setColor(colours::Grid);
     c.fill(42, Y(level), width() - 60, 1);
     Label(c, level == -72 ? "off" : std::to_string(int(level)), 4,
           Y(level) - 10, 36, 20);
@@ -84,7 +87,7 @@ void ModalPlot::draw(visage::Canvas &c) {
     for (double f = base; f <= 15000; f += base) {
       if (f < 20)
         continue;
-      c.setColor(0x506e5b32);
+      c.setColor(c.color(colours::Secondary).withMultipliedAlpha(.3f));
       c.fill(X(f), 14, 1, height() - 44);
     }
   for (unsigned i = 0; i < modes_.size(); ++i) {
@@ -103,10 +106,13 @@ void ModalPlot::draw(visage::Canvas &c) {
       }
       packet.lineTo(X(PacketFrequency(m, 3 * spread)), Y(-72));
       packet.close();
-      c.setColor(i == unsigned(selected) ? 0x405f491f : 0x283876ad);
+      c.setColor(i == unsigned(selected)
+                     ? c.color(colours::Secondary).withMultipliedAlpha(.25f)
+                     : c.color(colours::Accent).withMultipliedAlpha(.16f));
       c.fill(packet);
     }
-    c.setColor(i == unsigned(selected) ? 0xffe8b755 : 0xff83b9ed);
+    c.setColor(i == unsigned(selected) ? colours::Secondary
+                                       : colours::Accent);
     c.fill(X(m.frequency) - .75f, Y(m.level), 1.5f, Y(-72) - Y(m.level));
     c.circle(X(m.frequency) - 4, Y(m.level) - 4, 8);
   }

@@ -8,6 +8,11 @@ void Workbench::OpenSettings() {
     menu.addOption(0, "Audio / MIDI settings…");
   menu.addOption(1, "Reference library folder…");
   menu.addOption(2, "Clear reference library folder");
+  menu.addOption(3, "Layout…");
+  visage::PopupMenu colours("Colour scheme");
+  colours.addOption(4, "Load JSON…");
+  colours.addOption(5, "Reset to LazyVim");
+  menu.addSubMenu(std::move(colours));
   menu.onSelection() = [this](int item) {
     try {
       if (item == 0 && bridge_.settings)
@@ -22,10 +27,33 @@ void Workbench::OpenSettings() {
         fileShade_.setVisible(true);
       } else if (item == 2)
         analysis_.SetLibraryRoot({});
+      else if (item == 3)
+        OpenLayout();
+      else if (item == 4) {
+        files_.chosen = [this](const auto &path) {
+          LoadTheme(ReadTheme(path), true);
+        };
+        const auto directory = ThemeSettingsPath().parent_path();
+        files_.Open(std::filesystem::exists(directory)
+                        ? directory
+                        : std::filesystem::current_path(),
+                    false);
+        fileShade_.setVisible(true);
+      } else if (item == 5)
+        LoadTheme(DefaultTheme(), true);
     } catch (const std::exception &e) {
       Error(e.what());
     }
   };
   menu.show(&settings_);
+}
+void Workbench::LoadTheme(const editing::Json &theme, bool persist) {
+  ValidateTheme(theme);
+  if (persist)
+    SaveTheme(theme);
+  ApplyTheme(textPalette_, theme);
+  NativeFonts(*this); // Invalidate every child, including cached plots.
+  if (textSizeChanged)
+    textSizeChanged(); // Refresh the standalone settings overlay too.
 }
 } // namespace drumfoundry::ui

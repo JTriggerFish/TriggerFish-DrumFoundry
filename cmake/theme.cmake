@@ -1,0 +1,22 @@
+# Keep the shipped JSON authoritative, including standalone Frame defaults.
+set(theme_file "${PROJECT_SOURCE_DIR}/themes/lazyvim.json")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${theme_file}")
+file(READ "${theme_file}" theme_json)
+string(JSON color_count LENGTH "${theme_json}" colors)
+math(EXPR last_color "${color_count} - 1")
+set(theme_entries "// Generated from themes/lazyvim.json; do not edit.\n")
+foreach(index RANGE ${last_color})
+  string(JSON name MEMBER "${theme_json}" colors ${index})
+  string(JSON hex GET "${theme_json}" colors ${name})
+  string(SUBSTRING "${hex}" 1 6 rgb)
+  string(LENGTH "${hex}" length)
+  set(alpha "FF")
+  if(length EQUAL 9)
+    string(SUBSTRING "${hex}" 7 2 alpha)
+  endif()
+  string(APPEND theme_entries "DF_COLOR(${name}, 0x${alpha}${rgb})\n")
+endforeach()
+file(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/generated/theme_colors.inc"
+  CONTENT "${theme_entries}")
+configure_file("${PROJECT_SOURCE_DIR}/ui/theme_json.hpp.in"
+  "${PROJECT_BINARY_DIR}/generated/theme_json.hpp" @ONLY)

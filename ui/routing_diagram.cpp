@@ -22,19 +22,19 @@ std::string ModuleName(const editing::Json &node) {
   const auto found = names.find(type);
   return node.value("name", found == names.end() ? type : found->second);
 }
-unsigned ModuleColour(const std::string &type) {
+visage::theme::ColorId ModuleColour(const std::string &type) {
   const auto role = type.substr(0, type.find('.'));
   if (role == "exciter")
-    return 0xffe8b45a;
+    return colours::Warning;
   if (role == "body")
-    return 0xff68a7d8;
+    return colours::Accent;
   if (role == "interaction")
-    return 0xff56d39b;
+    return colours::Success;
   if (role == "observation")
-    return 0xffdb7da8;
+    return colours::Secondary;
   if (role == "transform")
-    return 0xffb48ae6;
-  return 0xff9aa6b5;
+    return colours::Secondary;
+  return colours::Muted;
 }
 RoutingDiagram::RoutingDiagram() {
   help = "Double-click for routing controls. Optional routes can be switched "
@@ -54,8 +54,8 @@ void RoutingDiagram::Fit() {
   canvasHeight_ = 210;
   for (const auto &p : positions_) {
     const double x = p.at("x"), y = p.at("y");
-    if (!std::isfinite(x) || !std::isfinite(y) || x < 0 || x > 4096 || y < 0 ||
-        y > 2048)
+    if (!std::isfinite(x) || !std::isfinite(y) || x < 0 || x > 4096 ||
+        y < 0 || y > 2048)
       throw std::invalid_argument("Invalid saved routing layout");
     canvasWidth_ = std::max(canvasWidth_, x + 148);
     canvasHeight_ = std::max(canvasHeight_, y + 72);
@@ -82,14 +82,14 @@ visage::Point RoutingDiagram::Port(const std::string &endpoint,
   const auto i =
       std::find(ports.begin(), ports.end(), endpoint) - ports.begin();
   const auto &p = positions_.at(id);
-  return Map(
-      {p.at("x").get<float>() + (output ? 124.f : 0.f),
-       p.at("y").get<float>() + 48.f * float(i + 1) / float(ports.size() + 1)});
+  return Map({p.at("x").get<float>() + (output ? 124.f : 0.f),
+              p.at("y").get<float>() +
+                  48.f * float(i + 1) / float(ports.size() + 1)});
 }
 void RoutingDiagram::draw(visage::Canvas &c) {
   if (width() < 32 || height() < 32)
     return;
-  c.setColor(0xff101920);
+  c.setColor(colours::Background);
   c.roundedRectangle(0, 0, width(), height(), 5);
   if (!document_)
     return;
@@ -102,7 +102,7 @@ void RoutingDiagram::draw(visage::Canvas &c) {
     visage::Path path;
     path.moveTo(a);
     path.bezierTo({a.x + bend, a.y}, {b.x - bend, b.y}, b);
-    c.setColor(route.enabled ? 0xff718b9e : 0xff293440);
+    c.setColor(route.enabled ? colours::Border : colours::Grid);
     c.fill(path.stroke(route.enabled ? 1.5f : 1.f));
   }
   const float scale = Scale();
@@ -112,14 +112,15 @@ void RoutingDiagram::draw(visage::Canvas &c) {
     const auto type = node.at("type").get<std::string>();
     c.setColor(ModuleColour(type));
     c.roundedRectangle(point.x, point.y, 124 * scale, 48 * scale, 4);
-    c.setColor(0xff17202a);
+    c.setColor(colours::Panel);
     c.roundedRectangle(point.x + 1, point.y + 1, 124 * scale - 2,
                        48 * scale - 2, 3);
-    c.setColor(0xffcad4df);
-    c.text(ModuleName(node), Font(13 * scale), visage::Font::kLeft,
-           point.x + 6 * scale, point.y + 4 * scale, 112 * scale, 22 * scale);
+    c.setColor(colours::Text);
+    c.text(ModuleName(node), FrameFont(*this, 13 * scale),
+           visage::Font::kLeft, point.x + 6 * scale, point.y + 4 * scale,
+           112 * scale, 22 * scale);
     c.setColor(ModuleColour(type));
-    c.text(type.substr(0, type.find('.')), Font(11 * scale),
+    c.text(type.substr(0, type.find('.')), FrameFont(*this, 11 * scale),
            visage::Font::kLeft, point.x + 6 * scale, point.y + 26 * scale,
            112 * scale, 16 * scale);
   }

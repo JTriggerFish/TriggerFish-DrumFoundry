@@ -54,10 +54,10 @@ ui::Bridge Connect(Plugin &plugin) {
       throw std::runtime_error("Editor control queue full");
   };
   bridge.status = [&plugin] {
-    return plugin.EditorErrors()
-               ? "Editor event delivery errors: " +
-                     std::to_string(plugin.EditorErrors())
-               : "CLAP host audio / MIDI — device settings belong to your host";
+    return plugin.EditorErrors() ? "Editor event delivery errors: " +
+                                       std::to_string(plugin.EditorErrors())
+                                 : "CLAP host audio / MIDI — device settings "
+                                   "belong to your host";
   };
   return bridge;
 }
@@ -83,6 +83,8 @@ const char *Editor::Api() {
 Editor::Editor(Plugin &plugin) : plugin_(plugin), content_(Connect(plugin)) {
   app_.setMinimumDimensions(900, 600);
   app_.addChild(&content_);
+  app_.setPalette(
+      content_.palette()); // Includes menus attached to the UI root.
   app_.onResize() = [this] { content_.setBounds(app_.localBounds()); };
   app_.setNativeBounds(0, 0, width_, height_);
 }
@@ -91,6 +93,7 @@ Editor::~Editor() {
     fds_->unregister_fd(plugin_.Host(), registeredFd_);
   app_.removeFromWindow();
   window_.reset();
+  app_.setPalette(nullptr);
 }
 bool Editor::Parent(const clap_window_t *parent) {
   if (!parent || !parent->api || std::strcmp(parent->api, Api()) || window_)
@@ -108,9 +111,9 @@ bool Editor::Parent(const clap_window_t *parent) {
 #endif
   if (!handle)
     return false;
-  window_ = visage::createPluginWindow(visage::Dimension::nativePixels(width_),
-                                       visage::Dimension::nativePixels(height_),
-                                       handle);
+  window_ = visage::createPluginWindow(
+      visage::Dimension::nativePixels(width_),
+      visage::Dimension::nativePixels(height_), handle);
   if (!window_)
     return false;
 #if defined(__linux__)

@@ -1,4 +1,5 @@
 #pragma once
+#include "typography.hpp"
 #include <algorithm>
 #include <visage/ui.h>
 
@@ -9,7 +10,7 @@ public:
   ToolbarLayout(float width, float top, float rowHeight)
       : width_(std::max(1.f, width)), y_(top), rowHeight_(rowHeight) {}
   void Place(visage::Frame &frame, float wanted, float height = 28) {
-    const float w = std::min(wanted, width_);
+    const float w = std::min(wanted * frame.paletteValue(TextScale), width_);
     if (x_ > 0 && x_ + w > width_) {
       x_ = 0;
       y_ += rowHeight_;

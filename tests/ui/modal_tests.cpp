@@ -13,14 +13,18 @@ int main(int argc, char **argv) {
   std::ifstream input(argv[1]);
   editing::Document d;
   d.Load(editing::Json::parse(input));
+  extern void ParameterGroupTests(editing::Document);
+  ParameterGroupTests(d);
   extern void EqTests(editing::Document);
   EqTests(d);
   for (const auto *recipe :
        {"drum.kick.v1", "drum.membrane.v1", "drum.snare.v1"}) {
     editing::Document drum;
     drum.Load(WithFitEnvelope(DefaultPatch(recipe)));
+    ParameterGroupTests(drum);
     EqTests(drum);
-    if (drum.Recipe() == "drum.snare.v1" || drum.Recipe() == "drum.membrane.v1")
+    if (drum.Recipe() == "drum.snare.v1" ||
+        drum.Recipe() == "drum.membrane.v1")
       Require(editing::Section(drum.Description("body_brightness")) ==
               "Membrane");
   }

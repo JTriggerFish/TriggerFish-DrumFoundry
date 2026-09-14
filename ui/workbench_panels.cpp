@@ -11,7 +11,8 @@ void Workbench::SetupPanels() {
     applyingHold_ = true;
     ApplyDocument();
     applyingHold_ = false;
-    reloadDocument_ = true; // Rebuild the visible T60 curve and scalar values.
+    reloadDocument_ =
+        true; // Rebuild the visible T60 curve and scalar values.
   };
   excitation_.outputSpectrum = &liveSpectrum_;
   excitation_.previewRate = [this] { return analysis_.RenderRate(); };
@@ -43,17 +44,13 @@ void Workbench::SetupAnalysis() {
   analysis_.layoutChanged = [this] { LayoutRight(); };
   analysis_.play = bridge_.play;
   analysis_.presentation = bridge_.presentation;
-  referencePlay_.onToggle() = [this](auto *, bool) {
+  analysis_.requestReferencePlay = [this] {
     if (!analysis_.HasReferenceSelection()) {
       Error("Choose a reference in the Reference menu above the plot first.");
       return;
     }
     if (EnsureAudio())
       analysis_.Play(true);
-  };
-  modelPlay_.onToggle() = [this](auto *, bool) {
-    if (EnsureAudio())
-      analysis_.Play(false);
   };
   modal_.committed = [this] { ApplyDocument(); };
   modal_.error = [this](const auto &text) { Error(text); };
@@ -64,7 +61,7 @@ void Workbench::SetupMetas() {
   metaShade_.setOnTop(true);
   metaShade_.addChild(&meta_);
   metaShade_.onDraw() = [this](visage::Canvas &c) {
-    c.setColor(0x4005090f);
+    c.setColor(colours::Overlay);
     c.fill(0, 0, width(), height());
   };
   meta_.onVisibilityChange() = [this] {

@@ -62,9 +62,6 @@ AnalysisView::Coordinate AnalysisView::At(float x, float y) const {
       double((y - PlotTop) / std::max(1.f, height() - PlotTop - 29)), 0., 1.);
   bool reference = Mode() == Comparison::Reference;
   double time = pan + span * u;
-  if (y < PlotTop)
-    return {false, time,
-            frequencyHigh}; // Forward-time waveform, not a mirrored pane.
   if (Mode() == Comparison::Mirror || Mode() == Comparison::SideBySide) {
     reference = u < split;
     const double local = reference ? u / split : (u - split) / (1 - split);
@@ -87,7 +84,8 @@ void AnalysisView::Refresh() {
   const int columns = std::clamp(int(width() - 54), 64, 2048),
             rows = std::clamp(int(height() - PlotTop - 29), 64, 768);
   heatmap_.setDimensions(columns, rows);
-  // One reference-anchored ceiling for BOTH sides. Never adapt to model edits.
+  // One reference-anchored ceiling for BOTH sides. Never adapt to model
+  // edits.
   const float ceiling =
       HasReference() && result_->referenceSpectrum.frames &&
               result_->referenceSpectrum.maximumDb > -180
@@ -102,12 +100,14 @@ void AnalysisView::Refresh() {
   for (int y = 0; y < rows; ++y) {
     const auto vertical =
         At(42, PlotTop + (height() - PlotTop - 29) * (y + .5f) / rows);
-    const double verticalShare = Mode() == Comparison::Stacked
-                                     ? (vertical.reference ? split : 1 - split)
-                                     : 1;
-    const double halfBand = std::pow(
-        std::min(frequencyHigh, result_->model.sampleRate * .5) / frequencyLow,
-        .5 / (rows * verticalShare));
+    const double verticalShare =
+        Mode() == Comparison::Stacked
+            ? (vertical.reference ? split : 1 - split)
+            : 1;
+    const double halfBand =
+        std::pow(std::min(frequencyHigh, result_->model.sampleRate * .5) /
+                     frequencyLow,
+                 .5 / (rows * verticalShare));
     const double frequencyLo = vertical.frequency / halfBand,
                  frequencyHi = vertical.frequency * halfBand;
     for (int x = 0; x < columns; ++x) {
@@ -132,8 +132,8 @@ void AnalysisView::Refresh() {
       const double model =
           ModelAt(p.time + modelOffset)
               .modelSpectrum.Peak(p.time + modelOffset - halfTime,
-                                  p.time + modelOffset + halfTime, frequencyLo,
-                                  frequencyHi);
+                                  p.time + modelOffset + halfTime,
+                                  frequencyLo, frequencyHi);
       const double value =
           Mode() == Comparison::Difference
               ? .5 + .5 * (std::max(model, floor) - std::max(ref, floor)) /
@@ -145,7 +145,7 @@ void AnalysisView::Refresh() {
   redraw();
 }
 void AnalysisView::draw(visage::Canvas &c) {
-  c.setColor(0xff0b1016);
+  c.setColor(colours::Plot);
   c.fill(0, 0, width(), height());
   if (!result_) {
     Label(c, "Preparing native render…", 8, 8, width() - 16, 24);
@@ -157,18 +157,17 @@ void AnalysisView::draw(visage::Canvas &c) {
   else
     c.setColor(visage::Brush::horizontal(visage::Gradient::kMagma));
   c.heatMap(heatmap_, 42, PlotTop, width() - 54, height() - PlotTop - 29);
-  Waveform(c);
   Axes(c);
   Readout(c);
   WriteEdge(c);
   if (Mode() == Comparison::Mirror || Mode() == Comparison::SideBySide) {
-    c.setColor(0xff8e9ead);
+    c.setColor(colours::Muted);
     c.fill(42 + float(split) * (width() - 54), PlotTop, 1,
            height() - PlotTop - 29);
   } else if (Mode() == Comparison::Stacked) {
-    c.setColor(0xff8e9ead);
-    c.fill(42, PlotTop + float(split) * (height() - PlotTop - 29), width() - 54,
-           1);
+    c.setColor(colours::Muted);
+    c.fill(42, PlotTop + float(split) * (height() - PlotTop - 29),
+           width() - 54, 1);
   }
 }
 void AnalysisView::WriteEdge(visage::Canvas &c) {
@@ -182,7 +181,7 @@ void AnalysisView::WriteEdge(visage::Canvas &c) {
   const float top = Mode() == Comparison::Stacked
                         ? PlotTop + float(split) * (height() - PlotTop - 29)
                         : PlotTop;
-  c.setColor(0xffa6adb5);
+  c.setColor(colours::Muted);
   c.fill(42 + float(x) * (width() - 54), top, 2, height() - 29 - top);
 }
 } // namespace drumfoundry::ui

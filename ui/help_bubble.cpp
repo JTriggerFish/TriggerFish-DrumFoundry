@@ -8,7 +8,8 @@ HelpBubble::HelpBubble() {
   setVisible(false);
 }
 void HelpBubble::Bind(visage::Frame &frame) {
-  if (auto *hint = dynamic_cast<HelpText *>(&frame); hint && !hint->helpBound) {
+  if (auto *hint = dynamic_cast<HelpText *>(&frame);
+      hint && !hint->helpBound) {
     hint->helpBound = true;
     const std::string text = hint->help;
     // Append, never replace native hover/press behaviour.
@@ -33,8 +34,8 @@ void HelpBubble::Queue(const std::string &text, visage::Point point) {
   std::string word, line;
   while (words >> word) {
     const auto next = line.empty() ? word : line + " " + word;
-    if (!line.empty() &&
-        Font().stringWidth(visage::String(next).toUtf32()) > w - 24) {
+    if (!line.empty() && FrameFont(*this).stringWidth(
+                             visage::String(next).toUtf32()) > w - 24) {
       lines_.push_back(line);
       line = word;
     } else
@@ -42,7 +43,7 @@ void HelpBubble::Queue(const std::string &text, visage::Point point) {
   }
   if (!line.empty())
     lines_.push_back(line);
-  const float h = float(lines_.size()) * 18 + 20;
+  const float h = float(lines_.size()) * 18 * paletteValue(TextScale) + 20;
   const float y = point.y + 22 + h <= parent()->height() - 10
                       ? point.y + 22
                       : point.y - h - 12;
@@ -62,11 +63,12 @@ void HelpBubble::Hide() {
   setVisible(false);
 }
 void HelpBubble::draw(visage::Canvas &c) {
-  c.setColor(0xff344351);
+  c.setColor(colours::Border);
   c.roundedRectangle(0, 0, width(), height(), 5);
-  c.setColor(0xff18222c);
+  c.setColor(colours::Panel);
   c.roundedRectangle(1, 1, width() - 2, height() - 2, 4);
   for (unsigned i = 0; i < lines_.size(); ++i)
-    Label(c, lines_[i], 12, 10 + i * 18, width() - 24, 18);
+    Label(c, lines_[i], 12, 10 + i * 18 * paletteValue(TextScale),
+          width() - 24, 18 * paletteValue(TextScale));
 }
 } // namespace drumfoundry::ui

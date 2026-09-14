@@ -5,11 +5,14 @@ offline analysis/fitting; no browser, Node or Wasm renderer is introduced.
 
 ## Layout and interaction contract
 
-- Header: presets/reference selection, playback, master, persistent limiter
-  reduction/latency/bypass and standalone settings.
+- Single-row header: preset, patch name, limiter bypass, master and Settings.
+  Limiter reduction/latency and device status stay visible at the bottom.
 - Left: two independently laid-out control columns, excitation/output and
   resonance/bloom, with the T60 editor retained in its existing control area.
-- Right: waveform/spectrogram, strike surface with implement controls, wide
+  Existing parameter sections appear in padded, rounded cards with distinct
+  header bands and small functional accents. All controls remain visible;
+  these groups do not add another level of collapsing or navigation.
+- Right: spectrogram, strike surface with implement controls, wide
   modal editor. Resizable analysis/editor split; controls may scroll without
   moving playback and analysis out of reach.
 - Bottom: named snapshots, fit save/load and persistent errors (never swallowed).
@@ -20,8 +23,14 @@ offline analysis/fitting; no browser, Node or Wasm renderer is introduced.
 Use Visage buttons, menus, text editors and scrolling directly. The library has
 no stock audio slider: a small conventional horizontal Frame-based control is
 needed. Custom DSP editors and graphs use Visage drawing, not browser widgets.
+The default palette follows LazyVim; [JSON colour schemes](colour-schemes.md)
+can replace it through Settings without changing presets or synthesis.
 All instruments share a single graphical final output EQ: bypass, high-pass,
 one broad colour band and low-pass, with the live output spectrum behind it.
+The graph uses a dark inset and subdued spectrum, with outlined coloured handles
+and a bright response curve. Hover/drag shows the handle's value. Handles and
+numeric controls remain editable when bypassed; editing never enables the EQ
+implicitly. The one-click enable button and graph status make bypass explicit.
 There are no section-specific EQs or multiband controls in instrument patches.
 The kick places contact/output in the first column and thump/resonance/tension
 in the second. Old bypass/radiation drum fits convert to the shared EQ names;
@@ -31,27 +40,40 @@ The analysis toolbar uses compact wrapping controls below the plot, matching
 the web workbench ordering. Above it, optional reference selection stays separate
 from the instrument's strike controls. Factory presets start with None and a
 single model plot. Calibrations retain their explicit reference gain.
-Waveforms have labelled, forward-time lanes and a shared reference amplitude
-scale; mirroring applies only to the spectrogram, including its pan gestures.
+The spectrogram occupies the full analysis view below its legend; no separate
+waveform lanes are displayed. Mirrored pan/alignment and split gestures remain.
+Each horizontal comparison pane has its own time ticks, including its starting
+time at any divider position. Narrow panes retain that label without overlap.
+The strike pad has a contrasting surface, directional axes, in-pad legends and
+a last-click crosshair/velocity readout. Up means stronger; right means a harder
+beater for kicks, or a strike nearer the edge for other instruments. The whole
+pad remains playable: the drawn axes span the full input range, with clicks in
+the surrounding margins clamped to their endpoints. The marker uses the same
+rectangle and preserves its normalized position when resized.
 The strike pad sits beside implement/character controls on wide panels and
 above them on narrow ones. Drag the vertical divider to resize the control
-area, or the horizontal divider below analysis to resize the plot. The Layout
-menu can hide the spectrogram or modal editor independently, select one control
+area, or the horizontal divider below analysis to resize the plot. Settings → Layout
+can hide the spectrogram or modal editor independently, select one control
 column, and reset the layout. Narrow control areas use Excitation/Resonance tabs;
 wider areas retain both columns. Modal and series tools wrap rather than overlap.
 Layout choices are presentation-only and are stored with saved fits/host state.
+Selected Layout options have a persistent highlighted background. Text size offers
+Small (the original 13 px), Medium (15 px) and Large (17 px), independent of OS DPI.
+Parameter captions and values stay on one line when they fit; only genuinely
+narrow rows expand. Toolbars wrap and narrow control areas use tabs.
+Text preferences are per editor, including native menus and text-entry fields.
 The standalone and resizable CLAP editor support windows down to 900 × 600.
 Regression checks cover 900 × 600 through 3200 × 1800 and all factory instruments.
 
-Play reference remains visible in the header; None produces a helpful message,
-not an audio-engine restart. Reference selection remains accessible with the
+The play triangle beside a selected reference auditions it; None has no play
+button. Reference selection remains accessible with the
 spectrogram hidden. Previous/Next steps through WAVs in the current folder,
 preserving the explicit reference gain. No recording is normalized on selection.
 
 Standalone launches automatically start the saved audio/MIDI configuration.
 First launch or a device-open failure opens Settings; there is no silent fallback
-to another device. A stopped engine is explicitly labelled beside playback with a
-**Start audio** button. Striking or auditioning while stopped opens Settings,
+to another device. A stopped engine is identified in the bottom status, with
+Settings highlighted. Striking or auditioning while stopped opens Settings,
 where **Apply & start** activates the selected device. Offline preview rendering
 does not imply that a device is running. The click-to-CLAP audio path is tested
 at 128 samples with hardware-free output capture; this does not test a driver.
@@ -230,12 +252,12 @@ committed. Selecting a reference does not alter synthesis settings or normalize
 gain. The optional attachment and missing-file behaviour are specified in
 [Reference libraries](reference-libraries.md).
 
-Play reference and Play render audition the exact PCM represented by the plots,
+The reference play triangle auditions the exact PCM represented by its plot,
 through the host master and optional 1 ms limiter. File gain is explicit; model
 gain is already in its rendered PCM. A separate off-thread libsamplerate sinc
 conversion prepares audition buffers for the active device rate without changing
 analysis samples. Live pad/MIDI strikes interrupt audition and process the actual
-Voice in real time. Stop halts both paths. Bounded immutable slots avoid audio-
+Voice in real time. There are no header play/stop controls. Bounded immutable slots avoid audio-
 thread allocation, reference-count destruction, locks or filesystem work. Native
 host tests verify gain, stop, rate mismatch and allocation/deallocation freedom.
 Neither offline rendering nor audition preparation opens a device; standalone
