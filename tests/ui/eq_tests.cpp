@@ -1,4 +1,5 @@
 #include "ui/eq_plot.hpp"
+#include "ui/parameter_panel.hpp"
 #include <cmath>
 #include <complex>
 #include <stdexcept>
@@ -30,6 +31,26 @@ void CheckResponse(const drumfoundry::editing::Document &d) {
 void EqTests(drumfoundry::editing::Document d) {
   using namespace drumfoundry;
   Check(editing::HasOutputEq(d));
+  for (const auto &p : d.Parameters()) {
+    Check(p.key != "equalizer_mode" && p.key.rfind("band_", 0) != 0);
+    if (p.key.rfind("output_", 0) == 0)
+      Check(editing::Section(p) == "Output" && !editing::RightColumn(p));
+    if (d.Recipe() == "drum.kick.v1" &&
+        (p.key.rfind("thump_", 0) == 0 || p.key.rfind("tension_", 0) == 0))
+      Check(editing::RightColumn(p));
+  }
+  ui::ParameterPanel panel;
+  panel.setBounds(0, 0, 280, 800);
+  panel.Load(d, false);
+  unsigned plots = 0;
+  // ScrollableFrame owns one content frame.
+  auto count = [&](auto &&self, visage::Frame &frame) -> void {
+    plots += dynamic_cast<ui::EqPlot *>(&frame) != nullptr;
+    for (auto *child : frame.children())
+      self(self, *child);
+  };
+  count(count, panel);
+  Check(plots == 1);
   d.SetMany({{"output_eq_enabled", 1},
              {"output_low_cut", 60},
              {"output_colour_frequency", 1000},
@@ -44,8 +65,8 @@ void EqTests(drumfoundry::editing::Document d) {
   plot.changed = [&] { ++changes; };
   plot.committed = [&] { ++commits; };
   const auto point = [](double f, double gain) {
-    return visage::Point{float(30 + 262 * std::log(f / 20) / std::log(1000.)),
-                         float(26 + 140 * (18 - gain) / 54)};
+    return visage::Point{float(30 + 262 * std::log(f / 5) / std::log(4400.)),
+                         float(26 + 140 * (24 - gain) / 60)};
   };
   visage::MouseEvent e;
   e.button_id = visage::kMouseButtonLeft;

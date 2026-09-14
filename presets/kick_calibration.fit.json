@@ -132,19 +132,11 @@
         "name": "Output EQ",
         "version": 1,
         "parameters": {
-          "equalizer_mode": 1,
-          "low_cut_hz": 5,
-          "high_cut_hz": 832.8606050821793,
-          "colour_frequency_hz": 963.6154709520429,
-          "colour_gain_db": 7.108660165949413,
-          "band_1_frequency_hz": 90,
-          "band_1_gain_db": 0,
-          "band_2_frequency_hz": 350,
-          "band_2_gain_db": 0,
-          "band_3_frequency_hz": 1800,
-          "band_3_gain_db": 0,
-          "band_4_frequency_hz": 7500,
-          "band_4_gain_db": 0
+          "output_eq_enabled": 1,
+          "output_low_cut": 5,
+          "output_high_cut": 832.8606050821793,
+          "output_colour_frequency": 963.6154709520429,
+          "output_colour_gain": 7.108660165949413
         },
         "editor": {
           "x": 690,

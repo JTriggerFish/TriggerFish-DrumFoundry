@@ -1,7 +1,7 @@
 #pragma once
 
-#include "parameter_descriptor.hpp"
 #include "kick_mode_macros.hpp"
+#include "parameter_descriptor.hpp"
 #include "tfdsp/percussion/kick_voice_parameters.hpp"
 #include <array>
 #include <cstddef>
@@ -28,19 +28,11 @@ enum class KickParameter : std::size_t {
   ResonanceDecayTilt,
   TensionOctaves,
   TensionRecovery,
-  EqualizerMode,
+  OutputEqEnabled,
   LowCutHz,
   HighCutHz,
   ColourFrequency,
   ColourGain,
-  Band1Frequency,
-  Band1Gain,
-  Band2Frequency,
-  Band2Gain,
-  Band3Frequency,
-  Band3Gain,
-  Band4Frequency,
-  Band4Gain,
   Count
 };
 inline constexpr std::size_t KickParameterCount =

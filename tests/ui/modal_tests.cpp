@@ -1,3 +1,4 @@
+#include "patch/document.hpp"
 #include "ui/decay_editor.hpp"
 #include "ui/modal_plot.hpp"
 #include <fstream>
@@ -14,6 +15,15 @@ int main(int argc, char **argv) {
   d.Load(editing::Json::parse(input));
   extern void EqTests(editing::Document);
   EqTests(d);
+  for (const auto *recipe :
+       {"drum.kick.v1", "drum.membrane.v1", "drum.snare.v1"}) {
+    editing::Document drum;
+    drum.Load(WithFitEnvelope(DefaultPatch(recipe)));
+    EqTests(drum);
+    if (drum.Recipe() == "drum.snare.v1" || drum.Recipe() == "drum.membrane.v1")
+      Require(editing::Section(drum.Description("body_brightness")) ==
+              "Membrane");
+  }
   extern void RoutingGestures(editing::Document);
   RoutingGestures(d);
   extern void DecayHoldPolicy(editing::Document);

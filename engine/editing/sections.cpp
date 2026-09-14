@@ -7,6 +7,8 @@ bool Starts(const std::string &text, const char *prefix) {
 } // namespace
 std::string Section(const Parameter &p) {
   const auto &k = p.key;
+  if (p.owner == "membrane-body")
+    return "Membrane"; // Its brightness is not the metallic diffusion control.
   if (Starts(k, "body_decay_"))
     return "Modal T60";
   if (Starts(k, "resolved_") || Starts(k, "mode_"))
@@ -48,9 +50,9 @@ std::string Section(const Parameter &p) {
   if (p.owner.find("body-mix") != std::string::npos)
     return "Body drive";
   if (p.owner.find("observation") != std::string::npos)
-    return "Observation";
+    return "Output";
   if (p.owner.find("-eq") != std::string::npos)
-    return "Output EQ";
+    return "Output";
   return p.owner;
 }
 bool RightColumn(const Parameter &p) {
@@ -58,6 +60,7 @@ bool RightColumn(const Parameter &p) {
   if (section == "Modal T60")
     return false;
   return section == "Bloom / energy travel" || section == "Resonance" ||
+         section == "Thump" || section == "Strike / tension" ||
          section == "Packet texture" || section == "Beating" ||
          section == "Slow detuning" || section == "Shimmer" ||
          section == "Phase blur" || section == "Modal anchors" ||

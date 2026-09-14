@@ -1,4 +1,5 @@
 #include "membrane_macros.hpp"
+#include "tfdsp/percussion/output_eq_parameters.hpp"
 
 #include <array>
 #include <cmath>
@@ -32,25 +33,14 @@ const std::array<ParameterDescriptor, MembraneParameterCount> Descriptors{{
     {"direct_level", "Direct level", "x", 0.f, 3.f, .9f},
     {"body_level", "Body level", "x", 0.f, 3.f, 3.f},
     {"direct_delay_ms", "Direct delay", "ms", 0.f, 10.f, 0.f},
-    {"equalizer_mode", "Output EQ", "mode", 0.f, 2.f, 1.f, Scale::Choice},
-    {"low_cut_hz", "High-pass", "Hz", 5.f, 1000.f, 24.f, Scale::Logarithmic},
-    {"high_cut_hz", "Low-pass", "Hz", 500.f, 22000.f, 18000.f,
+    {"output_eq_enabled", "Enable final EQ", "", 0.f, 1.f, 1.f, Scale::Boolean},
+    {"output_low_cut", "High-pass", "Hz", 5.f, 1000.f, 24.f,
      Scale::Logarithmic},
-    {"colour_frequency_hz", "Radiation colour", "Hz", 40.f, 20000.f, 2800.f,
+    {"output_high_cut", "Low-pass", "Hz", 500.f, 22000.f, 18000.f,
      Scale::Logarithmic},
-    {"colour_gain_db", "Radiation colour gain", "dB", -24.f, 24.f, 0.f},
-    {"band_1_frequency_hz", "Band 1 frequency", "Hz", 30.f, 500.f, 90.f,
+    {"output_colour_frequency", "Colour frequency", "Hz", 40.f, 20000.f, 2800.f,
      Scale::Logarithmic},
-    {"band_1_gain_db", "Band 1 gain", "dB", -24.f, 24.f, 0.f},
-    {"band_2_frequency_hz", "Band 2 frequency", "Hz", 100.f, 2000.f, 350.f,
-     Scale::Logarithmic},
-    {"band_2_gain_db", "Band 2 gain", "dB", -24.f, 24.f, 0.f},
-    {"band_3_frequency_hz", "Band 3 frequency", "Hz", 400.f, 8000.f, 1800.f,
-     Scale::Logarithmic},
-    {"band_3_gain_db", "Band 3 gain", "dB", -24.f, 24.f, 0.f},
-    {"band_4_frequency_hz", "Band 4 frequency", "Hz", 1500.f, 20000.f, 7500.f,
-     Scale::Logarithmic},
-    {"band_4_gain_db", "Band 4 gain", "dB", -24.f, 24.f, 0.f},
+    {"output_colour_gain", "Colour gain", "dB", -24.f, 24.f, 0.f},
     {"fm_pitch_decay_seconds", "Pitch fall time", "s", .003f, .5f, .049f,
      Scale::Logarithmic},
     {"contact_noise_level", "Contact noise", "x", 0.f, 4.f, .45f},
@@ -92,7 +82,8 @@ ApplyMembraneParameters(const MembraneParameterValues &values) noexcept {
   controls.contactDurationSeconds = values[Index(P::ContactDurationSeconds)];
   controls.contactBrightness = values[Index(P::ContactBrightness)];
   controls.contactNoiseLevel = values[Index(P::ContactNoiseLevel)];
-  controls.contactNoiseDecaySeconds = values[Index(P::ContactNoiseDecaySeconds)];
+  controls.contactNoiseDecaySeconds =
+      values[Index(P::ContactNoiseDecaySeconds)];
   controls.fmDirectLevel = values[Index(P::FmDirectLevel)];
   controls.fmBodyLevel = values[Index(P::FmBodyLevel)];
   controls.fmDepthHz = values[Index(P::FmDepthHz)];
@@ -103,23 +94,18 @@ ApplyMembraneParameters(const MembraneParameterValues &values) noexcept {
   controls.bodyLevel = values[Index(P::BodyLevel)];
   controls.directDelaySeconds = .001f * values[Index(P::DirectDelayMs)];
   controls.equalizerMode =
-      static_cast<tfdsp::percussion::ObservationEqualizerMode>(
-          static_cast<int>(std::lround(values[Index(P::EqualizerMode)])));
+      values[Index(P::OutputEqEnabled)] >= .5f
+          ? tfdsp::percussion::ObservationEqualizerMode::Radiation
+          : tfdsp::percussion::ObservationEqualizerMode::Bypass;
   controls.lowCutHz = values[Index(P::LowCutHz)];
   controls.highCutHz = values[Index(P::HighCutHz)];
   controls.colourFrequencyHz = values[Index(P::ColourFrequencyHz)];
   controls.colourGainDb = values[Index(P::ColourGainDb)];
   controls.outputGain = std::pow(10.f, values[Index(P::ModelLevelDb)] / 20.f);
   auto result = tfdsp::percussion::DefaultMembraneDrumParameters(controls);
-  constexpr std::array<P, 4> frequencies{
-      P::Band1FrequencyHz, P::Band2FrequencyHz, P::Band3FrequencyHz,
-      P::Band4FrequencyHz};
-  constexpr std::array<P, 4> gains{P::Band1GainDb, P::Band2GainDb,
-                                   P::Band3GainDb, P::Band4GainDb};
-  for (std::size_t band = 0; band < 4; ++band) {
-    result.equalizer.bands[band].frequencyHz = values[Index(frequencies[band])];
-    result.equalizer.bands[band].gainDb = values[Index(gains[band])];
-  }
+  result.equalizer.radiation = tfdsp::percussion::SimpleOutputEqParameters(
+      controls.lowCutHz, controls.colourFrequencyHz, controls.colourGainDb,
+      controls.highCutHz);
   return result;
 }
 

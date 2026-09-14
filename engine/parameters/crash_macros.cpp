@@ -117,16 +117,16 @@ std::array<CrashMacroDescriptor, CrashMacroCount> BuildDescriptors() {
       {"output_eq_enabled", "Enable final EQ", "", 0.f, 1.f,
        fit.outputEqEnabled ? 1.f : 0.f, CrashMacroScale::Boolean});
   set(CrashMacro::OutputLowCut,
-      Logarithmic("output_low_cut", "High-pass", "Hz", 10.f, 1000.f,
+      Logarithmic("output_low_cut", "High-pass", "Hz", 5.f, 1000.f,
                   fit.outputLowCutHz));
   set(CrashMacro::OutputColourFrequency,
       Logarithmic("output_colour_frequency", "Colour frequency", "Hz",
-                  100.f, 18000.f, fit.outputColourFrequencyHz));
+                  40.f, 20000.f, fit.outputColourFrequencyHz));
   set(CrashMacro::OutputColourGain,
-      Linear("output_colour_gain", "Colour gain", "dB", -18.f, 18.f,
+      Linear("output_colour_gain", "Colour gain", "dB", -24.f, 24.f,
              fit.outputColourGainDb));
   set(CrashMacro::OutputHighCut,
-      Logarithmic("output_high_cut", "Low-pass", "Hz", 1000.f, 22000.f,
+      Logarithmic("output_high_cut", "Low-pass", "Hz", 500.f, 22000.f,
                   fit.outputHighCutHz));
 
   for (std::size_t interior = 0; interior < BodyDecayInteriorPointCount;

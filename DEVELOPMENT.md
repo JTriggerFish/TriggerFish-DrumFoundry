@@ -12,8 +12,8 @@ to use `dev.ps1`. Alternatively use `cmake --preset native` and
 `cmake --build build/native`. Windows uses `cmake --preset mingw`.
 
 Optional development: uv plus managed Python 3.13. `uv.lock` pins packages;
-`./dev.ps1 setup` creates `.venv`, installs the same Black/notebook hooks as
-TriggerFish-VCV and sets repository-local LF handling. It does not edit global
+`./dev.ps1 setup` creates `.venv`, installs Black/notebook hooks
+and sets repository-local LF handling. It does not edit global
 Git configuration or install system tools. Configure your own Git identity.
 
 ## Commands
@@ -46,17 +46,16 @@ Git development branch: `dev`. CI builds and tests Windows/MinGW, Linux,
 macOS ARM64 and macOS x64. Each native build/package precedes the optional Python
 job steps, demonstrating that Python is not required to build the engine.
 Engine, CLAP and standalone preview artifacts are uploaded per runner; tagged public release
-automation and application bundles remain future work. The original VCV repo only had a
-CI workflow, not a separate tagged-release workflow.
+automation and application bundles remain future work.
 
 ## Code boundaries
 
 Keep files focused and new integration functions short. `engine/tfdsp` holds
-parity-preserved DSP imports; do not mix migration changes with sound redesign.
+the DSP components and instrument implementations.
 The native runtime, patch validator, descriptor access and C ABI are separate.
 Python search orchestration must never reimplement the synthesis or control map.
 Keep recordings and render outputs in ignored `data/`, `renders/` or `build/`.
 
 Third-party dependencies are version/hash pinned in `cmake/dependencies.cmake`.
 Set standard `FETCHCONTENT_SOURCE_DIR_EIGEN` / `FETCHCONTENT_SOURCE_DIR_JSON`
-cache variables to local copies for offline builds. Do not link to the VCV tree.
+cache variables to local copies for offline builds.

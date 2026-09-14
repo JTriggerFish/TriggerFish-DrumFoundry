@@ -11,6 +11,7 @@ Voice::Voice(float sampleRate, Json document) : sampleRate_(sampleRate) {
 void Voice::Configure(Json document) {
   ValidateEnvelope(document);
   auto &patch = Instrument(document);
+  UpgradeOutputEq(patch);
   const auto recipe = ParseRecipe(patch.at("recipe").get<std::string>());
   Strike event;
   if (document.contains("instrument"))

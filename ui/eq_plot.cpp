@@ -17,17 +17,17 @@ EqPlot::EqPlot(editing::Document &d, const LiveSpectrum *s)
 float EqPlot::X(double f) const {
   return 30 +
          std::max(1.f, width() - 38) *
-             float(std::log(std::clamp(f, 20., 20000.) / 20) / std::log(1000.));
+             float(std::log(std::clamp(f, 5., 22000.) / 5) / std::log(4400.));
 }
 float EqPlot::Y(double db) const {
   return 26 + std::max(1.f, height() - 50) *
-                  float((18 - std::clamp(db, -36., 18.)) / 54);
+                  float((24 - std::clamp(db, -36., 24.)) / 60);
 }
 double EqPlot::Frequency(float x) const {
-  return 20 * std::pow(1000., (x - 30) / std::max(1.f, width() - 38));
+  return 5 * std::pow(4400., (x - 30) / std::max(1.f, width() - 38));
 }
 double EqPlot::Gain(float y) const {
-  return 18 - 54 * (y - 26) / std::max(1.f, height() - 50);
+  return 24 - 60 * (y - 26) / std::max(1.f, height() - 50);
 }
 void EqPlot::draw(visage::Canvas &c) {
   const bool enabled = document_.Value("output_eq_enabled") >= .5;
@@ -58,9 +58,9 @@ void EqPlot::draw(visage::Canvas &c) {
   }
   std::array<visage::Path, 4> paths;
   const editing::OutputEqResponse response(p, rate);
-  const double maximum = std::min(20000., .499 * rate);
+  const double maximum = std::min(22000., .499 * rate);
   for (int i = 0; i < 160; ++i) {
-    const double f = 20 * std::pow(maximum / 20, i / 159.);
+    const double f = 5 * std::pow(maximum / 5, i / 159.);
     auto parts = response.At(f);
     const double total = enabled ? parts[0] + parts[1] + parts[2] : 0;
     for (unsigned stage = 0; stage < 4; ++stage) {

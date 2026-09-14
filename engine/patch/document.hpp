@@ -17,6 +17,7 @@ const Json &Topology(detail::Recipe recipe);
 detail::Recipe ParseRecipe(const std::string &key);
 void ValidateTopology(const Json &patch, detail::Recipe recipe);
 void ValidateEnvelope(const Json &document);
+void UpgradeOutputEq(Json &patch);
 // Validate supplied values, materialize missing defaults, then apply the patch.
 void ApplyPatch(detail::Session &, Json &patch);
 Strike ReadStrike(const Json &event, bool fixedBeater = false);

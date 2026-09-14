@@ -40,7 +40,8 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     auto heading = std::make_unique<Heading>(section);
     addScrolledChild(heading.get());
     rows_.push_back({std::move(heading), 40});
-    if (section == "Output" && outputSpectrum)
+    if (section == "Output" &&
+        (outputSpectrum || editing::HasOutputEq(document)))
       AddOutputPreview(document);
     if (meta &&
         (section == "Bloom / energy travel" ||
@@ -72,6 +73,19 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
       };
       addScrolledChild(editor.get());
       rows_.push_back({std::move(editor), 366});
+      continue;
+    }
+    // Keep the shared EQ's scalar counterparts in the same order for every
+    // recipe, regardless of its internal parameter-enum ordering.
+    if (section == "Output" && editing::HasOutputEq(document)) {
+      for (const auto &p : document.Parameters())
+        if (editing::Section(p) == section &&
+            editing::RightColumn(p) == right && p.key.rfind("output_", 0) != 0)
+          AddParameter(document, p);
+      for (const auto *key :
+           {"output_eq_enabled", "output_low_cut", "output_colour_frequency",
+            "output_colour_gain", "output_high_cut"})
+        AddParameter(document, document.Description(key));
       continue;
     }
     for (const auto &p : document.Parameters())

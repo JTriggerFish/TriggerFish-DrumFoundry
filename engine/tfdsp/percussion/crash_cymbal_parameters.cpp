@@ -1,4 +1,5 @@
 #include "crash_cymbal_parameters.hpp"
+#include "output_eq_parameters.hpp"
 
 #include "erb_scale.hpp"
 #include "modal_packet_allocator.hpp"
@@ -300,19 +301,8 @@ void SetLocationProjections(const Parameters &modes,
 
 RadiationFilterParameters CrashOutputEqParameters(
     const CrashCymbalFitParameters &fit) noexcept {
-  RadiationFilterParameters result{};
-  result.lowCutHz =
-      std::clamp(fit.outputLowCutHz, 10.f, 1000.f);
-  result.lowCutQ = .70710678f;
-  result.colourFrequencyHz =
-      std::clamp(fit.outputColourFrequencyHz, 100.f, 18000.f);
-  result.colourGainDb =
-      std::clamp(fit.outputColourGainDb, -18.f, 18.f);
-  result.colourQ = .8f;
-  result.highCutHz =
-      std::clamp(fit.outputHighCutHz, 1000.f, 22000.f);
-  result.highCutQ = .70710678f;
-  return result;
+  return SimpleOutputEqParameters(fit.outputLowCutHz, fit.outputColourFrequencyHz,
+                                  fit.outputColourGainDb, fit.outputHighCutHz);
 }
 
 CrashCymbalParameters DefaultCrashCymbalParameters(

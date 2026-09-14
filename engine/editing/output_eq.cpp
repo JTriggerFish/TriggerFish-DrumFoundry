@@ -1,5 +1,5 @@
 #include "output_eq.hpp"
-#include "tfdsp/percussion/crash_cymbal_parameters.hpp"
+#include "tfdsp/percussion/output_eq_parameters.hpp"
 #include <algorithm>
 #include <complex>
 namespace drumfoundry::editing {
@@ -11,12 +11,10 @@ bool HasOutputEq(const Document &document) {
 }
 tfdsp::percussion::RadiationFilterParameters
 OutputEqSettings(const Document &d) {
-  tfdsp::percussion::CrashCymbalFitParameters p;
-  p.outputLowCutHz = float(d.Value("output_low_cut"));
-  p.outputColourFrequencyHz = float(d.Value("output_colour_frequency"));
-  p.outputColourGainDb = float(d.Value("output_colour_gain"));
-  p.outputHighCutHz = float(d.Value("output_high_cut"));
-  return tfdsp::percussion::CrashOutputEqParameters(p);
+  return tfdsp::percussion::SimpleOutputEqParameters(
+      float(d.Value("output_low_cut")),
+      float(d.Value("output_colour_frequency")),
+      float(d.Value("output_colour_gain")), float(d.Value("output_high_cut")));
 }
 OutputEqResponse::OutputEqResponse(
     const tfdsp::percussion::RadiationFilterParameters &p, double rate)
