@@ -10,9 +10,11 @@ constexpr const char *names[]{"Kick",  "Snare", "Hi-hat",
 Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   for (auto *frame : std::initializer_list<visage::Frame *>{
            &preset_, &settings_, &stop_, &limiter_, &master_, &location_,
-           &mute_, &excitation_, &resonance_, &referencePlay_, &modelPlay_})
+           &mute_, &excitation_, &resonance_, &referencePlay_, &modelPlay_,
+           &layout_, &excitationTab_, &resonanceTab_, &columnSplit_})
     addChild(frame);
   SetupPanels();
+  SetupLayout();
   SetupRouting();
   SetupFiles();
   SetupPerformance();
@@ -81,7 +83,7 @@ void Workbench::RefreshDocument() {
   resonance_.Load(document_, true);
   modal_.Load(document_);
   analysis_.SetDocument(document_.JsonValue());
-  LayoutRight();
+  resized();
   NativeFonts(*this);
   ControlErrors(*this, [this](const auto &text) { Error(text); });
   help_.Bind(*this);

@@ -9,7 +9,7 @@ void Workbench::PollPerformance() {
   const int preset = std::clamp(int(bridge_.value(100)), 0, 5);
   preset_.setText(std::string("Preset: ") + names[preset] + " ▾");
   audioRunning_ = !bridge_.audioRunning || bridge_.audioRunning();
-  referencePlay_.setVisible(analysis_.HasReferenceSelection());
+  referencePlay_.setVisible(true);
   settings_.setText(audioRunning_ ? "Settings" : "Start audio…");
   settings_.setActionButton(!audioRunning_);
   master_.Set(bridge_.value(105));

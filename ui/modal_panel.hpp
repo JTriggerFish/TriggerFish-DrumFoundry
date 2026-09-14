@@ -7,12 +7,16 @@ public:
   ModalPanel();
   void Load(editing::Document &);
   void Refresh();
+  bool Available() const { return available_; }
+  float MinimumHeight();
+  std::function<void()> layoutChanged;
   void resized() override;
   void draw(visage::Canvas &) override;
   std::function<void()> committed;
   std::function<void(const std::string &)> error;
 
 private:
+  float LayoutTools();
   void Sync();
   void EditSelection();
   editing::Document *document_{};

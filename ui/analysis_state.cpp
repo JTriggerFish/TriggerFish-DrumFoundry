@@ -18,6 +18,10 @@ void AnalysisPanel::LoadView(const editing::Json &analysis) {
   view_.frequencyHigh = v.at("frequencyHigh");
   duration_.Set(v.at("renderSeconds"));
   analysisShare = v.at("analysisShare");
+  leftShare = v.at("leftShare");
+  showSpectrogram = v.at("showSpectrogram").get<double>() != 0;
+  showModalEditor = v.at("showModalEditor").get<double>() != 0;
+  singleColumn = v.at("singleColumn").get<double>() != 0;
   const char *names[]{"Mirror",     "Side by side", "Stacked",
                       "Difference", "Model",        "Reference"};
   comparison_.setText(names[int(mode)]);

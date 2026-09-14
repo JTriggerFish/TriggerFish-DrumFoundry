@@ -63,7 +63,7 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &cli, bool smoke,
   };
   visage::ApplicationWindow window;
   window.setTitle("TriggerFish DrumFoundry");
-  window.setMinimumDimensions(1000, 640);
+  window.setMinimumDimensions(900, 600);
   ui::Workbench editor(std::move(bridge));
   if (!settingsError.empty())
     editor.Error(settingsError);

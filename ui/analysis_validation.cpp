@@ -25,10 +25,16 @@ editing::Json ReadSavedView(const editing::Json &analysis) {
       {"pan", 0, -1e6, 1e6},           {"split", .5, .1, .9},
       {"modelOffset", 0, -1e6, 1e6},   {"differenceDb", 24, 1, 120},
       {"frequencyLow", 20, 20, 19999}, {"frequencyHigh", 20000, 20, 20000},
-      {"renderSeconds", 8, .25, 60},   {"analysisShare", 450. / 1100, .1, .9}};
+      {"renderSeconds", 8, .25, 60},   {"analysisShare", 450. / 1100, .1, .9},
+      {"leftShare", .4, .1, .85},      {"showSpectrogram", 1, 0, 1},
+      {"showModalEditor", 1, 0, 1},    {"singleColumn", 0, 0, 1}};
   auto result = editing::Json::object();
   for (auto f : fields)
     result[f.key] = Number(v, f.key, f.initial, f.low, f.high);
+  for (auto key : {"showSpectrogram", "showModalEditor", "singleColumn"})
+    if (result.at(key).get<double>() !=
+        std::floor(result.at(key).get<double>()))
+      throw std::invalid_argument("Invalid saved layout toggle");
   const double mode = result.at("comparison");
   if (mode != std::floor(mode) || result.at("frequencyHigh").get<double>() <=
                                       result.at("frequencyLow").get<double>())

@@ -81,7 +81,7 @@ const char *Editor::Api() {
 #endif
 }
 Editor::Editor(Plugin &plugin) : plugin_(plugin), content_(Connect(plugin)) {
-  app_.setMinimumDimensions(1000, 640);
+  app_.setMinimumDimensions(900, 600);
   app_.addChild(&content_);
   app_.onResize() = [this] { content_.setBounds(app_.localBounds()); };
   app_.setNativeBounds(0, 0, width_, height_);
@@ -125,7 +125,7 @@ bool Editor::Parent(const clap_window_t *parent) {
   return true;
 }
 bool Editor::Resize(uint32_t width, uint32_t height) {
-  if (width < 1000 || height < 640 || width > 8192 || height > 8192)
+  if (width < 900 || height < 600 || width > 8192 || height > 8192)
     return false;
   width_ = width;
   height_ = height;

@@ -1,17 +1,25 @@
 #include "modal_panel.hpp"
+#include "toolbar_layout.hpp"
 namespace drumfoundry::ui {
-void ModalPanel::resized() {
-  tool_.setBounds(0, 26, 150, 28);
-  clear_.setBounds(158, 26, 64, 28);
-  generate_.setBounds(230, 26, 128, 28);
-  brush_.setBounds(374, 18, width() - 374, 44);
-  guide_.setBounds(0, 64, 170, 28);
-  snap_.setBounds(178, 64, 92, 28);
-  guidePitch_.setBounds(290, 58, width() - 290, 44);
+float ModalPanel::LayoutTools() {
+  ToolbarLayout tools(width(), 26, 46);
+  tools.Place(tool_, 150);
+  tools.Place(clear_, 64);
+  tools.Place(generate_, 128);
+  tools.Place(brush_, 190, 44);
+  ToolbarLayout guide(width(), tools.Bottom(), 46);
+  guide.Place(guide_, 170);
+  guide.Place(snap_, 92);
+  guide.Place(guidePitch_, 200, 44);
   series_.setVisible(showSeries_ && available_);
-  series_.setBounds(0, 108, width(), 210);
-  const float top = showSeries_ ? 328 : 110;
-  plot_.setBounds(0, top, width(), height() - top - 150);
+  const float seriesHeight = width() < 560 ? 264.f : 210.f;
+  series_.setBounds(0, guide.Bottom() + 8, width(), seriesHeight);
+  return guide.Bottom() + 8 + (showSeries_ ? seriesHeight + 10 : 0);
+}
+float ModalPanel::MinimumHeight() { return LayoutTools() + 350; }
+void ModalPanel::resized() {
+  const float top = LayoutTools();
+  plot_.setBounds(0, top, width(), std::max(1.f, height() - top - 150));
   const float col = (width() - 12) / 2;
   frequency_.setBounds(0, height() - 130, col, 44);
   level_.setBounds(col + 12, height() - 130, col, 44);

@@ -1,5 +1,31 @@
 #include "analysis_panel.hpp"
 namespace drumfoundry::ui {
+void AnalysisPanel::StepReference(int direction) {
+  if (!reference_.is_object() || !direction)
+    return;
+  try {
+    const auto relative = reference_.value("libraryPath", "");
+    const auto folder =
+        std::filesystem::u8path(relative).parent_path().generic_u8string();
+    std::vector<std::filesystem::path> samples;
+    int selected = -1;
+    for (const auto &entry : analysis::LibraryFolder(libraryRoot_, folder)) {
+      if (entry.is_directory())
+        continue;
+      if (analysis::LibraryRelativePath(libraryRoot_, entry.path()) == relative)
+        selected = int(samples.size());
+      samples.push_back(entry.path());
+    }
+    if (selected < 0 || samples.empty())
+      throw std::runtime_error(
+          "Current reference is missing; choose an available sample.");
+    const int count = int(samples.size());
+    SetReference(samples[(selected + (direction > 0 ? 1 : count - 1)) % count]);
+  } catch (const std::exception &e) {
+    if (error)
+      error(e.what());
+  }
+}
 void AnalysisPanel::ReferenceMenu() {
   visage::PopupMenu menu;
   menu.addOption(-1, "None").select(reference_.is_null());

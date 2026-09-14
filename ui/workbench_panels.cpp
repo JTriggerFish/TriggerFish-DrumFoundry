@@ -34,15 +34,20 @@ void Workbench::SetupAnalysis() {
     right_.addScrolledChild(frame);
   analysisSplit_.started = [this] { splitStart_ = analysis_.height(); };
   analysisSplit_.dragged = [this](float delta) {
-    const double flexible = std::max(1350.f, right_.height()) - 210;
+    const double flexible = std::max(1.f, flexibleHeight_);
     analysis_.analysisShare =
         std::clamp((splitStart_ + delta) / flexible, .1, .9);
     LayoutRight();
   };
   analysis_.error = [this](const auto &message) { Error(message); };
+  analysis_.layoutChanged = [this] { LayoutRight(); };
   analysis_.play = bridge_.play;
   analysis_.presentation = bridge_.presentation;
   referencePlay_.onToggle() = [this](auto *, bool) {
+    if (!analysis_.HasReferenceSelection()) {
+      Error("Choose a reference in the Reference menu above the plot first.");
+      return;
+    }
     if (EnsureAudio())
       analysis_.Play(true);
   };
@@ -52,6 +57,7 @@ void Workbench::SetupAnalysis() {
   };
   modal_.committed = [this] { ApplyDocument(); };
   modal_.error = [this](const auto &text) { Error(text); };
+  modal_.layoutChanged = [this] { LayoutRight(); };
 }
 void Workbench::SetupMetas() {
   addChild(&metaShade_, false);

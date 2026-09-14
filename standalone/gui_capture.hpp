@@ -12,6 +12,7 @@ public:
 
 private:
   void Tick();
+  void Resize(unsigned width, unsigned height);
   visage::ApplicationWindow &window_;
   ui::Workbench &editor_;
   visage::Frame &shade_, &settings_;

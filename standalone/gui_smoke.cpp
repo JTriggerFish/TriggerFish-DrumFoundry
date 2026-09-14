@@ -26,16 +26,35 @@ void PluginGuiSmoke(PluginHost &host) {
     if (!gui->set_parent(plugin, &parent) ||
         !gui->set_size(plugin, 1200, 800) || !gui->show(plugin))
       throw std::runtime_error("CLAP parenting/resizing/show failed");
+    clap_gui_resize_hints_t hints{};
+    uint32_t adjustedWidth = 600, adjustedHeight = 400;
+    if (!gui->can_resize(plugin) || !gui->get_resize_hints(plugin, &hints) ||
+        !hints.can_resize_horizontally || !hints.can_resize_vertically ||
+        hints.preserve_aspect_ratio ||
+        !gui->adjust_size(plugin, &adjustedWidth, &adjustedHeight) ||
+        adjustedWidth != 900 || adjustedHeight != 600 ||
+        gui->set_size(plugin, 899, 600))
+      throw std::runtime_error("CLAP resize contract failed");
     visage::EventTimer timer;
-    unsigned attempts = 0;
+    unsigned attempts = 0, stage = 0;
     timer.onTimerCallback() = [&] {
       auto &editor = *clap_adapter::Plugin::Get(plugin).editor;
-      const auto &shot = editor.Screenshot();
+      const auto shot = editor.Screenshot();
       if (shot.width() > 0) {
-        shot.save("build/clap-ui-smoke.png");
-        passed = true;
+        if (stage == 0) {
+          shot.save("build/clap-ui-smoke.png");
+          if (!gui->set_size(plugin, 900, 600))
+            throw std::runtime_error("CLAP small editor resize failed");
+          ++stage;
+        } else if (shot.width() != 1200 || shot.height() != 800) {
+          uint32_t w{}, h{};
+          if (!gui->get_size(plugin, &w, &h) || w != 900 || h != 600)
+            throw std::runtime_error("CLAP resized dimensions disagree");
+          shot.save("build/clap-ui-small-smoke.png");
+          passed = true;
+        }
       }
-      if (passed || ++attempts == 5) {
+      if (passed || ++attempts == 10) {
         timer.stopTimer();
         gui->hide(plugin);
         window.window()->close();

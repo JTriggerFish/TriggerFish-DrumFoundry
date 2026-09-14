@@ -87,7 +87,11 @@ int main(int argc, char **argv) {
                                                 {"renderSeconds", .25},
                                                 {"frequencyLow", 100},
                                                 {"frequencyHigh", 5000},
-                                                {"analysisShare", 450. / 1100}};
+                                                {"analysisShare", 450. / 1100},
+                                                {"leftShare", .4},
+                                                {"showSpectrogram", 1},
+                                                {"showModalEditor", 1},
+                                                {"singleColumn", 0}};
     ui::AnalysisPanel panel;
     panel.SetDocument(document);
     Require(panel.Settings().at("view") ==

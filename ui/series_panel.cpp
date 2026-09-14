@@ -110,9 +110,11 @@ void SeriesPanel::resized() {
   family_.setBounds(0, 0, 120, 28);
   note_.setBounds(128, 0, 100, 28);
   replace_.setBounds(width() - 144, 0, 144, 28);
-  const float col = (width() - 24) / 3;
+  const unsigned columns = width() < 560 ? 2 : 3;
+  const float col = (width() - 12 * (columns - 1)) / columns;
   for (unsigned i = 0; i < fields_.size(); ++i)
-    fields_[i]->setBounds((col + 12) * (i % 3), 36 + 48 * (i / 3), col, 44);
+    fields_[i]->setBounds((col + 12) * (i % columns), 36 + 48 * (i / columns),
+                          col, 44);
 }
 void SeriesPanel::draw(visage::Canvas &c) {
   Label(c, status_, 0, height() - 24, width(), 22, 0xffe8b755);

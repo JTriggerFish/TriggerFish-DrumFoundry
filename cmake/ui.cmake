@@ -16,6 +16,7 @@ target_sources(drumfoundry_ui PRIVATE ui/slider_text.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/workbench_panels.cpp ui/workbench_history.cpp
   ui/workbench_performance.cpp ui/workbench_poll.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/workbench_settings.cpp ui/analysis_reference.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/workbench_layout_controls.cpp ui/layout_right.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/help_bubble.cpp ui/parameter_help.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/live_spectrum.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/eq_plot.cpp ui/eq_gestures.cpp)

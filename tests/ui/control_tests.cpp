@@ -85,6 +85,17 @@ int main() {
   event.window_position.y = 100;
   divider.mouseDrag(event);
   Require(movement == 0);
+  divider.mouseUp(event);
+  divider.vertical = true;
+  event.window_position.x = 40;
+  divider.mouseDown(event);
+  event.window_position.x = 80;
+  divider.mouseDrag(event);
+  Require(movement == 40);
+  event.window_position.x = 40;
+  divider.mouseDrag(event);
+  Require(movement == 0);
+  divider.mouseUp(event);
   StrikePad pad;
   pad.setBounds(0, 0, 200, 100);
   float velocity = 0, location = 0;

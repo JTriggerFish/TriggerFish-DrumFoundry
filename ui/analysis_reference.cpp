@@ -40,14 +40,17 @@ void AnalysisPanel::ApplyReferenceView() {
                                ? "Ref: " + reference_.value("name", "Sample")
                                : "Reference: None");
   for (auto *frame : std::initializer_list<visage::Frame *>{
-           &referenceVisible_, &referenceGain_, &channel_})
+           &referenceVisible_, &referenceGain_, &channel_, &previousReference_,
+           &nextReference_})
     frame->setVisible(selected);
   const bool visible = selected && reference_.value("visible", true);
   referenceVisible_.setText(visible ? "Hide reference" : "Show reference");
   view_.showReference = visible && referenceReady_;
-  comparison_.setVisible(view_.showReference);
+  comparison_.setVisible(showSpectrogram && view_.showReference);
   view_.Refresh();
   resized();
+  if (layoutChanged)
+    layoutChanged();
 }
 void AnalysisPanel::ClearReference() {
   reference_ = nullptr;
@@ -76,7 +79,7 @@ void AnalysisPanel::SetReference(const std::filesystem::path &path) {
                 {"libraryPath", relative},
                 {"visible", true},
                 {"offsetSeconds", 0.},
-                {"referenceGainDb", 0.},
+                {"referenceGainDb", referenceGain_.Value()},
                 {"channel", 0}};
   ResolveReference();
   matchLength_ = true;

@@ -101,6 +101,34 @@ void LibraryTests(drumfoundry::Json document) {
     if (auto *v = dynamic_cast<ui::AnalysisView *>(child))
       view = v;
   Check(view && view->HasReference());
+  const auto nextSample = folder / "Second.wav";
+  Wave(nextSample);
+  auto gainDocument = document;
+  gainDocument["reference"]["referenceGainDb"] = 6.;
+  panel.SetDocument(gainDocument);
+  Finish(panel);
+  panel.StepReference(1);
+  Finish(panel);
+  Check(panel.Reference().at("libraryPath") ==
+        analysis::LibraryRelativePath(library, nextSample));
+  Check(panel.Reference().at("referenceGainDb") == 6.);
+  panel.showSpectrogram = false;
+  panel.resized();
+  Check(!view->isVisible());
+  bool referencePlayed = false;
+  panel.play = [&](auto pcm, unsigned rate, double gain) {
+    Check(!pcm->empty() && rate == 48000 &&
+          std::abs(gain - std::pow(10., .3)) < 1e-8);
+    referencePlayed = true;
+  };
+  panel.Play(true);
+  Check(referencePlayed); // Hiding the plot does not disable reference audio.
+  panel.StepReference(-1);
+  Finish(panel);
+  Check(panel.Reference().at("libraryPath") == relative);
+  panel.showSpectrogram = true;
+  panel.SetDocument(document);
+  Finish(panel);
   panel.SetReferenceVisible(false);
   Check(panel.Ready() && !view->HasReference() &&
         view->Mode() == ui::Comparison::Model);

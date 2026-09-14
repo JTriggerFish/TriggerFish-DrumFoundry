@@ -51,8 +51,8 @@ const clap_plugin_gui_t GuiExtension{
     [](const clap_plugin_t *p, uint32_t *w, uint32_t *h) {
       if (!Get(p) || !w || !h)
         return false;
-      *w = std::clamp(*w, 1000u, 8192u);
-      *h = std::clamp(*h, 640u, 8192u);
+      *w = std::clamp(*w, 900u, 8192u);
+      *h = std::clamp(*h, 600u, 8192u);
       return true;
     },
     [](const clap_plugin_t *p, uint32_t w, uint32_t h) {

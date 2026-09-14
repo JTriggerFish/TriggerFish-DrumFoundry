@@ -47,6 +47,8 @@ ModalPanel::ModalPanel() {
   generate_.onToggle() = [this](auto *, bool) {
     showSeries_ = !showSeries_;
     resized();
+    if (layoutChanged)
+      layoutChanged();
   };
   guide_.onToggle() = [this](auto *, bool) {
     plot_.guide = !plot_.guide;

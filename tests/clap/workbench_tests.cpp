@@ -1,6 +1,7 @@
 #include "adapters/clap/plugin.hpp"
 #ifdef DRUMFOUNDRY_UI
 #include "ui/workbench.hpp"
+#include <array>
 #include <stdexcept>
 
 namespace {
@@ -15,6 +16,13 @@ template <class T> T *Find(visage::Frame &frame) {
     if (auto *match = Find<T>(*child))
       return match;
   return nullptr;
+}
+void CheckChildren(visage::Frame &frame) {
+  for (auto *child : frame.children())
+    if (child->isVisible())
+      Check(child->x() >= 0 && child->y() >= 0 && child->width() > 0 &&
+            child->height() > 0 && child->right() <= frame.width() + 1 &&
+            child->bottom() <= frame.height() + 1);
 }
 } // namespace
 #endif
@@ -45,15 +53,28 @@ void WorkbenchTests() {
   auto *pad = Find<ui::StrikePad>(editor);
   auto *analysis = Find<ui::AnalysisPanel>(editor);
   Check(pad && analysis);
-  for (int width : {1000, 1440, 3200}) {
-    editor.setBounds(0, 0, width, 1000);
-    Check(pad->width() <= 360 && pad->height() >= 120);
-    for (auto *control : analysis->children())
-      if (control->isVisible())
-        Check(control->x() >= 0 && control->right() <= analysis->width() + 1 &&
-              control->y() >= 0 && control->bottom() <= analysis->height() + 1);
-    auto *plot = Find<ui::AnalysisView>(*analysis);
-    Check(plot && plot->height() >= 180);
+  for (auto size : {std::array<int, 2>{900, 600},
+                    {1024, 768},
+                    {1280, 720},
+                    {1440, 900},
+                    {3200, 1800}}) {
+    editor.setBounds(0, 0, size[0], size[1]);
+    for (float controlWidth : {300.f, 460.f, 700.f}) {
+      editor.SetControlWidth(controlWidth);
+      Check(pad->width() <= 360 && pad->height() >= 120);
+      CheckChildren(editor);
+      CheckChildren(*analysis);
+      auto *plot = Find<ui::AnalysisView>(*analysis);
+      Check(plot && plot->height() >= 300);
+      for (bool modes : {false, true}) {
+        editor.SetVisualPanels(false, modes);
+        Check(!plot->isVisible());
+        CheckChildren(*analysis); // Reference picker remains accessible.
+        editor.SetVisualPanels(true, modes);
+        Check(plot->isVisible());
+        CheckChildren(*analysis);
+      }
+    }
   }
   visage::MouseEvent click;
   click.button_id = visage::kMouseButtonLeft;
@@ -81,5 +102,26 @@ void WorkbenchTests() {
   }
   Check(energy > 1e-6 && plugin.PreviewStrength() == .75);
   plugin.Deactivate();
+  for (unsigned preset = 1; preset < 6; ++preset) {
+    plugin.SelectFactory(preset);
+    auto smallDocument = plugin.EditableDocument();
+    smallDocument["controls"]["analysis"]["view"] = {{"renderSeconds", .25}};
+    plugin.EditDocument(smallDocument);
+    const auto sound = plugin.EditableDocument().at("instrument");
+    ui::Workbench small(bridge);
+    small.setBounds(0, 0, 900, 600);
+    small.SetControlWidth(340);
+    auto *modes = Find<ui::ModalPanel>(small);
+    Check(modes);
+    for (bool spectrum : {true, false})
+      for (bool visible : {true, false}) {
+        small.SetVisualPanels(spectrum, visible);
+        CheckChildren(small);
+        CheckChildren(*Find<ui::AnalysisPanel>(small));
+        if (modes->isVisible())
+          CheckChildren(*modes);
+      }
+    Check(plugin.EditableDocument().at("instrument") == sound);
+  }
 #endif
 }

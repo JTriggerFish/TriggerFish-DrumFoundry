@@ -15,6 +15,7 @@ public:
     Queue();
   }
   void SetReference(const std::filesystem::path &);
+  void StepReference(int direction);
   void ClearReference();
   void SetReferenceVisible(bool);
   void SetLibraryRoot(const std::filesystem::path &);
@@ -36,9 +37,13 @@ public:
                        1100}; // Presentation only; saved with view state.
   void SetAuditionRate(unsigned);
   void Play(bool reference);
+  float MinimumHeight();
+  bool showSpectrogram{true}, showModalEditor{true}, singleColumn{};
+  double leftShare{.4};
   void resized() override;
   void draw(visage::Canvas &) override;
   std::function<void(const std::string &)> error;
+  std::function<void()> layoutChanged;
   std::function<void(std::shared_ptr<const std::vector<float>>, unsigned,
                      double)>
       play;
@@ -52,6 +57,7 @@ private:
   void ReceiveContext(std::shared_ptr<const analysis::Result>);
   void ReceiveResult(std::shared_ptr<const analysis::Result>);
   void LoadView(const editing::Json &);
+  float LayoutControls(float toolsTop);
   void PublishState();
   void Menus();
   void ReferenceMenu();
@@ -81,6 +87,7 @@ private:
       channel_{"Mono average"};
   visage::UiButton overlap_{"Overlap"}, render_{"Render"};
   visage::UiButton referenceVisible_{"Show reference"};
+  visage::UiButton previousReference_{"Previous"}, nextReference_{"Next"};
   Slider duration_{"Render length", .25, 60, 8, " s"};
   Slider range_{"Colour range", 30, 120, 80, " dB"};
   Slider referenceGain_{"Reference gain", -60, 48, 0, " dB"};

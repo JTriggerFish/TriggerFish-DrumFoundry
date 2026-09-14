@@ -1,5 +1,10 @@
 #include "gui_capture.hpp"
 namespace drumfoundry::standalone {
+void GuiCapture::Resize(unsigned width, unsigned height) {
+  const float scale = window_.window()->dpiScale();
+  window_.window()->setNativeWindowSize(int(width * scale),
+                                        int(height * scale));
+}
 GuiCapture::GuiCapture(visage::ApplicationWindow &window, ui::Workbench &editor,
                        visage::Frame &shade, visage::Frame &settings)
     : window_(window), editor_(editor), shade_(shade), settings_(settings) {
@@ -8,7 +13,7 @@ GuiCapture::GuiCapture(visage::ApplicationWindow &window, ui::Workbench &editor,
 }
 void GuiCapture::Tick() {
   if (!liveCaptured_) {
-    const auto &shot = window_.takeScreenshot();
+    const auto shot = window_.takeScreenshot();
     if (shot.width() > 0 && shot.height() > 0) {
       shot.save("build/ui-live-smoke.png");
       liveCaptured_ = true;
@@ -23,17 +28,25 @@ void GuiCapture::Tick() {
     }
     return;
   }
-  const auto &shot = window_.takeScreenshot();
+  const auto shot = window_.takeScreenshot();
   if (shot.width() > 0 && shot.height() > 0) {
     if (stage_ == 0) {
       shot.save("build/ui-smoke.png");
+      Resize(900, 600);
+      editor_.SetControlWidth(340);
+    } else if (stage_ == 2) {
+      shot.save("build/ui-small-smoke.png");
+      editor_.SetVisualPanels(false, false);
+    } else if (stage_ == 4) {
+      shot.save("build/ui-compact-smoke.png");
+      Resize(1440, 900);
       shade_.setVisible(true);
       settings_.setVisible(true);
-    } else if (stage_ == 2) {
+    } else if (stage_ == 6) {
       shot.save("build/ui-settings-smoke.png");
       settings_.setVisible(false);
       editor_.OpenRouting();
-    } else if (stage_ == 4) {
+    } else if (stage_ == 8) {
       shot.save("build/ui-routing-smoke.png");
       captured_ = true;
     }

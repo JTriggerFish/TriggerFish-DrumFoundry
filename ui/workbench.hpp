@@ -25,12 +25,18 @@ public:
   void Error(const std::string &message);
   bool AnalysisReady() const { return analysis_.Ready(); }
   void OpenRouting();
+  void SetVisualPanels(bool spectrogram, bool modes);
+  void SetControlWidth(float pixels);
 
 private:
   void Poll();
   void PollPreview();
   void PollPerformance();
   void LayoutRight();
+  float LeftWidth() const;
+  bool SingleColumn() const;
+  void SetupLayout();
+  void OpenLayout();
   void SelectPreset();
   void Change(unsigned, double);
   void SetupPanels();
@@ -70,6 +76,11 @@ private:
   visage::ScrollableFrame right_;
   AnalysisPanel analysis_;
   SplitBar analysisSplit_;
+  SplitBar columnSplit_;
+  visage::UiButton layout_{"Layout ▾"}, excitationTab_{"Excitation / output"},
+      resonanceTab_{"Resonance / bloom"};
+  bool resonanceSelected_{};
+  float columnStart_{}, flexibleHeight_{};
   float splitStart_{};
   ModalPanel modal_;
   HistoryBar history_;
