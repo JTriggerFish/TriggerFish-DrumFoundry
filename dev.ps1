@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('setup','doctor','build','test','clap','clap-test','clap-dist','standalone','standalone-test','standalone-dist','ui','ui-test','ui-dist','python-test','test-fitting-tools','perceptual-test','check','dist')]
+    [ValidateSet('setup','doctor','build','test','clap','clap-test','clap-dist','standalone','standalone-test','standalone-dist','ui','ui-test','ui-dist','python-test','test-fitting-tools','perceptual-test','benchmark-percussion','check','dist')]
     [string]$Command = 'build',
     [ValidateRange(1,64)][int]$Jobs = 4,
     [string]$Python = ''
@@ -39,7 +39,12 @@ try {
         'python-test' { Invoke-PythonTests }
         'test-fitting-tools' { Invoke-PythonTests }
         'perceptual-test' {
-            Invoke-Checked (Resolve-DevelopmentPython) @('-m','pytest','tests/perceptual')
+            Invoke-Checked (Resolve-DevelopmentPython) @('-m','pytest','tests/perceptual','tests/python/test_reference_floor_mel.py','tests/python/test_metal_refinement.py')
+        }
+        'benchmark-percussion' {
+            Build-Native
+            Invoke-Checked cmake @('--build','build/native','--target','percussion_benchmark','--parallel',"$Jobs")
+            Invoke-Checked (Join-Path $repoRoot 'build/native/tests/percussion_benchmark') @()
         }
         'check' { Invoke-Checked (Resolve-DevelopmentPython) @('-m','pre_commit','run','--all-files') }
         'dist' {

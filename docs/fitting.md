@@ -2,7 +2,7 @@
 
 Python is optional, offline tooling. `drumfoundry.Renderer` calls the native C ABI
 directly; C++ reads and validates the saved document, maps parameters and runs
-the same voice that the future CLAP adapter will use. There is no JS renderer.
+the same voice used by CLAP and the standalone. There is no JS renderer.
 
 `triggerfish_percussion` retains selected existing numerical modules: STFT,
 power envelopes, band-decay shape, short-drum and metallic losses, modal texture,
@@ -49,7 +49,7 @@ separate multi-seed and multi-velocity audits are still needed before accepting
 a real fit. A regression test first recovers a known native gain change and
 checks that every other parameter is untouched.
 
-This stage supplies the shared native fitting backend, not a mechanical port of
-every old sample-server-dependent search/report script. Dataset selection and
-experiment-specific optimizers can now be migrated against this backend without
-bringing back Node. Plotly remains available for optional offline diagnostics.
+The complete saved-fit refinement and independent audit commands are documented
+in [Refinement methodology](refinement.md). They retain the structured metal,
+kick ridge/band-envelope and gong onset objectives, with native rendering,
+reference provenance, seed separation and repeated-hit checks.

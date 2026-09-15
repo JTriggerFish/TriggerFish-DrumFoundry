@@ -22,6 +22,11 @@ set(DRUMFOUNDRY_DSP_TESTS
   percussion_turbulence_tests
   percussion_wire_tests
 )
+add_executable(percussion_benchmark EXCLUDE_FROM_ALL dsp/percussion_benchmark.cpp)
+target_link_libraries(percussion_benchmark PRIVATE drumfoundry_engine)
+if(MINGW)
+  target_link_options(percussion_benchmark PRIVATE -static -static-libgcc -static-libstdc++)
+endif()
 add_executable(editing_document_tests editing/document_tests.cpp editing/route_tests.cpp)
 target_link_libraries(editing_document_tests PRIVATE drumfoundry_editing)
 if(MINGW)

@@ -255,10 +255,7 @@ Snapshots and CLAP state retain view, zoom, alignment, render length, channel,
 reference and transform. UI-only metadata changes mark host state dirty without
 restarting the voice. Structural edits retain that current presentation metadata.
 
-The optional, one-time `tools/import_workbench_references.py` helper copies the
-old workbench's curated allow-list into the user's application-data
-`TriggerFish/DrumFoundry/references` folder. It refuses conflicting existing files.
-Choose that folder (or any other WAV library) in Settings → Reference library
+Choose any local WAV library in Settings → Reference library
 folder. The native UI browses the folder hierarchy directly; it does not need
 `catalog.json`, Python or the old repository. Recordings are never packaged or
 committed. Selecting a reference does not alter synthesis settings or normalize

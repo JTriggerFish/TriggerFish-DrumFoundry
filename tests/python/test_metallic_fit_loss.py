@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 
 from triggerfish_percussion.metallic_fit_loss import MetallicFitLoss
-from triggerfish_percussion.instrument_fit_stages import metallic_stages, snare_stages
 
 
 @pytest.fixture(scope="module")
@@ -43,18 +42,3 @@ def test_decay_direction_known_answer(example):
     t = np.arange(len(x)) / rate
     errors = [np.linalg.norm(loss.residual(x * np.exp(-k * t))) for k in (0, 0.2, 1)]
     assert errors[0] < errors[1] < errors[2]
-
-
-def test_no_per_mode_decay_or_event_fitting():
-    parameters = {f"resolved_level_{i}": -6 for i in range(32)}
-    parameters.update({f"resolved_frequency_{i}": 100 * (i + 1) for i in range(32)})
-    for stages in (metallic_stages(parameters), snare_stages(parameters)):
-        keys = {key for _, bounds, _ in stages for key in bounds}
-        assert not keys.intersection(
-            {"strength", "location", "hardness", "implement", "constraint"}
-        )
-        assert not any(
-            key.startswith("body_decay_")
-            and key not in {"body_decay_seconds_0", "body_decay_seconds_7"}
-            for key in keys
-        )

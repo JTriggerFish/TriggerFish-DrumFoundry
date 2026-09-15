@@ -1,8 +1,8 @@
 # Optional reference libraries
 
 References are audition/analysis attachments, not synthesis inputs. A fresh
-session and the ordinary factory presets use **None**, showing one model waveform
-and spectrogram. No reference library is required to play, edit or save a sound.
+session and the ordinary factory presets use **None**, showing one model
+spectrogram. No reference library is required to play, edit or save a sound.
 
 ## Using the library
 
@@ -13,12 +13,11 @@ and spectrogram. No reference library is required to play, edit or save a sound.
    open their contents, and **Parent folder** goes back up. Choose a WAV file.
 3. **Hide reference** keeps the attachment but shows only the model. **Show
    reference** restores the comparison. Choosing **None** removes the attachment.
-4. Save the fit or a snapshot normally. It retains the relative file path,
+4. Save a user preset normally. It retains the relative file path,
    visibility, explicit reference gain, channel, alignment and content identity.
 
-Factory sound parameters are also available under **Presets → Calibrations
-(with reference)**. These contain the existing calibration attachments and gain,
-but have the same synthesis parameters as their ordinary factory counterparts.
+Local calibrations appear under **Presets → User presets** with their folder
+hierarchy. They are not factory content and are never packaged or published.
 Moving between samples never changes the instrument or its strike parameters.
 
 ## Storage and portability
@@ -29,7 +28,7 @@ in presets or CLAP state. Clear it through Settings without deleting any files.
 
 A fit's optional `reference` object uses a UTF-8, forward-slash `libraryPath`
 relative to that base folder. `visible`, `referenceGainDb`, `channel` and
-`offsetSeconds` describe presentation only. SHA256 is recorded after decoding;
+`offsetSeconds` describe presentation only. SHA256 identifies the raw WAV file;
 it is optional for a newly selected file. Null or an absent object means None.
 Legacy calibration URLs are converted to relative paths on load. Existing
 corpus/cell annotations are retained for offline analysis tools; the native UI
@@ -37,7 +36,7 @@ does not depend on them. Absolute sample paths are not written back to fits.
 
 The existing private calibration folders can be used unchanged under a common
 base. This migration does not move/delete recordings or overwrite user fits.
-Only relative metadata is committed to Git, never reference audio.
+Calibration presets and reference audio both remain local, outside Git.
 
 ## Failure and rendering contract
 
