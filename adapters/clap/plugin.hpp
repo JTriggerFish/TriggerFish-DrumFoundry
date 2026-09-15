@@ -76,7 +76,6 @@ public:
   void PrepareEditorPreset();
   void EditDocument(Json);
   void SelectFactory(unsigned index);
-  void SelectCalibration(unsigned index);
   void EditPresentation(const Json &reference, const Json &analysis);
   double PreviewStrength() const { return previewStrength_.load(); }
   void SetPreviewStrength(double);
@@ -125,8 +124,8 @@ private:
   std::atomic<double> previewStrength_{.8};
   std::unique_ptr<Voice> voice_;
   output::Limiter limiter_;
-  Json
-      document_; // Main-thread-only saved/desired patch, never read in Process.
+  Json document_; // Main-thread-only saved/desired patch, never read in
+                  // Process.
   int documentPreset_{};
   unsigned documentRevision_{};
   bool fixedBeater_{}; // Active recipe property, never inferred from a preset

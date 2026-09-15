@@ -9,7 +9,8 @@ public:
   FilePanel();
   void Open(std::filesystem::path directory, bool save,
             std::string extension = ".json");
-  void OpenDirectory(std::filesystem::path directory);
+  void OpenDirectory(std::filesystem::path directory,
+                     std::string title = "REFERENCE LIBRARY FOLDER");
   void resized() override;
   void draw(visage::Canvas &) override;
   std::function<void(const std::filesystem::path &)> chosen;
@@ -25,5 +26,6 @@ private:
   bool save_{};
   bool folderOnly_{};
   std::string extension_{".json"};
+  std::string folderTitle_;
 };
 } // namespace drumfoundry::ui

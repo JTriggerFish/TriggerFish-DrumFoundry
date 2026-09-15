@@ -13,6 +13,8 @@ int main(int argc, char **argv) {
   std::ifstream input(argv[1]);
   editing::Document d;
   d.Load(editing::Json::parse(input));
+  extern void PresetTests(const editing::Document &);
+  PresetTests(d);
   extern void ParameterGroupTests(editing::Document);
   ParameterGroupTests(d);
   extern void EqTests(editing::Document);

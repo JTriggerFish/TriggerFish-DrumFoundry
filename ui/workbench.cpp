@@ -6,18 +6,23 @@ namespace drumfoundry::ui {
 namespace {
 constexpr const char *names[]{"Kick",  "Snare", "Hi-hat",
                               "Crash", "Ride",  "Gong"};
-}
+constexpr const char *factoryIds[]{"factory.kick",  "factory.snare",
+                                   "factory.hihat", "factory.crash",
+                                   "factory.ride",  "factory.gong"};
+} // namespace
 Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   for (auto *frame : std::initializer_list<visage::Frame *>{
            &preset_, &settings_, &limiter_, &master_, &location_, &mute_,
            &excitation_, &resonance_, &excitationTab_, &resonanceTab_,
-           &columnSplit_})
+           &columnSplit_, &footer_})
     addChild(frame);
   SetupPanels();
   SetupLayout();
   SetupRouting();
   SetupFiles();
   SetupPerformance();
+  footer_.setOnTop(
+      true); // Errors remain readable while a modal dialog is open.
   addChild(&help_, false);
   help_.Bind(*this);
   NativeFonts(*this);
@@ -39,28 +44,51 @@ void Workbench::Change(unsigned id, double value) {
   }
 }
 void Workbench::SelectPreset() {
-  visage::PopupMenu menu;
-  for (int i = 0; i < 6; ++i)
-    menu.addOption(i, names[i]).select(bridge_.value(100) == i);
-  if (bridge_.selectCalibration) {
-    visage::PopupMenu calibrations("Calibrations (with reference)");
+  try {
+    visage::PopupMenu menu;
+    menu.addOption(-1, "Factory presets").enable(false);
     for (int i = 0; i < 6; ++i)
-      calibrations.addOption(100 + i, names[i]);
-    menu.addSubMenu(std::move(calibrations));
-  }
-  menu.onSelection() = [this](int index) {
+      menu.addOption(i, names[i])
+          .select(document_.JsonValue().value("id", "") == factoryIds[i]);
+    menu.addBreak();
+    menu.addOption(-1, "User presets").enable(false);
+    std::vector<std::filesystem::path> paths;
     try {
-      if (index >= 100 && bridge_.selectCalibration)
-        bridge_.selectCalibration(unsigned(index - 100));
-      else if (bridge_.selectFactory)
-        bridge_.selectFactory(unsigned(index));
-      else
-        Change(100, index);
+      const auto root = UserPresetDirectory();
+      paths = UserPresets(root);
+      AddPresetFolders(menu, root, paths);
     } catch (const std::exception &e) {
-      Error(e.what());
+      Error(e.what()); // Factory presets and import/save remain accessible.
     }
-  };
-  menu.show(&preset_);
+    if (paths.empty())
+      menu.addOption(-1, "No user presets — choose a folder in Settings")
+          .enable(false);
+    menu.addBreak();
+    menu.addOption(200, "Save preset as…");
+    menu.addOption(201, "Import preset…");
+    menu.addOption(202, "Export preset…");
+    menu.onSelection() = [this, paths](int index) {
+      try {
+        if (index >= 1000 && unsigned(index - 1000) < paths.size()) {
+          bridge_.applyDocument(editing::ReadFit(paths[index - 1000]));
+          reloadDocument_ = true;
+        } else if (index == 200) {
+          presetShade_.setVisible(true);
+          presetSave_.Open(CaptureDocument());
+        } else if (index == 201 || index == 202) {
+          OpenFitFile(index == 202, CaptureDocument());
+        } else if (index >= 0 && index < 6 && bridge_.selectFactory)
+          bridge_.selectFactory(unsigned(index));
+        else if (index >= 0 && index < 6)
+          Change(100, index);
+      } catch (const std::exception &e) {
+        Error(e.what());
+      }
+    };
+    menu.show(&preset_);
+  } catch (const std::exception &e) {
+    Error(e.what());
+  }
 }
 void Workbench::RefreshDocument() {
   holdDecay_.Cancel();

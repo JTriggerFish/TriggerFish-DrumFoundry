@@ -136,7 +136,7 @@ as recorded, not presented as precise wall-clock timing.
 ## Native interface
 
 Visage supplies the settings/device chooser, strike surface, persistent limiter
-meters, modal/T60 editors, snapshots and reference analysis. It calls this host
+meters, modal/T60 editors, user presets and reference analysis. It calls this host
 layer, while CLAP embeds the same workbench. There is no browser server or second
 DSP renderer. See [native-ui.md](native-ui.md) for interaction and testing details.
 

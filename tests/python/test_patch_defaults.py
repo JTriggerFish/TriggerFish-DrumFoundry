@@ -71,7 +71,7 @@ def test_ring_character_is_discrete():
 
 
 def test_fit_metadata_and_overrides_survive_expansion():
-    preset = Path(__file__).resolve().parents[2] / "presets/crash_calibration.fit.json"
+    preset = Path(__file__).resolve().parents[2] / "presets/factory/crash.fit.json"
     with Renderer(preset) as r:
         full = r.document
         partial = deepcopy(full)

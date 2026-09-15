@@ -1,9 +1,7 @@
 {
   "schema": "triggerfish.percussion.fit/v1",
-  "id": "8b5d14e9-93af-4f33-b950-496865caf9cc",
-  "parentId": "76c54fcb-86a9-4f34-b3d8-193b5dce9007",
-  "createdAt": "2026-09-12T15:18:29.437152+00:00",
-  "name": "Crash — beating doubles, refined decay",
+  "id": "factory.crash",
+  "name": "Crash",
   "renderer": {
     "recipe": "metal.cymbal.v1",
     "api": 1,
@@ -289,39 +287,7 @@
       "contactSpread"
     ]
   },
-  "reference": {
-    "id": "sha256:0446d07f06eea71428183a1e8a3507dfee8552734926e5b91c0bd4b9a10ed8c6",
-    "sha256": "0446d07f06eea71428183a1e8a3507dfee8552734926e5b91c0bd4b9a10ed8c6",
-    "name": "edge v072 r01",
-    "sampleRate": 48000,
-    "channels": 1,
-    "bits": 32,
-    "duration": 10,
-    "referenceGainDb": 42,
-    "corpus": {
-      "id": "private-crash-a",
-      "name": "Private crash A",
-      "referenceGainDb": 42
-    },
-    "cell": {
-      "label": "edge v072 r01",
-      "articulation": "edge",
-      "velocity": 72,
-      "repeat": 1,
-      "strength": 0.5669291338582677,
-      "location": 1,
-      "hardness": 0.6,
-      "implement": 1,
-      "contactSpread": 0.2,
-      "onset_seconds": 0.05,
-      "seed": 1396978464,
-      "split": "fit",
-      "url": "/reference/private-crash-a/032-edge-v072-r01.wav"
-    },
-    "libraryPath": "private-crash-a/032-edge-v072-r01.wav",
-    "visible": true,
-    "offsetSeconds": 0.05
-  },
+  "reference": null,
   "controls": {
     "event": {
       "strength": 0.5669291338582677,

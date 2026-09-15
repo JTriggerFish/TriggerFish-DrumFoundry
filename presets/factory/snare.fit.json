@@ -1,9 +1,7 @@
 {
   "schema": "triggerfish.percussion.fit/v1",
-  "id": "dc280d23-d001-453c-a932-1504bc488f74",
-  "parentId": null,
-  "createdAt": "2026-09-07T12:52:06.635Z",
-  "name": "Snare — medium standard (fitted candidate)",
+  "id": "factory.snare",
+  "name": "Snare",
   "renderer": {
     "recipe": "drum.snare.v1",
     "api": 1,
@@ -286,39 +284,7 @@
       "contactSpread"
     ]
   },
-  "reference": {
-    "id": "sha256:6313c66e16d32ab4475315293759d8fe386cc79d573fa3b84906bb4f91c5191f",
-    "sha256": "6313c66e16d32ab4475315293759d8fe386cc79d573fa3b84906bb4f91c5191f",
-    "name": "Snare YMCA 1 B 01",
-    "sampleRate": 44100,
-    "channels": 2,
-    "bits": 16,
-    "duration": 1.733809523809524,
-    "referenceGainDb": 5,
-    "corpus": {
-      "id": "acoustic-snare-maple",
-      "name": "Acoustic snare — maple",
-      "referenceGainDb": 5
-    },
-    "cell": {
-      "label": "Snare YMCA 1 B 01",
-      "articulation": "main",
-      "velocity": 82,
-      "repeat": 1,
-      "strength": 0.65,
-      "location": 0.3,
-      "hardness": 0.65,
-      "implement": 1,
-      "contactSpread": 0.2,
-      "onset_seconds": 0.000975,
-      "seed": 1575,
-      "split": "audition",
-      "url": "http://127.0.0.1:8765/reference/acoustic-snare-maple/Snare%20YMCA%201%20B%2001.wav"
-    },
-    "libraryPath": "acoustic-snare-maple/Snare YMCA 1 B 01.wav",
-    "visible": true,
-    "offsetSeconds": 0.000975
-  },
+  "reference": null,
   "controls": {
     "event": {
       "strength": 0.65,
@@ -336,7 +302,5 @@
       "floorDb": -160,
       "dynamicRangeDb": 80
     }
-  },
-  "reviewStatus": "measurement-reviewed-audition-pending",
-  "reviewNote": "Fixed source/event. Two training seeds, three held-out seeds; exact WAV and snapshot reload checked. Body/ring detail still differs; not a claim of perceptual equivalence."
+  }
 }

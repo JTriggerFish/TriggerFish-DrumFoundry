@@ -7,7 +7,7 @@ import pytest
 from drumfoundry import Renderer, default_patch
 from drumfoundry.fitting import fit_parameters, parameters, with_parameters
 
-PRESET = Path(__file__).resolve().parents[2] / "presets/kick_calibration.fit.json"
+PRESET = Path(__file__).resolve().parents[2] / "presets/factory/kick.fit.json"
 
 
 def test_recover_known_gain_without_changing_other_controls():

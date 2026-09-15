@@ -10,7 +10,7 @@ FilePanel::FilePanel() {
     field->setMultiLine(false);
     field->setFont(Font());
   }
-  filename_.setDefaultText("New fit name.json");
+  filename_.setDefaultText("Preset name.json");
   directory_.onEnterKey() = [this] { Browse(); };
   filename_.onEnterKey() = [this] { Accept(); };
   browse_.onToggle() = [this](auto *, bool) { Browse(); };
@@ -28,11 +28,13 @@ void FilePanel::Open(std::filesystem::path directory, bool save,
   extension_ = std::move(extension);
   directory_.setText(directory.u8string());
   filename_.setText("");
-  accept_.setText(save ? "Save new fit" : "Open");
+  accept_.setText(save ? "Export preset" : "Open");
   setVisible(true);
 }
-void FilePanel::OpenDirectory(std::filesystem::path directory) {
+void FilePanel::OpenDirectory(std::filesystem::path directory,
+                              std::string title) {
   Open(std::move(directory), false);
+  folderTitle_ = std::move(title);
   folderOnly_ = true;
   filename_.setVisible(false);
   accept_.setText("Use this folder");
@@ -64,14 +66,19 @@ void FilePanel::Browse() {
                      (entries[i].is_directory() ? "[folder] " : "") +
                          entries[i].path().filename().u8string());
     menu.onSelection() = [this, entries](int choice) {
-      if (choice == 0)
-        directory_.setText(Directory().parent_path().u8string());
-      else if (choice > 0 && unsigned(choice) <= entries.size()) {
-        const auto &entry = entries[choice - 1];
-        if (entry.is_directory())
-          directory_.setText(entry.path().u8string());
-        else
-          filename_.setText(entry.path().filename().u8string());
+      try {
+        if (choice == 0)
+          directory_.setText(Directory().parent_path().u8string());
+        else if (choice > 0 && unsigned(choice) <= entries.size()) {
+          const auto &entry = entries[choice - 1];
+          if (entry.is_directory())
+            directory_.setText(entry.path().u8string());
+          else
+            filename_.setText(entry.path().filename().u8string());
+        }
+      } catch (const std::exception &e) {
+        if (error)
+          error(e.what());
       }
     };
     menu.show(&browse_);
@@ -98,7 +105,7 @@ void FilePanel::Accept() {
       path += extension_;
     if (save_ && std::filesystem::exists(path))
       throw std::runtime_error("That file already exists. Use a new name to "
-                               "keep the previous fit.");
+                               "keep the previous preset.");
     if (chosen)
       chosen(path);
     setVisible(false);
@@ -119,21 +126,20 @@ void FilePanel::draw(visage::Canvas &c) {
   c.setColor(colours::Panel);
   c.roundedRectangle(0, 0, width(), height(), 8);
   Label(c,
-        folderOnly_ ? "REFERENCE LIBRARY FOLDER"
-        : save_     ? "SAVE A NEW FIT"
+        folderOnly_ ? folderTitle_
+        : save_     ? "EXPORT PRESET"
                     : "OPEN FILE",
         18, 12, width() - 36, 28, colours::Heading);
   Label(c, "Folder — paste a path or browse its contents", 18, 36,
         width() - 36, 22);
   if (!folderOnly_)
     Label(c, "Filename", 18, 140, width() - 36, 22);
-  Label(
-      c,
-      folderOnly_
-          ? "This local folder is shared by the standalone and CLAP editor."
-      : save_
-          ? "Existing fits are kept; choose a new filename for each version."
-          : "Choose a file, then Open.",
-      18, 206, width() - 36, 28);
+  Label(c,
+        folderOnly_
+            ? "This local folder is shared by the standalone and CLAP editor."
+        : save_ ? "Existing presets are kept; choose a new filename for each "
+                  "version."
+                : "Choose a file, then Open.",
+        18, 206, width() - 36, 28);
 }
 } // namespace drumfoundry::ui

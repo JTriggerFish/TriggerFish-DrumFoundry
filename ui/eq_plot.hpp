@@ -3,12 +3,13 @@
 #include "editing/output_eq.hpp"
 #include "live_spectrum.hpp"
 namespace drumfoundry::ui {
-// Three handles edit the same four visible scalar controls; no extra sound
-// state.
+// Graph handles and editable readouts share the document's EQ parameters.
 class EqPlot : public visage::Frame, public HelpText {
 public:
   EqPlot(editing::Document &, const LiveSpectrum *);
   void draw(visage::Canvas &) override;
+  void resized() override;
+  bool SubmitValue(unsigned index, const std::string &text);
   void mouseDown(const visage::MouseEvent &) override;
   void mouseDrag(const visage::MouseEvent &) override;
   void mouseUp(const visage::MouseEvent &) override;
@@ -25,9 +26,17 @@ private:
   double Gain(float) const;
   int Hit(visage::Point) const;
   void ResetHandle(int);
-  void DrawBackground(visage::Canvas &, bool enabled);
+  void DrawBackground(visage::Canvas &);
   void DrawGrid(visage::Canvas &);
   void DrawHandles(visage::Canvas &);
+  void EditValue(unsigned);
+  void SyncReadouts();
+  HelpButton enabled_;
+  std::array<HelpButton, 4> values_;
+  visage::TextEditor entry_;
+  unsigned editing_{};
+  std::array<double, 5> displayed_{};
+  bool readoutsReady_{};
   editing::Document &document_;
   const LiveSpectrum *spectrum_;
   int drag_{-1};

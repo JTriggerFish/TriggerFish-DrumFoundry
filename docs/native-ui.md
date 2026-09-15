@@ -15,7 +15,18 @@ offline analysis/fitting; no browser, Node or Wasm renderer is introduced.
 - Right: spectrogram, strike surface with implement controls, wide
   modal editor. Resizable analysis/editor split; controls may scroll without
   moving playback and analysis out of reach.
-- Bottom: named snapshots, fit save/load and persistent errors (never swallowed).
+  Resize dividers have thin visible rules with wider invisible grab areas.
+  Scrollbars are 4 px at rest and 8 px on hover, independent of text size.
+- Bottom: one compact row for limiter/device status and persistent errors.
+  Hover for the full status/error text when it does not fit.
+- Presets menu: separate factory and user sections, plus Save preset as,
+  Import and Export. User subfolders become nested menus. Former snapshots appear as user presets in the same
+  library; no user files are moved or deleted. Saving creates a new stored
+  version without restarting the voice. User presets show their save time.
+  Settings → User preset folder selects a persistent library shared by standalone
+  and CLAP. The default remains the application's local `fits` folder.
+  Calibrations with reference attachments are local user presets only: neither
+  embedded in the binaries nor installed with factory assets.
 - Preserve double-click defaults, curve editing, modal painting/harmonic tools,
   reference-only colour normalization, mirrored alignment and black-centred
   difference display. No automatic audio normalization.
@@ -30,7 +41,7 @@ All instruments share a single graphical final output EQ: bypass, high-pass,
 one broad colour band and low-pass, with the live output spectrum behind it.
 The graph uses a dark inset and subdued spectrum, with outlined coloured handles
 and a bright response curve. Hover/drag shows the handle's value. Handles and
-numeric controls remain editable when bypassed; editing never enables the EQ
+click-to-edit numeric readouts remain editable when bypassed; editing never enables the EQ
 implicitly. The one-click enable button and graph status make bypass explicit.
 There are no section-specific EQs or multiband controls in instrument patches.
 The kick places contact/output in the first column and thump/resonance/tension
@@ -83,7 +94,7 @@ at 128 samples with hardware-free output capture; this does not test a driver.
 
 1. Optional pinned Visage build, shared editor foundation, native performance
    controls, standalone window and CLAP embedding/lifecycle.
-2. Native settings/device selection and shared patch editing, save/load/snapshots.
+2. Native settings/device selection and shared patch editing/preset save/load.
 3. Port recipe-aware parameter grouping and native modal/T60/meta editors.
 4. Reference selection/playback and off-thread native rendering/FFT/STFT,
    GPU presentation, comparison/alignment and interactive analysis.
@@ -148,11 +159,12 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   windows expand the analysis/editor area to use available height. Its division
   is stored with the view, while the two left control columns remain independent.
   A fixed-velocity Strike button complements the continuous 2D playing surface.
-- Named snapshots persist as independent fit JSON documents under the user's
-  application-data `TriggerFish/DrumFoundry/fits` folder. Each records its parent
-  ID and retains reference identity and analysis settings. Saved snapshots can
-  be restored after restarting. Save/load uses a small in-window Visage path/
-  folder picker; no shell command or browser filesystem permission is involved.
+- User presets persist as independent fit JSON documents in the configured
+  folder (by default application-data `TriggerFish/DrumFoundry/fits`). Each records its parent
+  ID and retains reference identity and analysis settings. Former snapshots are
+  listed in the same User presets menu. Save preset as names a new version;
+  Import validates and copies a new version into this library before loading it;
+  Export writes a portable copy. File selection uses an in-window Visage picker.
   Writes validate first and exclusively create a new file, never overwriting a
   previous fit. Native tests check round-trip persistence and overwrite rejection.
 - Bloom timing and Size meta are native in-window tools, opened from their
@@ -221,7 +233,7 @@ first published chunk approximately 16–26 ms. At 1200×500, full heatmap prepa
 was approximately 13–18 ms; a 33 ms live strip approximately 0.55 ms. These are
 CPU-stage timings, not end-to-end display measurements; add edit debounce,
 polling, initial reference decode and screen refresh. Reproduce with
-`build/native/tests/analysis_preview_bench presets/gong_calibration.fit.json`
+`build/native/tests/analysis_preview_bench presets/factory/gong.fit.json`
 (append `.exe` on Windows) after `./dev.ps1 ui-test`.
 
 Regression tests compare whole/streamed FFTs for every supported window, capture
@@ -276,8 +288,11 @@ invariance, concurrent tap wraparound and equality to actual host output.
 
 Every instrument uses the same final radiation EQ and a three-handle
 EQ plot with the live output as its background. High-pass and low-pass handles
-move horizontally; the colour handle moves frequency and gain. The ordinary
-four sliders remain visible and synchronized, including numeric entry. Bypass
+move horizontally; the colour handle moves frequency and gain. Duplicate
+sliders are replaced by four compact, clickable numeric readouts inside the
+slightly taller graph (Enter applies, Escape cancels). A compact EQ on/off button
+is inside the graph header. Output level remains separate above the graph; it
+balances the instrument against references, unlike master listening volume. Bypass
 leaves a flat total response; double-click resets the selected handle. There is
 no additional Q, gain or hidden shaping parameter. The curve uses the same DSP
 bandwidths in every recipe (Butterworth cuts and a broad colour band, Q 0.7).

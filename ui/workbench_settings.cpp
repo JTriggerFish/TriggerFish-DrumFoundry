@@ -9,6 +9,8 @@ void Workbench::OpenSettings() {
   menu.addOption(1, "Reference library folder…");
   menu.addOption(2, "Clear reference library folder");
   menu.addOption(3, "Layout…");
+  menu.addOption(7, "User preset folder…");
+  menu.addOption(8, "Use default user preset folder");
   visage::PopupMenu colours("Colour scheme");
   colours.addOption(5, "Classic (default)");
   colours.addOption(6, "LazyVim");
@@ -44,6 +46,18 @@ void Workbench::OpenSettings() {
         LoadTheme(DefaultTheme(), true);
       else if (item == 6)
         LoadTheme(LazyVimTheme(), true);
+      else if (item == 7) {
+        files_.chosen = [](const auto &folder) {
+          SetUserPresetDirectory(folder);
+        };
+        const auto root = UserPresetDirectory();
+        files_.OpenDirectory(std::filesystem::exists(root)
+                                 ? root
+                                 : std::filesystem::current_path(),
+                             "USER PRESET FOLDER");
+        fileShade_.setVisible(true);
+      } else if (item == 8)
+        SetUserPresetDirectory({});
     } catch (const std::exception &e) {
       Error(e.what());
     }

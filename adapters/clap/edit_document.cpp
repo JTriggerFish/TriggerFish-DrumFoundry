@@ -93,11 +93,6 @@ void Plugin::SelectFactory(unsigned index) {
                   ParseJson(PresetJson.at(index)));
   PublishDocument(validated, int(index));
 }
-void Plugin::SelectCalibration(unsigned index) {
-  Voice validated(static_cast<float>(sampleRate_),
-                  ParseJson(CalibrationJson.at(index)));
-  PublishDocument(validated, int(index));
-}
 void Plugin::PublishDocument(const Voice &validated, int preset) {
   const auto strike = validated.Event();
   auto next = validated.Document();

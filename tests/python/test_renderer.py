@@ -10,7 +10,8 @@ import pytest
 from drumfoundry import Renderer, default_patch
 
 ROOT = Path(__file__).resolve().parents[2]
-PRESETS = sorted((ROOT / "presets").glob("*.json"))
+PRESETS = sorted((ROOT / "presets/factory").glob("*.fit.json"))
+assert len(PRESETS) == 6, "Factory preset test inputs are missing"
 
 
 @pytest.mark.parametrize("path", PRESETS, ids=lambda p: p.stem)

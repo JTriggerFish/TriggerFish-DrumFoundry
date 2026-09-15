@@ -4,10 +4,7 @@
 #include <exception>
 namespace drumfoundry::ui {
 void Workbench::PollPerformance() {
-  static const char *names[]{"Kick",  "Snare", "Hi-hat",
-                             "Crash", "Ride",  "Gong"};
-  const int preset = std::clamp(int(bridge_.value(100)), 0, 5);
-  preset_.setText(std::string("Preset: ") + names[preset] + " ▾");
+  preset_.setText("Presets ▾");
   audioRunning_ = !bridge_.audioRunning || bridge_.audioRunning();
   settings_.setActionButton(!audioRunning_);
   master_.Set(bridge_.value(105));

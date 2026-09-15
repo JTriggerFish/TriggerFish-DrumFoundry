@@ -80,11 +80,11 @@ void Slider::draw(visage::Canvas &c) {
   const float track = std::max(1.f, width() - 12.f);
   const float trackY = stacked ? 52.f : 30.f;
   c.setColor(colours::Track);
-  c.roundedRectangle(6, trackY, track, 4, 2);
+  c.roundedRectangle(6, trackY + 1, track, 1.5f, .75f);
   const float x = 6 + track * float(Position(value_));
   c.setColor(colours::Accent);
-  c.roundedRectangle(6, trackY, x - 6, 4, 2);
-  c.circle(x - 5, trackY - 3, 10);
+  c.roundedRectangle(6, trackY + 1, x - 6, 1.5f, .75f);
+  c.circle(x - 3.5f, trackY - 1.75f, 7);
 }
 void Slider::mouseDown(const visage::MouseEvent &e) {
   if (e.button_id == visage::kMouseButtonRight) {

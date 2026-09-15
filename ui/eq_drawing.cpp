@@ -3,7 +3,7 @@
 #include <cstdio>
 
 namespace drumfoundry::ui {
-void EqPlot::DrawBackground(visage::Canvas &c, bool enabled) {
+void EqPlot::DrawBackground(visage::Canvas &c) {
   c.setColor(colours::Plot);
   c.roundedRectangle(0, 0, width(), height(), 5);
   c.setColor(colours::Border);
@@ -23,12 +23,9 @@ void EqPlot::DrawBackground(visage::Canvas &c, bool enabled) {
                     hz[selected]);
     label = value;
   }
-  const float badge = (enabled ? 32 : 78) * paletteValue(TextScale);
+  const float badge = enabled_.width();
   const float space = std::max(0.f, width() - badge - 24);
   Label(c, ElideText(FrameFont(*this), label, space), 8, 1, space, 22);
-  c.setColor(enabled ? colours::Success : colours::Warning);
-  c.text(enabled ? "ON" : "Bypassed", FrameFont(*this), visage::Font::kRight,
-         width() - badge - 8, 1, badge, 22);
 }
 void EqPlot::DrawGrid(visage::Canvas &c) {
   for (double db : {-24., -12., 0., 12.}) {
@@ -39,12 +36,12 @@ void EqPlot::DrawGrid(visage::Canvas &c) {
   }
   for (double f : {100., 1000., 10000.}) {
     c.setColor(c.color(colours::Grid).withMultipliedAlpha(.55f));
-    c.fill(X(f), 26, 1, height() - 50);
+    c.fill(X(f), 32, 1, height() - 110);
     Label(c,
           f == 100    ? "100"
           : f == 1000 ? "1k"
                       : "10k",
-          X(f) - 10, height() - 21, 32, 18, colours::Muted);
+          X(f) - 10, height() - 77, 32, 18, colours::Muted);
   }
 }
 void EqPlot::DrawHandles(visage::Canvas &c) {

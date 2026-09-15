@@ -27,9 +27,6 @@ ui::Bridge Connect(Plugin &plugin) {
   bridge.selectFactory = [&plugin](unsigned index) {
     plugin.SelectFactory(index);
   };
-  bridge.selectCalibration = [&plugin](unsigned index) {
-    plugin.SelectCalibration(index);
-  };
   bridge.presentation = [&plugin](const auto &ref, const auto &analysis) {
     plugin.EditPresentation(ref, analysis);
   };

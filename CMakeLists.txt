@@ -39,7 +39,7 @@ endif()
 # The CLAP preview adds a plugin; ordinary engine packages remain independent.
 install(TARGETS drumfoundry_native RUNTIME DESTINATION lib LIBRARY DESTINATION lib)
 install(FILES adapters/c_api/native.h DESTINATION include/drumfoundry)
-install(DIRECTORY presets/ DESTINATION presets)
+install(DIRECTORY presets/factory/ DESTINATION presets/factory FILES_MATCHING PATTERN "*.fit.json")
 install(FILES LICENSE.txt README.md DESTINATION .)
 install(FILES ${eigen_SOURCE_DIR}/COPYING.MPL2 DESTINATION licenses/eigen)
 install(FILES ${json_SOURCE_DIR}/LICENSE.MIT DESTINATION licenses/json)

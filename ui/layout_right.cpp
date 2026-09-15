@@ -16,7 +16,8 @@ void Workbench::LayoutRight() {
   const float minModal = modes ? modal_.MinimumHeight() : 0;
   // The divider may grow scrollable content; minimum editor heights must not
   // pin it in place on a small screen.
-  flexibleHeight_ = std::max(1100.f, right_.height()) - strikeHeight;
+  flexibleHeight_ = std::max(std::max(1100.f, right_.height()) - strikeHeight,
+                             (minAnalysis + 500) / .9f);
   const float analysisHeight =
       !analysis_.showSpectrogram
           ? minAnalysis
@@ -26,8 +27,8 @@ void Workbench::LayoutRight() {
       std::max(right_.height(), analysisHeight + strikeHeight + minModal);
   analysis_.setBounds(0, 0, w, analysisHeight);
   analysisSplit_.setVisible(analysis_.showSpectrogram);
-  analysisSplit_.setBounds(0, analysisHeight, w, 10);
-  const float top = analysisHeight + 14;
+  analysisSplit_.setBounds(0, analysisHeight, w, 14);
+  const float top = analysisHeight + 20;
   const float padWidth =
       narrow ? std::min(w, 360.f) : std::clamp(w * .3f, 280.f, 360.f);
   strike_.setBounds(0, top, padWidth, 180);

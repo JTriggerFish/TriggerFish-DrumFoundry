@@ -89,7 +89,7 @@ void Workbench::ApplyTextSize() {
   excitation_.resized();
   resonance_.resized();
   modal_.resized();
-  history_.resized();
+  presetSave_.resized();
   if (textSizeChanged)
     textSizeChanged();
 }

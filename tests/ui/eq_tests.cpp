@@ -61,14 +61,14 @@ void EqTests(drumfoundry::editing::Document d) {
   CheckResponse(d);
   const auto before = d.JsonValue();
   ui::EqPlot plot(d, nullptr);
-  plot.setBounds(0, 0, 300, 190);
+  plot.setBounds(0, 0, 300, 270);
   Check(d.JsonValue() == before);
   unsigned changes = 0, commits = 0;
   plot.changed = [&] { ++changes; };
   plot.committed = [&] { ++commits; };
   const auto point = [](double f, double gain) {
     return visage::Point{float(30 + 262 * std::log(f / 5) / std::log(4400.)),
-                         float(26 + 140 * (24 - gain) / 60)};
+                         float(32 + 160 * (24 - gain) / 60)};
   };
   visage::MouseEvent e;
   e.button_id = visage::kMouseButtonLeft;

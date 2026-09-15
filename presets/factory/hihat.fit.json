@@ -1,9 +1,7 @@
 {
   "schema": "triggerfish.percussion.fit/v1",
-  "id": "21920aac-e8ef-41e3-939a-32fca7346e46",
-  "parentId": "6a7a88f2-9bca-435a-ad9a-ca7c09f6aff9",
-  "createdAt": "2026-09-09T14:45:33.472Z",
-  "name": "Hi-hat — medium half-open (fitted candidate)",
+  "id": "factory.hihat",
+  "name": "Hi-hat",
   "renderer": {
     "recipe": "metal.cymbal.v1",
     "api": 1,
@@ -289,40 +287,7 @@
       "contactSpread"
     ]
   },
-  "reference": {
-    "id": "sha256:3d7754cde12492819c9f815c4115bef3ec9b966a2e62217aac45a9e19f208019",
-    "sha256": "3d7754cde12492819c9f815c4115bef3ec9b966a2e62217aac45a9e19f208019",
-    "name": "Hi-Hat 14 K Custom H-Op 03",
-    "sampleRate": 44100,
-    "channels": 2,
-    "bits": 16,
-    "duration": 3.494467120181406,
-    "referenceGainDb": 8,
-    "corpus": {
-      "id": "hihat-14-reference",
-      "name": "14-inch hi-hat reference",
-      "referenceGainDb": 8
-    },
-    "cell": {
-      "label": "Hi-Hat 14 K Custom H-Op 03",
-      "articulation": "half-open",
-      "velocity": 96,
-      "repeat": 1,
-      "strength": 0.76,
-      "location": 0.72,
-      "hardness": 0.65,
-      "implement": 1,
-      "contactSpread": 0.2,
-      "onset_seconds": 0.000431,
-      "seed": 1673,
-      "split": "audition",
-      "url": "http://127.0.0.1:8765/reference/hihat-14-reference/Hi-Hat%2014%20K%20Custom%20H-Op%2003.wav",
-      "constraint": 0.38
-    },
-    "libraryPath": "hihat-14-reference/Hi-Hat 14 K Custom H-Op 03.wav",
-    "visible": true,
-    "offsetSeconds": 0.000431
-  },
+  "reference": null,
   "controls": {
     "event": {
       "strength": 0.76,
@@ -340,7 +305,5 @@
       "floorDb": -160,
       "dynamicRangeDb": 80
     }
-  },
-  "reviewStatus": "measurement-reviewed-audition-pending",
-  "reviewNote": "Fixed half-open event and source. Three held-out seeds, exact snapshot reload and repeated strikes checked. No per-hit level matching; only two T60 endpoints."
+  }
 }

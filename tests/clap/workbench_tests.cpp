@@ -77,6 +77,8 @@ void WorkbenchTests() {
         analysis->showModalEditor);
   layout->close();
   Check(!layout->parent()->isVisible());
+  extern void WorkbenchSplitTests(ui::Workbench &, ui::AnalysisPanel &);
+  WorkbenchSplitTests(editor, *analysis);
   for (auto size : {std::array<int, 2>{900, 600},
                     {1024, 768},
                     {1280, 720},
@@ -89,7 +91,7 @@ void WorkbenchTests() {
       CheckChildren(editor);
       CheckChildren(*analysis);
       auto *plot = Find<ui::AnalysisView>(*analysis);
-      Check(plot && plot->height() >= 300);
+      Check(plot && plot->height() >= 180);
       for (bool modes : {false, true}) {
         editor.SetVisualPanels(false, modes);
         Check(!plot->isVisible());

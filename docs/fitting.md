@@ -27,7 +27,7 @@ from triggerfish_percussion.short_drum_fit_loss import ShortDrumLoss
 
 # reference is already mono PCM at the render rate, with explicit fixed gain
 # and onset alignment; never normalize the model independently per candidate.
-with Renderer(Path("presets/kick_calibration.fit.json"), 48000) as renderer:
+with Renderer(Path("presets/factory/kick.fit.json"), 48000) as renderer:
     loss = ShortDrumLoss(reference, 48000)
     candidate, report = fit_parameters(
         renderer, reference,

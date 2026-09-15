@@ -36,8 +36,11 @@ void Workbench::SetupAnalysis() {
   analysisSplit_.started = [this] { splitStart_ = analysis_.height(); };
   analysisSplit_.dragged = [this](float delta) {
     const double flexible = std::max(1.f, flexibleHeight_);
-    analysis_.analysisShare =
-        std::clamp((splitStart_ + delta) / flexible, .1, .9);
+    const double minimum = analysis_.MinimumHeight();
+    analysis_.analysisShare = std::clamp(
+        std::clamp(double(splitStart_ + delta), minimum, flexible * .9) /
+            flexible,
+        .1, .9);
     LayoutRight();
   };
   analysis_.error = [this](const auto &message) { Error(message); };

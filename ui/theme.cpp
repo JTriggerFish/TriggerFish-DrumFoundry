@@ -79,11 +79,16 @@ void ApplyTheme(visage::Palette &palette, const editing::Json &j) {
       {"TextEditorDefaultText", "Muted"},
       {"TextEditorSelection", "Selected"},
       {"TextEditorCaret", "Accent"},
-      {"ScrollBarDefault", "Border"},
+      {"ScrollBarDefault", "Track"},
       {"ScrollBarDown", "Accent"}};
   for (const auto &[widget, token] : mappings)
     if (const auto found = native.find(widget); found != native.end())
       palette.setColor(found->second,
                        visage::Color(Hex(j.at("colors").at(token))));
+  // Stock Visage draws half-width at rest and full-width on hover. Keep
+  // scrollbar geometry independent of text size and colour-scheme choice.
+  const auto values = visage::theme::ValueId::nameIdMap();
+  if (const auto width = values.find("ScrollBarWidth"); width != values.end())
+    palette.setValue(width->second, 8.f);
 }
 } // namespace drumfoundry::ui

@@ -15,7 +15,7 @@ BASELINE = json.loads(
 
 
 def test_sound_identity_ignores_reference_but_not_strike_or_patch():
-    document = json.loads((ROOT / "presets/kick_calibration.fit.json").read_text())
+    document = json.loads((ROOT / "presets/factory/kick.fit.json").read_text())
     identity = sound_identity(document)
     document["reference"] = None
     document["controls"]["analysis"]["size"] = 2048
@@ -33,7 +33,7 @@ def test_sound_identity_ignores_reference_but_not_strike_or_patch():
     ids=lambda c: f"{c['preset']}-{c['rate']}-{c['repeated']}",
 )
 def test_legacy_temporal_and_spectral_signature(case):
-    actual = signature(render_case(ROOT / "presets", case), case["rate"])
+    actual = signature(render_case(ROOT / "presets/factory", case), case["rate"])
     for key in ("temporal_rms", "spectral_rms"):
         expected = np.array(case[key])
         np.testing.assert_allclose(

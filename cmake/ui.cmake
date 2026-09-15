@@ -20,19 +20,20 @@ install(FILES themes/classic.json themes/lazyvim.json themes/theme.schema.json D
 install(FILES themes/LICENSE.lazyvim.txt DESTINATION licenses/lazyvim)
 target_sources(drumfoundry_ui PRIVATE ui/slider_text.cpp ui/slider_layout.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/strike_pad.cpp)
-target_sources(drumfoundry_ui PRIVATE ui/workbench_panels.cpp ui/workbench_history.cpp
+target_sources(drumfoundry_ui PRIVATE ui/workbench_panels.cpp ui/workbench_presets.cpp
   ui/workbench_performance.cpp ui/workbench_poll.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/workbench_settings.cpp ui/analysis_reference.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/workbench_layout_controls.cpp ui/layout_right.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/layout_panel.cpp ui/typography.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/help_bubble.cpp ui/parameter_help.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/live_spectrum.cpp)
-target_sources(drumfoundry_ui PRIVATE ui/eq_plot.cpp ui/eq_gestures.cpp ui/eq_drawing.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/eq_plot.cpp ui/eq_gestures.cpp ui/eq_drawing.cpp ui/eq_values.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/routing_diagram.cpp ui/routing_gestures.cpp ui/routing_panel.cpp ui/workbench_routing.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/decay_editor.cpp ui/decay_gestures.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/modal_plot.cpp ui/modal_gestures.cpp ui/modal_paint.cpp
   ui/modal_panel.cpp ui/modal_layout.cpp ui/series_panel.cpp)
-target_sources(drumfoundry_ui PRIVATE ui/file_panel.cpp ui/history_bar.cpp ui/workbench_files.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/file_panel.cpp ui/preset_panel.cpp ui/workbench_files.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/preset_settings.cpp ui/preset_menu.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/analysis_view.cpp ui/analysis_axes.cpp ui/analysis_gestures.cpp ui/analysis_panel.cpp ui/analysis_menus.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/reference_menu.cpp ui/analysis_playback.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/analysis_toolbar.cpp)

@@ -147,7 +147,7 @@ float AnalysisPanel::LayoutControls(float toolsTop) {
   };
   const float controlsHeight = tools(0);
   // Retain the view height: reclaimed space now belongs to the heatmap.
-  constexpr float MinimumView = 300;
+  constexpr float MinimumView = 180;
   const float minimum =
       reference.Bottom() + MinimumView + 26 + controlsHeight;
   const float bottom = std::max(reference.Bottom() + MinimumView,

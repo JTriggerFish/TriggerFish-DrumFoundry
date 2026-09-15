@@ -9,13 +9,21 @@ editing::Json Workbench::CaptureDocument() const {
 }
 void Workbench::OpenFitFile(bool save, const editing::Json &document) {
   try {
-    auto directory = editing::FitDirectory();
+    auto directory = UserPresetDirectory();
     std::filesystem::create_directories(directory);
-    files_.chosen = [this, save, document](const auto &path) {
+    files_.chosen = [this, save,
+                     document](const std::filesystem::path &path) {
       if (save)
         editing::WriteNewFit(path, document);
       else {
-        bridge_.applyDocument(editing::ReadFit(path));
+        const auto source = editing::ReadFit(path);
+        const auto imported =
+            NewPreset(source, source.value("name", path.stem().u8string()));
+        const auto destination =
+            UserPresetDirectory() /
+            (imported.at("id").get<std::string>() + ".json");
+        editing::WriteNewFit(destination, imported);
+        bridge_.applyDocument(imported);
         reloadDocument_ = true;
       }
     };

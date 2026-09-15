@@ -4,16 +4,19 @@
 #include <exception>
 namespace drumfoundry::ui {
 void Workbench::SetupFiles() {
-  addChild(&history_);
-  history_.capture = [this] { return CaptureDocument(); };
-  history_.restore = [this](const auto &document) {
-    bridge_.applyDocument(document);
-    reloadDocument_ = true;
+  addChild(&presetShade_, false);
+  presetShade_.setOnTop(true);
+  presetShade_.addChild(&presetSave_);
+  presetShade_.onDraw() = [this](visage::Canvas &c) {
+    c.setColor(colours::Overlay);
+    c.fill(0, 0, width(), height());
   };
-  history_.file = [this](bool save, const auto &document) {
-    OpenFitFile(save, document);
+  presetSave_.onVisibilityChange() = [this] {
+    if (!presetSave_.isVisible())
+      presetShade_.setVisible(false);
   };
-  history_.error = files_.error = [this](const auto &text) { Error(text); };
+  presetSave_.error =
+      files_.error = [this](const auto &text) { Error(text); };
   addChild(&fileShade_, false);
   fileShade_.setOnTop(true);
   fileShade_.addChild(&files_);

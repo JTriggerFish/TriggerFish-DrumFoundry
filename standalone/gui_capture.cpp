@@ -74,6 +74,18 @@ void GuiCapture::Tick() {
       editor_.OpenRouting();
     } else if (stage_ == 16) {
       shot.save("build/ui-routing-smoke.png");
+      // Inspect the public preset menu without loading a preset or opening
+      // devices.
+      for (auto *child : editor_.children())
+        if (child->width() == editor_.width() &&
+            child->height() == editor_.height())
+          child->setVisible(false);
+      for (auto *child : editor_.children())
+        if (auto *button = dynamic_cast<visage::UiButton *>(child))
+          if (child->x() == 16 && child->y() < 48)
+            button->onToggle().callback(button, false);
+    } else if (stage_ == 18) {
+      shot.save("build/ui-presets-smoke.png");
       captured_ = true;
     }
     ++stage_; // Allow a full drawn frame between view changes and capture.

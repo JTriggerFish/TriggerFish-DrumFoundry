@@ -48,7 +48,7 @@ def sound_identity(document):
 
 def render_case(presets, case):
     """Enforce the original patch identity before comparing a saved baseline."""
-    preset = Path(presets) / f"{case['preset']}_calibration.fit.json"
+    preset = Path(presets) / f"{case['preset']}.fit.json"
     content = preset.read_bytes().replace(b"\r\n", b"\n")
     identity = (
         sound_identity(json.loads(content))

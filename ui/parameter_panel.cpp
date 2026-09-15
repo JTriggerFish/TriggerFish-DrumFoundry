@@ -26,9 +26,15 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
   }
   for (const auto &section : sections) {
     AddGroup(section);
-    if (section == "Output" &&
-        (outputSpectrum || editing::HasOutputEq(document)))
-      AddOutputPreview(document);
+    if (section == "Output") {
+      for (const auto &p : document.Parameters())
+        if (editing::Section(p) == section &&
+            editing::RightColumn(p) == right &&
+            p.key.rfind("output_", 0) != 0)
+          AddParameter(document, p);
+      if (outputSpectrum || editing::HasOutputEq(document))
+        AddOutputPreview(document);
+    }
     if (meta &&
         (section == "Bloom / energy travel" ||
          (section == "Output" && document.Recipe() == "metal.cymbal.v1"))) {
@@ -61,18 +67,7 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
       rows_.push_back({std::move(editor), 366});
       continue;
     }
-    // Keep the shared EQ's scalar counterparts in the same order for every
-    // recipe, regardless of its internal parameter-enum ordering.
-    if (section == "Output" && editing::HasOutputEq(document)) {
-      for (const auto &p : document.Parameters())
-        if (editing::Section(p) == section &&
-            editing::RightColumn(p) == right &&
-            p.key.rfind("output_", 0) != 0)
-          AddParameter(document, p);
-      for (const auto *key :
-           {"output_eq_enabled", "output_low_cut", "output_colour_frequency",
-            "output_colour_gain", "output_high_cut"})
-        AddParameter(document, document.Description(key));
+    if (section == "Output") {
       continue;
     }
     for (const auto &p : document.Parameters())
@@ -133,9 +128,9 @@ void ParameterPanel::AddParameter(editing::Document &document,
     addScrolledChild(widget);
     rows_.push_back({std::move(button), 38});
   } else {
-    auto slider =
-        std::make_unique<Slider>(editing::ControlName(p), p.minimum,
-                                 p.maximum, p.initial, " " + p.unit);
+    auto slider = std::make_unique<Slider>(
+        p.key == "model_level_db" ? "Output level" : editing::ControlName(p),
+        p.minimum, p.maximum, p.initial, " " + p.unit);
     slider->Set(document.Value(p.key));
     slider->help =
         ParameterHelp(p.key) + " " + slider->help +
@@ -168,7 +163,7 @@ void ParameterPanel::AddOutputPreview(editing::Document &document) {
     };
     preview_ = eq.get();
     addScrolledChild(preview_);
-    rows_.emplace_back(std::move(eq), 190);
+    rows_.emplace_back(std::move(eq), 274);
   } else {
     preview_ = outputSpectrum;
     addScrolledChild(preview_);

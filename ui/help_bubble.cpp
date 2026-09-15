@@ -11,10 +11,11 @@ void HelpBubble::Bind(visage::Frame &frame) {
   if (auto *hint = dynamic_cast<HelpText *>(&frame);
       hint && !hint->helpBound) {
     hint->helpBound = true;
-    const std::string text = hint->help;
     // Append, never replace native hover/press behaviour.
-    frame.onMouseEnter() += [this, text](const auto &event) {
-      Queue(text, event.windowPosition());
+    // The callback belongs to the control, so its help remains alive. Read
+    // it on hover: status/error readouts can change after binding.
+    frame.onMouseEnter() += [this, hint](const auto &event) {
+      Queue(hint->help, event.windowPosition());
     };
     frame.onMouseExit() += [this](const auto &) { Hide(); };
     frame.onMouseDown() += [this](const auto &) { Hide(); };

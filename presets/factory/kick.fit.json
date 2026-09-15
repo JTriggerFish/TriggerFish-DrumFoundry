@@ -1,9 +1,7 @@
 {
   "schema": "triggerfish.percussion.fit/v1",
-  "id": "1ac13ed2-80ea-4fbb-9fe5-432fb5820572",
-  "parentId": null,
-  "createdAt": "2026-09-07T09:58:13.011Z",
-  "name": "Kick — oak medium (audition)",
+  "id": "factory.kick",
+  "name": "Kick",
   "renderer": {
     "recipe": "drum.kick.v1",
     "api": 1,
@@ -225,39 +223,7 @@
       "contactSpread"
     ]
   },
-  "reference": {
-    "id": "sha256:72631be1485f64018f990e2c0b6d62969578a374d6a5a7d83059a2f0ba4b50b8",
-    "sha256": "72631be1485f64018f990e2c0b6d62969578a374d6a5a7d83059a2f0ba4b50b8",
-    "name": "Kick Yamaha Oak Custom 4 01",
-    "sampleRate": 44100,
-    "channels": 2,
-    "bits": 16,
-    "duration": 0.6124943310657597,
-    "referenceGainDb": 2,
-    "corpus": {
-      "id": "acoustic-kick-oak",
-      "name": "Acoustic kick — oak",
-      "referenceGainDb": 2
-    },
-    "cell": {
-      "label": "Kick Yamaha Oak Custom 4 01",
-      "articulation": "centre",
-      "velocity": 64,
-      "repeat": 1,
-      "strength": 0.5,
-      "location": 0.5,
-      "hardness": 0.5,
-      "implement": 0.5,
-      "contactSpread": 0.2,
-      "onset_seconds": 0.001315,
-      "seed": 1449,
-      "split": "audition",
-      "url": "http://127.0.0.1:8765/reference/acoustic-kick-oak/Kick%20Yamaha%20Oak%20Custom%204%2001.wav"
-    },
-    "libraryPath": "acoustic-kick-oak/Kick Yamaha Oak Custom 4 01.wav",
-    "visible": true,
-    "offsetSeconds": 0.001315
-  },
+  "reference": null,
   "controls": {
     "event": {
       "strength": 0.5,
@@ -274,7 +240,5 @@
       "floorDb": -160,
       "dynamicRangeDb": 80
     }
-  },
-  "reviewStatus": "audition-unapproved",
-  "reviewNote": "Exact renderer reload and repeated-hit checks pass. Full-match checks do not pass; broad 540–650 Hz energy remains deficient. Not listening-approved."
+  }
 }

@@ -24,7 +24,7 @@ visage::Point Point(const drumfoundry::ui::EqPlot &plot, double hz,
                     double db) {
   return {
       float(30 + (plot.width() - 38) * std::log(hz / 5) / std::log(4400.)),
-      float(26 + (plot.height() - 50) * (24 - db) / 60)};
+      float(32 + (plot.height() - 110) * (24 - db) / 60)};
 }
 } // namespace
 
@@ -46,7 +46,7 @@ void EqPanelTests(drumfoundry::editing::Document d) {
     auto *enabled =
         Find<HelpButton>(panel, ParameterHelp("output_eq_enabled"));
     auto *gain = Find<Slider>(panel, ParameterHelp("output_colour_gain"));
-    Check(plot && enabled && gain);
+    Check(plot && enabled && !gain); // No duplicate EQ sliders.
     for (float scroll : {0.f, 30.f}) {
       panel.setYPosition(scroll);
       visage::MouseEvent event;
@@ -63,14 +63,41 @@ void EqPanelTests(drumfoundry::editing::Document d) {
       plot->processMouseUp(event);
       Check(std::abs(d.Value("output_colour_frequency") - 1800 - scroll) <
             .01);
-      Check(std::abs(gain->Value() + 3) < .001);
+      Check(std::abs(d.Value("output_colour_gain") + 3) < .001);
       Check(d.Value("output_eq_enabled") ==
             0); // Editing never enables audio implicitly.
     }
     enabled->onToggle().callback(enabled, false);
     Check(d.Value("output_eq_enabled") == 1); // One click, no buried menu.
-    Check(gain->SubmitText("4"));
+    Check(plot->SubmitValue(2, "4"));
     Check(d.Value("output_colour_gain") == 4);
+    for (const auto *bad : {"nan", "inf", "garbage", "4dB", "9999"})
+      Check(!plot->SubmitValue(2, bad));
+    Check(d.Value("output_colour_gain") == 4);
+    Check(plot->SubmitValue(0, "60"));
+    Check(plot->SubmitValue(1, "1700"));
+    Check(plot->SubmitValue(3, "9000"));
+    auto *readout =
+        Find<HelpButton>(*plot, ParameterHelp("output_colour_gain"));
+    Check(readout);
+    readout->onToggle().callback(readout, false);
+    visage::TextEditor *entry = nullptr;
+    for (auto *child : plot->children())
+      if (auto *text = dynamic_cast<visage::TextEditor *>(child))
+        entry = text;
+    Check(entry && entry->isVisible());
+    entry->setText("3.25");
+    entry->onEnterKey().callback();
+    Check(!entry->isVisible() && d.Value("output_colour_gain") == 3.25);
+    readout->onToggle().callback(readout, false);
+    entry->setText("9");
+    entry->onEscapeKey().callback();
+    Check(!entry->isVisible() && d.Value("output_colour_gain") == 3.25);
+    for (auto *child : plot->children())
+      if (child->isVisible())
+        Check(child->x() >= 0 && child->y() >= 0 &&
+              child->right() <= plot->width() &&
+              child->bottom() <= plot->height());
     enabled->onToggle().callback(enabled, false);
     Check(d.Value("output_eq_enabled") == 0);
   }

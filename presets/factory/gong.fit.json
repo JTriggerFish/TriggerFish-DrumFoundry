@@ -1,9 +1,7 @@
 {
   "schema": "triggerfish.percussion.fit/v1",
-  "id": "aa30cdd8-7d28-407a-923b-bd55cfc95dd9",
-  "parentId": "04af4b2a-10a6-4a72-a98d-0f18f7406056",
-  "createdAt": "2026-09-11T00:06:03.537843+00:00",
-  "name": "Gong — quiet onset and bloom",
+  "id": "factory.gong",
+  "name": "Gong",
   "renderer": {
     "recipe": "metal.cymbal.v1",
     "api": 1,
@@ -289,39 +287,7 @@
       "contactSpread"
     ]
   },
-  "reference": {
-    "id": "sha256:a36721cff1f77c22484ac026330aa4da953826ff0e92376d7fb756e27d945147",
-    "sha256": "a36721cff1f77c22484ac026330aa4da953826ff0e92376d7fb756e27d945147",
-    "name": "Gong Dresden 03",
-    "sampleRate": 44100,
-    "channels": 2,
-    "bits": 24,
-    "duration": 7.68485260770975,
-    "referenceGainDb": -6,
-    "corpus": {
-      "id": "gong-dresden",
-      "name": "Dresden gong",
-      "referenceGainDb": -6
-    },
-    "cell": {
-      "label": "Gong Dresden 03",
-      "articulation": "mallet",
-      "velocity": 96,
-      "repeat": 3,
-      "strength": 0.76,
-      "location": 0.55,
-      "hardness": 0.35,
-      "implement": 0.5,
-      "contactSpread": 0.3,
-      "onset_seconds": 0,
-      "seed": 1675,
-      "split": "audition",
-      "url": "/reference/gong-dresden/Gong%20Dresden%2003.wav"
-    },
-    "libraryPath": "gong-dresden/Gong Dresden 03.wav",
-    "visible": true,
-    "offsetSeconds": 0
-  },
+  "reference": null,
   "controls": {
     "event": {
       "strength": 0.9502789144559086,

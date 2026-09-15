@@ -6,6 +6,7 @@
 #include <random>
 #include <stdexcept>
 #include <visage/widgets.h>
+#include <visage_ui/scroll_bar.h>
 
 namespace {
 void Check(bool ok) {
@@ -46,6 +47,14 @@ void ThemeTests() {
   // Both built-ins cover normal and hover states, with light OR dark text.
   for (const auto &builtIn : {DefaultTheme(), LazyVimTheme()}) {
     ApplyTheme(a, builtIn);
+    visage::ScrollableFrame scroller;
+    scroller.setPalette(&a);
+    for (int size : {0, 1, 2}) {
+      ConfigureTextSize(a, size);
+      scroller.setBounds(0, 0, 300, 400);
+      scroller.resized();
+      Check(scroller.scrollBar().width() == 8);
+    }
     for (auto surface : {colours::Background, colours::Panel, colours::Raised,
                          colours::Button})
       for (auto label : {colours::Text, colours::Muted})

@@ -5,15 +5,16 @@
 #include "decay_hold_panel.hpp"
 #include "file_panel.hpp"
 #include "help_bubble.hpp"
-#include "history_bar.hpp"
 #include "layout_panel.hpp"
 #include "live_spectrum.hpp"
 #include "meta_panel.hpp"
 #include "modal_panel.hpp"
 #include "parameter_panel.hpp"
+#include "preset_panel.hpp"
 #include "preview_tracker.hpp"
 #include "routing_panel.hpp"
 #include "split_bar.hpp"
+#include "status_line.hpp"
 
 namespace drumfoundry::ui {
 // Shared content, independent of CLAP windows and standalone device
@@ -54,7 +55,7 @@ private:
   bool EnsureAudio();
   void OpenSettings();
   void SetupRouting();
-  float LeftControlsTop() const { return 104 + (routingOpen_ ? 156.f : 0.f); }
+  float LeftControlsTop() const { return 94 + (routingOpen_ ? 156.f : 0.f); }
   void RefreshDocument();
   void ApplyDocument();
   editing::Json CaptureDocument() const;
@@ -93,7 +94,8 @@ private:
   float columnStart_{}, flexibleHeight_{};
   float splitStart_{};
   ModalPanel modal_;
-  HistoryBar history_;
+  visage::Frame presetShade_;
+  PresetPanel presetSave_;
   visage::Frame fileShade_;
   FilePanel files_;
   visage::Frame metaShade_;
@@ -109,6 +111,7 @@ private:
   bool reloadDocument_{};
   PreviewTracker preview_;
   std::string error_, status_;
+  StatusLine footer_;
   double reduction_{}, latency_{};
   bool audioRunning_{true};
 };

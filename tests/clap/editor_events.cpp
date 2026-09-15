@@ -22,15 +22,18 @@ int main(int argc, char **argv) {
   Require(presets.Init());
   Require(presets.EditableDocument().at("reference").is_null());
   for (unsigned i = 0; i < 6; ++i) {
-    presets.SelectCalibration(i);
-    const auto calibration = presets.EditableDocument();
-    Require(calibration.at("reference").contains("libraryPath"));
+    presets.SelectFactory(i);
+    const auto original = presets.EditableDocument();
+    presets.EditPresentation({{"libraryPath", "test/kick.wav"}},
+                             original.at("controls").at("analysis"));
+    Require(
+        presets.EditableDocument().at("reference").contains("libraryPath"));
     presets.SelectFactory(i);
     const auto factory = presets.EditableDocument();
     Require(factory.at("reference").is_null());
-    Require(factory.at("instrument") == calibration.at("instrument"));
+    Require(factory.at("instrument") == original.at("instrument"));
     Require(factory.at("controls").at("event") ==
-            calibration.at("controls").at("event"));
+            original.at("controls").at("event"));
   }
   Plugin plugin(&host);
   Require(plugin.Init());
@@ -41,7 +44,8 @@ int main(int argc, char **argv) {
   plugin.EditPresentation({{"id", "fixture"}, {"sha256", "test"}}, analysis);
   Require(plugin.DocumentRevision() == revision);
   Require(plugin.EditableDocument().at("reference").at("id") == "fixture");
-  Require(plugin.EditableDocument().at("controls").at("analysis") == analysis);
+  Require(plugin.EditableDocument().at("controls").at("analysis") ==
+          analysis);
   Require(!plugin.QueueEdit(Master, 12));
   Require(plugin.QueueEdit(Master, -20));
   Require(plugin.Value(Master) ==

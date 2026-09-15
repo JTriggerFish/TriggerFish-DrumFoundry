@@ -12,7 +12,8 @@ void GuiSession::Stop() {
 }
 std::string GuiSession::Apply(const ui::DeviceConfiguration &config) {
   ui::ValidateDeviceConfiguration(config);
-  // Remember the requested input even if disconnected, so retry needs no setup.
+  // Remember the requested input even if disconnected, so retry needs no
+  // setup.
   std::string warning;
   try {
     WriteSettings(SettingsPath(), config);
@@ -77,13 +78,6 @@ ui::Bridge GuiSession::Connect() {
       audio_->Start();
     }
   };
-  bridge.selectCalibration = [this, &plugin](unsigned index) {
-    plugin.SelectCalibration(index);
-    if (audio_) {
-      audio_->Stop();
-      audio_->Start();
-    }
-  };
   bridge.presentation = [&plugin](const auto &ref, const auto &analysis) {
     plugin.EditPresentation(ref, analysis);
   };
@@ -93,7 +87,8 @@ ui::Bridge GuiSession::Connect() {
   };
   bridge.applyDocument = [this, &plugin](const auto &document) {
     // Validation occurs before stopping a working stream. Publication is main
-    // thread only; audio owns its existing Voice until Stop joins its callback.
+    // thread only; audio owns its existing Voice until Stop joins its
+    // callback.
     plugin.EditDocument(document);
     if (audio_) {
       audio_->Stop();

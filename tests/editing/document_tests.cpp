@@ -11,11 +11,13 @@ void Require(bool condition, const std::string &message) {
 }
 int main(int argc, char **argv) {
   Require(argc == 2, "Expected preset directory");
-  for (const auto *name : {"kick", "snare", "hihat", "crash", "ride", "gong"}) {
-    std::ifstream input(std::string(argv[1]) + "/" + name +
-                        "_calibration.fit.json");
+  for (const auto *name :
+       {"kick", "snare", "hihat", "crash", "ride", "gong"}) {
+    std::ifstream input(std::string(argv[1]) + "/" + name + ".fit.json");
     Document document;
     document.Load(Json::parse(input));
+    Require(document.JsonValue().at("reference").is_null(),
+            "Factory preset contains a reference");
     extern void RouteTests(Document);
     RouteTests(document);
     const auto original = document.JsonValue();

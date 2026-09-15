@@ -12,6 +12,7 @@ public:
       return;
     dragging_ = true;
     origin_ = Coordinate(event);
+    redraw();
     if (started)
       started();
   }
@@ -19,15 +20,36 @@ public:
     if (dragging_ && dragged)
       dragged(Coordinate(event) - origin_);
   }
-  void mouseUp(const visage::MouseEvent &) override { dragging_ = false; }
+  void mouseUp(const visage::MouseEvent &) override {
+    dragging_ = false;
+    redraw();
+  }
+  void mouseEnter(const visage::MouseEvent &) override {
+    hover_ = true;
+    setCursorStyle(vertical ? visage::MouseCursor::HorizontalResize
+                            : visage::MouseCursor::VerticalResize);
+    redraw();
+  }
+  void mouseExit(const visage::MouseEvent &) override {
+    hover_ = false;
+    setCursorStyle(visage::MouseCursor::Arrow);
+    redraw();
+  }
   void draw(visage::Canvas &c) override {
-    c.setColor(colours::Border);
+    // Keep the generous input bounds invisible; only paint a fine divider.
+    const float thickness = hover_ || dragging_ ? 3.f : 1.f;
+    c.setColor(colours::Track);
     if (vertical)
-      c.roundedRectangle(width() * .5f - 1, height() * .35f, 2,
-                         height() * .3f, 1);
+      c.fill(width() * .5f - .5f, 0, 1, height());
     else
-      c.roundedRectangle(width() * .35f, height() * .5f - 1, width() * .3f, 2,
-                         1);
+      c.fill(0, height() * .5f - .5f, width(), 1);
+    c.setColor(hover_ || dragging_ ? colours::Accent : colours::Muted);
+    if (vertical)
+      c.roundedRectangle((width() - thickness) * .5f, height() * .5f - 20,
+                         thickness, 40, thickness * .5f);
+    else
+      c.roundedRectangle(width() * .5f - 20, (height() - thickness) * .5f, 40,
+                         thickness, thickness * .5f);
   }
 
 private:
@@ -36,5 +58,6 @@ private:
   }
   float origin_{};
   bool dragging_{};
+  bool hover_{};
 };
 } // namespace drumfoundry::ui
