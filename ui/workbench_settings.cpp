@@ -10,8 +10,9 @@ void Workbench::OpenSettings() {
   menu.addOption(2, "Clear reference library folder");
   menu.addOption(3, "Layout…");
   visage::PopupMenu colours("Colour scheme");
+  colours.addOption(5, "Classic (default)");
+  colours.addOption(6, "LazyVim");
   colours.addOption(4, "Load JSON…");
-  colours.addOption(5, "Reset to LazyVim");
   menu.addSubMenu(std::move(colours));
   menu.onSelection() = [this](int item) {
     try {
@@ -41,6 +42,8 @@ void Workbench::OpenSettings() {
         fileShade_.setVisible(true);
       } else if (item == 5)
         LoadTheme(DefaultTheme(), true);
+      else if (item == 6)
+        LoadTheme(LazyVimTheme(), true);
     } catch (const std::exception &e) {
       Error(e.what());
     }

@@ -1,5 +1,6 @@
 #include "ui/theme.hpp"
 #include "ui/typography.hpp"
+#include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <random>
@@ -23,13 +24,17 @@ double Luminance(unsigned colour) {
          .7152 * linear((colour >> 8) & 255) + .0722 * linear(colour & 255);
 }
 double Contrast(unsigned text, unsigned background) {
-  return (Luminance(text) + .05) / (Luminance(background) + .05);
+  const double a = Luminance(text), b = Luminance(background);
+  return (std::max(a, b) + .05) / (std::min(a, b) + .05);
 }
 } // namespace
 void ThemeTests() {
   using namespace drumfoundry::ui;
   auto theme = DefaultTheme();
   ValidateTheme(theme);
+  Check(theme.at("name") == "Classic");
+  Check(theme.at("colors").at("Background") == "#0D1015");
+  Check(LazyVimTheme().at("name") == "LazyVim");
   visage::Palette a, b;
   visage::Frame first, second;
   first.setPalette(&a);
@@ -38,14 +43,25 @@ void ThemeTests() {
   ApplyTheme(b, theme);
   ConfigureTextSize(a, 2);
   const auto background = Colour(first, colours::Background);
-  // Normal labels and secondary readouts remain readable on every main
-  // surface.
-  for (auto surface : {colours::Background, colours::Panel, colours::Raised,
-                       colours::Button})
-    for (auto label : {colours::Text, colours::Muted})
-      Check(Contrast(Colour(first, label), Colour(first, surface)) >= 4.5);
-  Check(Contrast(Colour(first, colours::SelectedText),
-                 Colour(first, colours::Selected)) >= 4.5);
+  // Both built-ins cover normal and hover states, with light OR dark text.
+  for (const auto &builtIn : {DefaultTheme(), LazyVimTheme()}) {
+    ApplyTheme(a, builtIn);
+    for (auto surface : {colours::Background, colours::Panel, colours::Raised,
+                         colours::Button})
+      for (auto label : {colours::Text, colours::Muted})
+        Check(Contrast(Colour(first, label), Colour(first, surface)) >= 7);
+    const auto ids = visage::theme::ColorId::nameIdMap();
+    for (const auto &state :
+         {std::pair{"UiButtonText", "UiButtonBackground"},
+          std::pair{"UiButtonTextHover", "UiButtonBackgroundHover"},
+          std::pair{"UiActionButtonText", "UiActionButtonBackground"},
+          std::pair{"UiActionButtonTextHover",
+                    "UiActionButtonBackgroundHover"}})
+      Check(Contrast(Colour(first, ids.at(state.first)),
+                     Colour(first, ids.at(state.second))) >= 4.5);
+    Check(first.paletteValue(TextScale) == TextSizeScale(2));
+  }
+  ApplyTheme(a, DefaultTheme());
   theme["colors"]["Background"] = "#123456";
   theme["colors"]["Button"] = "#12345680";
   ApplyTheme(a, theme);
@@ -103,8 +119,10 @@ void ThemeTests() {
   const auto file = directory / "theme.json";
   SaveTheme(theme, file);
   Check(ReadTheme(file) == theme);
-  SaveTheme(DefaultTheme(), file);
-  Check(ReadTheme(file) == DefaultTheme());
+  for (const auto &builtIn : {LazyVimTheme(), DefaultTheme()}) {
+    SaveTheme(builtIn, file);
+    Check(ReadTheme(file) == builtIn);
+  }
   auto invalid = theme;
   invalid["colors"]["Text"] = "invalid";
   try {

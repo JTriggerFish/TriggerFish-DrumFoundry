@@ -23,7 +23,8 @@ offline analysis/fitting; no browser, Node or Wasm renderer is introduced.
 Use Visage buttons, menus, text editors and scrolling directly. The library has
 no stock audio slider: a small conventional horizontal Frame-based control is
 needed. Custom DSP editors and graphs use Visage drawing, not browser widgets.
-The default palette follows LazyVim; [JSON colour schemes](colour-schemes.md)
+The default Classic palette restores the original workbench colours; LazyVim
+remains a built-in choice. [JSON colour schemes](colour-schemes.md)
 can replace it through Settings without changing presets or synthesis.
 All instruments share a single graphical final output EQ: bypass, high-pass,
 one broad colour band and low-pass, with the live output spectrum behind it.

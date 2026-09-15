@@ -12,6 +12,7 @@ namespace colours {
 
 // Complete semantic palette, separate from sound/preset state.
 editing::Json DefaultTheme();
+editing::Json LazyVimTheme();
 void ValidateTheme(const editing::Json &);
 void ApplyTheme(visage::Palette &, const editing::Json &);
 editing::Json ReadTheme(const std::filesystem::path &);

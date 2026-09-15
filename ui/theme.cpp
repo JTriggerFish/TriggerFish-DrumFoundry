@@ -29,6 +29,9 @@ unsigned Hex(const std::string &text) {
 editing::Json DefaultTheme() {
   return editing::Json::parse(DefaultThemeJson);
 }
+editing::Json LazyVimTheme() {
+  return editing::Json::parse(LazyVimThemeJson);
+}
 void ValidateTheme(const editing::Json &j) {
   if (!j.is_object() || j.size() != 3 ||
       j.value("schema", "") != "triggerfish.drumfoundry.theme/v1" ||
@@ -60,9 +63,9 @@ void ApplyTheme(visage::Palette &palette, const editing::Json &j) {
       {"UiButtonBackground", "Button"},
       {"UiButtonBackgroundHover", "ButtonHover"},
       {"UiButtonText", "Text"},
-      {"UiButtonTextHover", "SelectedText"},
+      {"UiButtonTextHover", "Text"},
       {"UiActionButtonBackground", "Selected"},
-      {"UiActionButtonBackgroundHover", "ButtonHover"},
+      {"UiActionButtonBackgroundHover", "Selected"},
       {"UiActionButtonText", "SelectedText"},
       {"UiActionButtonTextHover", "SelectedText"},
       {"PopupMenuBackground", "Panel"},

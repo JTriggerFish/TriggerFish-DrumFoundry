@@ -1,2 +1,3 @@
 #pragma once
 inline constexpr char DefaultThemeJson[] = R"theme(@theme_json@)theme";
+inline constexpr char LazyVimThemeJson[] = R"theme(@lazyvim_json@)theme";
