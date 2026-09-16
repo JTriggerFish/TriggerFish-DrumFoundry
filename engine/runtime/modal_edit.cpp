@@ -41,7 +41,9 @@ std::unique_ptr<PreparedModalEdit> PrepareModalEdit(float rate, Json next) {
       p = ApplyKickParameters(session->kickValues);
     } else if (recipe == detail::Recipe::SnareDrum) {
       copy(session->snareValues);
-      p = ApplySnareParameters(session->snareValues).membrane;
+      const auto snare = ApplySnareParameters(session->snareValues);
+      p = snare.membrane;
+      result->wires = PrepareWireRackParameters(rate, snare.wires);
     } else {
       copy(session->membraneValues);
       p = ApplyMembraneParameters(session->membraneValues);
@@ -53,6 +55,8 @@ std::unique_ptr<PreparedModalEdit> PrepareModalEdit(float rate, Json next) {
 }
 
 bool Voice::CanApplyModalEdit() const noexcept {
+  if (session_->recipe == detail::Recipe::SnareDrum)
+    return session_->snare.CanAdoptModalEdit();
   return session_->recipe != detail::Recipe::MetallicPlate ||
          session_->cymbal.CanAdoptModalEdit();
 }
@@ -84,8 +88,9 @@ bool Voice::ApplyModalEdit(PreparedModalEdit &edit) noexcept {
     session_->membrane.AdoptModalEdit(edit.membrane);
     break;
   case detail::Recipe::SnareDrum:
+    if (!session_->snare.AdoptModalEdit(edit.membrane, edit.wires))
+      return false;
     copy(session_->snareValues);
-    session_->snare.AdoptModalEdit(edit.membrane);
     break;
   default:
     return false;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tfdsp/finite_audio.hpp"
+#include "live_gain.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -23,12 +24,12 @@ public:
   void Reset() noexcept { lowState_ = 0.f; }
 
   void SetTilt(float tiltDb, float pivotHz) noexcept {
-    tiltDb = std::clamp(std::isfinite(tiltDb) ? tiltDb : 0.f, -24.f, 24.f);
-    pivotHz = std::clamp(std::isfinite(pivotHz) ? pivotHz : 3000.f,
-                         20.f, .45f * sampleRate_);
-    coefficient_ = 1.f - std::exp(-6.283185307179586f * pivotHz / sampleRate_);
-    lowGain_ = std::pow(10.f, -tiltDb / 40.f);
-    highGain_ = std::pow(10.f, tiltDb / 40.f);
+    Configure(tiltDb, pivotHz, false);
+  }
+
+  // Fixed-pivot live colour changes retain filter memory and smooth shelf gains.
+  void SetLiveTilt(float tiltDb, float pivotHz) noexcept {
+    Configure(tiltDb, pivotHz, true);
   }
 
   float Process(const float input) noexcept {
@@ -37,15 +38,29 @@ public:
     lowState_ = tfdsp::FiniteNormalOrZero(lowState_);
     const float high = safeInput - lowState_;
     return tfdsp::FiniteNormalOrZero(
-        lowGain_ * lowState_ + highGain_ * high);
+        lowGain_.Next() * lowState_ + highGain_.Next() * high);
   }
 
 private:
+  void Configure(float tiltDb, float pivotHz, bool live) noexcept {
+    tiltDb = std::clamp(std::isfinite(tiltDb) ? tiltDb : 0.f, -24.f, 24.f);
+    pivotHz = std::clamp(std::isfinite(pivotHz) ? pivotHz : 3000.f,
+                         20.f, .45f * sampleRate_);
+    coefficient_ = 1.f - std::exp(-6.283185307179586f * pivotHz / sampleRate_);
+    const float low = std::pow(10.f, -tiltDb / 40.f);
+    const float high = std::pow(10.f, tiltDb / 40.f);
+    if (live) {
+      lowGain_.Target(low, sampleRate_);
+      highGain_.Target(high, sampleRate_);
+    } else {
+      lowGain_.Reset(low);
+      highGain_.Reset(high);
+    }
+  }
   float sampleRate_{48000.f};
   float coefficient_{};
   float lowState_{};
-  float lowGain_{1.f};
-  float highGain_{1.f};
+  LiveGain lowGain_, highGain_;
 };
 
 } // namespace tfdsp::percussion

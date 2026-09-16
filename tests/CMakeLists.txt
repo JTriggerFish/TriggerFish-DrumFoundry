@@ -20,9 +20,11 @@ set(DRUMFOUNDRY_DSP_TESTS
   percussion_radiation_tests
   percussion_resonator_tests
   percussion_snare_tests
+  percussion_snare_live_tests
   percussion_spectral_diffusion_tests
   percussion_turbulence_tests
   percussion_wire_tests
+  percussion_wire_live_tests
 )
 add_executable(percussion_benchmark EXCLUDE_FROM_ALL dsp/percussion_benchmark.cpp)
 target_link_libraries(percussion_benchmark PRIVATE drumfoundry_engine)

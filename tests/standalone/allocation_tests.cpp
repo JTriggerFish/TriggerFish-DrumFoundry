@@ -113,13 +113,14 @@ int main() {
       host.Process(output.data(), 128);
     }
     watching = false;
-    if (preset >= 2) {
+    if (preset >= 1) {
       // Adopt and process removed states from an already sounding body under
       // the allocation/free watcher, not just a geometry edit in silence.
       liveDocument = livePlugin.EditableDocument();
+      const auto densityKey = preset == 1 ? "wire_density" : "field_satellite_density";
       for (auto &node : liveDocument["instrument"]["nodes"])
-        if (node["parameters"].contains("field_satellite_density"))
-          node["parameters"]["field_satellite_density"] = 0.;
+        if (node["parameters"].contains(densityKey))
+          node["parameters"][densityKey] = 0.;
       if (!livePlugin.EditLiveDocument(liveDocument))
         return 1;
       watching = true;

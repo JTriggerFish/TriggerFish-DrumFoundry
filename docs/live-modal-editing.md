@@ -8,6 +8,8 @@ uses two update paths, both independent of offline spectrogram rendering:
 | EQ, gains, damping, bloom rate | Existing sample-timed scalar queue | Retained |
 | Modal pitch, prominence, widths, allocation, texture and movement | Prepared off-thread, adopted at next callback | Remapped and retained |
 | Membrane pitch/character and kick resonance handles | Same prepared path | Fixed-slot quadrature and tension retained |
+| Snare wire sensitivity, threshold, engagement/release, colour and mixes | Sample-timed scalar queue, 5 ms smoothing | Follower, filter and random history retained |
+| Snare wire range, density, decay and ring pitch/level | Prepared off-thread, adopted at next callback | Wire and membrane quadrature retained |
 | Routing or observation delay | Existing replacement lifecycle | Reprepared |
 
 Prepared modal edits are currently editor controls, **not CLAP automation
@@ -73,6 +75,21 @@ audible edits; state retention is not a promise that such changes sound like
 an untouched note. Saved patches and new renders always use the normal engine
 preparation, with no editor-only synthesis mapping.
 
+## Snare wires
+
+The snare wire bank uses stable oscillator slots. Density changes redistribute
+stored squared quadrature energy equally between new slots while retaining
+surviving phases. Removed slots use the same bounded observation-only fade;
+wire input and observation gains ramp over 5 ms. Range edits retune the existing
+states, and decay edits change their damping without resetting the follower or
+noise generator. New scalar automation takes priority over older prepared
+snapshots. Ring pitch and level use the membrane's state-preserving update path.
+
+This makes 45 of 46 snare design parameters editable without a restart. The
+remaining observation-delay parameter, and routing changes, still rebuild.
+Contact templates change the next strike; wire follower controls affect ongoing
+body-driven contact. Prepared controls are UI-live, not host automation.
+
 ## Tests
 
 `percussion_modal_live_tests` checks pitch changes during an existing tail,
@@ -83,3 +100,7 @@ Host/UI tests cover held drags, Escape rollback for all modal tools, undo/redo,
 latest-update coalescing during retirement and preset/rate cancellation. The standalone
 allocation test watches the real callback for both allocation and freeing while
 prepared edits are adopted. Mailbox publication is stressed concurrently.
+`percussion_wire_live_tests` covers follower/RNG continuity, smooth mixes,
+energy redistribution, removal fades and stale-snapshot protection.
+`percussion_snare_live_tests` checks every prepared snare control at both range
+ends, finite tails and post-reset parity against a freshly prepared voice.

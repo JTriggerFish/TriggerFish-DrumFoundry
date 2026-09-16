@@ -9,6 +9,8 @@ set(DRUMFOUNDRY_ENGINE_SOURCES
   engine/tfdsp/percussion/membrane_drum.cpp
   engine/tfdsp/percussion/snare_drum.cpp
   engine/tfdsp/percussion/wire_rack.cpp
+  engine/tfdsp/percussion/wire_rack_parameters.cpp
+  engine/tfdsp/percussion/wire_rack_live.cpp
   engine/tfdsp/sampleRate.cpp
   engine/parameters/crash_macros.cpp
   engine/parameters/kick_macros.cpp

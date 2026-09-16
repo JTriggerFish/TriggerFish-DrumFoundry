@@ -28,6 +28,7 @@ public:
     return current_;
   }
   bool Moving() const noexcept { return left_ != 0; }
+  float Current() const noexcept { return current_; }
 
 private:
   float current_{}, target_{}, step_{};

@@ -17,6 +17,7 @@ struct PreparedModalEdit {
   std::unique_ptr<PreparedMetallicEdit> metallic;
   tfdsp::percussion::MembraneResonator<
       tfdsp::percussion::MembraneModeCount>::PreparedParameters membrane;
+  tfdsp::percussion::WireRackPreparedParameters wires;
   float sampleRate{};
 };
 std::unique_ptr<PreparedModalEdit> PrepareModalEdit(float sampleRate,

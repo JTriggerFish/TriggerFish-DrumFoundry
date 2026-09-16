@@ -1,6 +1,7 @@
 #pragma once
 
 #include "deterministic_random.hpp"
+#include "retiring_modal_output.hpp"
 #include "spectral_tilt_filter.hpp"
 #include "tfdsp/finite_audio.hpp"
 
@@ -29,14 +30,7 @@ struct WireRackParameters {
   std::uint32_t seed{0x57495245u};
 };
 
-struct WireRackPreparedParameters {
-  std::array<float, WireRackModeCount> cosine{};
-  std::array<float, WireRackModeCount> sine{};
-  std::array<float, WireRackModeCount> radius{};
-  std::array<float, WireRackModeCount> inputPhaseCosine{};
-  std::array<float, WireRackModeCount> inputPhaseSine{};
-  std::array<float, WireRackModeCount> modeOutputGain{};
-  float sampleRate{48000.f};
+struct WireRackLiveParameters {
   float motionCoefficient{};
   float attackCoefficient{};
   float releaseCoefficient{};
@@ -45,12 +39,25 @@ struct WireRackPreparedParameters {
   float noiseTiltDb{};
   float noiseMix{.6f};
   float modalMix{.75f};
+};
+
+struct WireRackPreparedParameters {
+  std::array<float, WireRackModeCount> cosine{};
+  std::array<float, WireRackModeCount> sine{};
+  std::array<float, WireRackModeCount> radius{};
+  std::array<float, WireRackModeCount> inputPhaseCosine{};
+  std::array<float, WireRackModeCount> inputPhaseSine{};
+  std::array<float, WireRackModeCount> modeOutputGain{};
+  WireRackLiveParameters controls{};
+  float sampleRate{48000.f};
   std::size_t activeModeCount{WireRackModeCount};
   std::uint32_t seed{0x57495245u};
 };
 
 WireRackPreparedParameters PrepareWireRackParameters(
     float sampleRate, const WireRackParameters &parameters);
+WireRackLiveParameters PrepareWireRackLiveParameters(
+    float sampleRate, const WireRackParameters &parameters) noexcept;
 
 // A compact snare-wire interaction driven continuously by body motion. A
 // motion high-pass rejects static displacement, while a contact
@@ -61,6 +68,12 @@ public:
   void Prepare(const WireRackPreparedParameters &parameters);
   void Reset() noexcept;
   void Seed(std::uint32_t seed) noexcept;
+  // Smooth follower/colour/mix targets without resetting the contact history.
+  void SetLiveControls(const WireRackParameters &parameters) noexcept;
+  bool CanAdoptPrepared() const noexcept { return !retiring_.Active(); }
+  // Callback-safe geometry adoption. Retry the latest target after retirement;
+  // newer scalar automation is never replaced by this prepared snapshot.
+  bool AdoptPrepared(const WireRackPreparedParameters &parameters) noexcept;
   float Process(float bodyMotion) noexcept;
   float StoredEnergy() const noexcept;
   float ContactAmount() const noexcept { return contactEnvelope_; }
@@ -69,6 +82,10 @@ private:
   std::array<float, WireRackModeCount> real_{};
   std::array<float, WireRackModeCount> imaginary_{};
   WireRackPreparedParameters parameters_{};
+  std::array<LiveGain, WireRackModeCount> outputGain_{};
+  LiveGain inputGain_, sensitivity_, threshold_, motion_, attack_, release_;
+  LiveGain noiseMix_, modalMix_;
+  RetiringModalOutput<WireRackModeCount> retiring_;
   DeterministicRandom random_{};
   SpectralTiltFilter tilt_{};
   float motionLowpass_{};

@@ -17,6 +17,12 @@ bool IsLiveParameter(std::string_view recipe, std::string_view key) {
            Starts(key, "bloom_") || Starts(key, "body_decay_") ||
            key == "direct_gain" || key == "field_gain" ||
            key == "body_excitation" || key == "velocity_brightness";
+  if (recipe == "drum.snare.v1" &&
+      (key == "wire_sensitivity" || key == "wire_threshold" ||
+       key == "wire_motion_highpass_hz" || key == "wire_attack_seconds" ||
+       key == "wire_release_seconds" || key == "wire_brightness" ||
+       key == "wire_noise_mix" || key == "wire_modal_mix"))
+    return true;
   return Starts(key, "contact_") || Starts(key, "fm_") ||
          Starts(key, "thump_") || key == "pitch_drop_octaves" ||
          key == "direct_level" || key == "body_level" || key == "wire_level" ||
@@ -38,6 +44,11 @@ bool ValidLiveDecay(const CrashMacroValues &values) noexcept {
 }
 
 bool IsPreparedLiveParameter(std::string_view recipe, std::string_view key) {
+  if (recipe == "drum.snare.v1" &&
+      (key == "wire_minimum_hz" || key == "wire_maximum_hz" ||
+       key == "wire_decay_seconds" || key == "wire_decay_tilt" ||
+       key == "wire_density" || key == "ring_frequency_hz" || key == "ring_level"))
+    return true;
   if (recipe == "metal.cymbal.v1")
     return (Starts(key, "resolved_") || Starts(key, "field_") ||
             key == "body_tune" || key == "body_brightness" ||

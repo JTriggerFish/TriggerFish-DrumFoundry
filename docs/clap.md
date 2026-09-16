@@ -80,6 +80,8 @@ the authoritative C++ metadata, in addition to the original performance controls
 - Metallic bloom/diffusion strength, concentration and energy sensitivity;
   modal T60 knot frequencies, times and enables.
 - Contact and thump/FM templates, membrane damping and tension controls.
+- Snare wire sensitivity, threshold, motion high-pass, engagement/release,
+  brightness and noise/modal mixes (smoothed without restarting wire contact).
 
 The registered list is fixed across presets. Each design ID is FNV-1a of
 `recipe/key`, in the separate `0x40000000` namespace; collisions fail initialization.
@@ -113,7 +115,9 @@ document before sorting, never read from moving automation during the sort.
 Mode geometry/allocation and packet texture now update during editor drags via
 off-thread preparation and state-preserving block-boundary adoption. They are
 **not** host-automatable yet: that needs a coalesced preparation worker, not heavy
-work in the sample-timed scalar setter. Routing still uses replacement on release.
+work in the sample-timed scalar setter. This also applies to snare wire frequency
+range, density and decay, and ring pitch/level. Routing and observation delay
+still use replacement on release.
 See [live modal editing](live-modal-editing.md). Factory selection and limiter enable
 are exposed but not marked automatable; gain reduction and latency are read-only.
 CLAP modulation and per-note modulation remain future work. Real-host recording

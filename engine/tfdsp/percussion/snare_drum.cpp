@@ -155,9 +155,19 @@ float SnareDrum::Process() noexcept { return ProcessFrame().output; }
 
 void SnareDrum::SetLiveControls(const SnareDrumParameters &p) noexcept {
   membrane_.SetLiveControls(p.membrane);
+  wires_.SetLiveControls(p.wires);
   observation_.SetLiveGains(p.observation);
   equalizer_.SetLiveParameters(p.equalizer);
   liveOutput_.Target(p.outputGain, sampleRate_);
+}
+
+bool SnareDrum::AdoptModalEdit(
+    const MembraneResonator<MembraneModeCount>::PreparedParameters &membrane,
+    const WireRackPreparedParameters &wires) noexcept {
+  if (!wires_.AdoptPrepared(wires))
+    return false;
+  membrane_.AdoptModalEdit(membrane);
+  return true;
 }
 
 } // namespace tfdsp::percussion

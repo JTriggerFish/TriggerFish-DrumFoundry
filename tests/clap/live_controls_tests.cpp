@@ -154,23 +154,24 @@ void PreparedTailEdits(unsigned preset) {
   Check(h->Block() == 0, "Stale modal edit crossed preset/rate lifecycle");
 }
 
-void DeferredAllocationEdits() {
-  auto a = std::make_unique<Harness>(5);
-  auto b = std::make_unique<Harness>(5);
+void DeferredAllocationEdits(unsigned preset) {
+  auto a = std::make_unique<Harness>(preset);
+  auto b = std::make_unique<Harness>(preset);
+  const auto densityKey = preset == 1 ? "wire_density" : "field_satellite_density";
   for (auto *h : {a.get(), b.get()}) {
-    Check(h->Set("field_satellite_density", 1), "Initial density rejected");
+    Check(h->Set(densityKey, 1), "Initial density rejected");
     h->Block();
     h->plugin.QueueStrike(.8f, .5f);
     for (unsigned i = 0; i < 20; ++i)
       h->Block();
-    Check(h->Set("field_satellite_density", 0), "Removal rejected");
+    Check(h->Set(densityKey, 0), "Removal rejected");
     h->Block(); // First 128 of the 240-sample removal fade.
   }
   for (double density : {.2, .8, .6})
-    Check(a->Set("field_satellite_density", density), "Queued density rejected");
+    Check(a->Set(densityKey, density), "Queued density rejected");
   a->Block();
   b->Block(); // Complete the fade. A's newest target must still be pending.
-  Check(b->Set("field_satellite_density", .6), "Final density rejected");
+  Check(b->Set(densityKey, .6), "Final density rejected");
   for (unsigned i = 0; i < 16; ++i) {
     if (i == 4) {
       a->plugin.QueueStrike(.7f, .5f);
@@ -193,7 +194,8 @@ void LiveControlsTests() {
     TailAndRetrigger(preset);
   for (unsigned preset : {0u, 1u, 5u})
     PreparedTailEdits(preset);
-  DeferredAllocationEdits();
+  DeferredAllocationEdits(1);
+  DeferredAllocationEdits(5);
   auto h = std::make_unique<Harness>(5);
   Check(h->Set("body_decay_seconds_0", 2), "Decay curve must be live");
   Check(h->Set("output_colour_gain", 3), "EQ following decay must be live");

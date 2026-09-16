@@ -144,8 +144,11 @@ void ParameterPanel::AddParameter(editing::Document &document,
     slider->Set(document.Value(p.key));
     slider->help = ParameterHelp(p.key) + " " + slider->help +
                    (IsLiveParameter(document.Recipe(), p.key)
-                        ? " Updates during playback; contact/envelope edits "
-                          "shape the next strike."
+                        ? (p.key.substr(0, 5) == "wire_"
+                               ? " Updates the sounding wire response without "
+                                 "restarting it."
+                               : " Updates during playback; contact/envelope "
+                                 "edits shape the next strike.")
                         : IsPreparedLiveParameter(document.Recipe(), p.key)
                             ? " Updates ringing modes while dragging; retains "
                               "their phase and energy. Prepared outside audio."
