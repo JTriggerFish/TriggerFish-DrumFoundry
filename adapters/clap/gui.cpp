@@ -6,7 +6,8 @@ namespace drumfoundry::clap_adapter {
 namespace {
 ui::Bridge Connect(Plugin &plugin) {
   ui::Bridge bridge;
-  bridge.value = [&plugin](unsigned id) { return plugin.Value(id); };
+  bridge.history = plugin.editHistory;
+  bridge.value = [&plugin](unsigned id) { return plugin.EditorValue(id); };
   bridge.velocity = [&plugin] { return plugin.PreviewStrength(); };
   bridge.setVelocity = [&plugin](double v) { plugin.SetPreviewStrength(v); };
   bridge.sampleRate = [&plugin] { return plugin.AuditionRate(); };
@@ -33,6 +34,9 @@ ui::Bridge Connect(Plugin &plugin) {
   bridge.service = [&plugin] { plugin.PrepareEditorPreset(); };
   bridge.applyDocument = [&plugin](const auto &document) {
     plugin.EditDocument(document);
+  };
+  bridge.restoreDocument = [&plugin](const auto &document, unsigned preset) {
+    plugin.EditDocument(document, int(preset));
   };
   bridge.revision = [&plugin] { return plugin.DocumentRevision(); };
   bridge.layout = [&plugin](const auto &positions) {
@@ -108,9 +112,9 @@ bool Editor::Parent(const clap_window_t *parent) {
 #endif
   if (!handle)
     return false;
-  window_ = visage::createPluginWindow(
-      visage::Dimension::nativePixels(width_),
-      visage::Dimension::nativePixels(height_), handle);
+  window_ = visage::createPluginWindow(visage::Dimension::nativePixels(width_),
+                                       visage::Dimension::nativePixels(height_),
+                                       handle);
   if (!window_)
     return false;
 #if defined(__linux__)

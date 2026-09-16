@@ -26,17 +26,15 @@ void ControlErrors(visage::Frame &frame,
 void Label(visage::Canvas &c, const std::string &text, float x, float y,
            float w, float h, visage::theme::ColorId color) {
   c.setColor(color);
-  c.text(text, Font(13 * c.value(TextScale)), visage::Font::kLeft, x, y, w,
-         h);
+  c.text(text, Font(13 * c.value(TextScale)), visage::Font::kLeft, x, y, w, h);
 }
 Slider::Slider(std::string label, double low, double high, double initial,
                std::string unit)
-    : label_(std::move(label)), unit_(std::move(unit)), low_(low),
-      high_(high), initial_(initial), value_(initial) {
-  help =
-      label_ + (unit_.empty() ? ". " : " (" + unit_ + "). ") +
-      "Double-click resets; Shift-drag adjusts finely. Right-click to type "
-      "a value in the displayed units; Enter applies, Escape cancels.";
+    : label_(std::move(label)), unit_(std::move(unit)), low_(low), high_(high),
+      initial_(initial), value_(initial) {
+  help = label_ + (unit_.empty() ? ". " : " (" + unit_ + "). ") +
+         "Double-click resets; Shift-drag adjusts finely. Right-click to type "
+         "a value in the displayed units; Enter applies, Escape cancels.";
   if (unit_ == " Hz")
     help += " Type frequencies in Hz, even when the readout shows kHz.";
 }
@@ -70,8 +68,7 @@ void Slider::draw(visage::Canvas &c) {
   const bool stacked = height() >= 62;
   const auto readout = Readout(value_);
   const auto font = FrameFont(*this);
-  const float valueWidth =
-      font.stringWidth(visage::String(readout).toUtf32());
+  const float valueWidth = font.stringWidth(visage::String(readout).toUtf32());
   const float valueX = stacked ? 0 : std::max(0.f, width() - valueWidth);
   const float captionWidth = stacked ? width() : std::max(0.f, valueX - 8);
   Label(c, ElideText(font, label_, captionWidth), 0, 0, captionWidth, 22,
@@ -96,6 +93,7 @@ void Slider::mouseDown(const visage::MouseEvent &e) {
     return;
   CloseText();
   dragging_ = true;
+  requestKeyboardFocus();
   if (e.repeatClickCount() == 2)
     Edit(initial_);
   else if (!e.isShiftDown())
@@ -107,8 +105,8 @@ void Slider::mouseDrag(const visage::MouseEvent &e) {
   if (!dragging_)
     return;
   const double fine = e.isShiftDown() ? .1 : 1.;
-  Edit(ValueAt(dragValue_ + (e.position.x - dragX_) /
-                                std::max(1.f, width() - 12.f) * fine));
+  Edit(ValueAt(dragValue_ +
+               (e.position.x - dragX_) / std::max(1.f, width() - 12.f) * fine));
 }
 void Slider::mouseUp(const visage::MouseEvent &e) {
   const bool commit = dragging_ && e.isLeftButton();

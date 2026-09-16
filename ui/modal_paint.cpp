@@ -49,7 +49,7 @@ void ModalPlot::Paint(visage::Point p, const visage::MouseEvent &e) {
           error("All modal handles are in use");
       } else {
         modes_[free] = {f, std::max(-71.9, target), 1, 1};
-        selected = free;
+        SelectOnly(free);
       }
     }
   }

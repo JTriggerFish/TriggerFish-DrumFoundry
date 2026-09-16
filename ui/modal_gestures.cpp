@@ -4,49 +4,71 @@
 #include <cmath>
 namespace drumfoundry::ui {
 using namespace editing;
-int ModalPlot::Hit(visage::Point p) const {
+int ModalPlot::Hit(visage::Point p, bool handlesOnly) const {
   for (int i = int(modes_.size()) - 1; i >= 0; --i)
-    if (modes_[i].level > -72 && std::abs(p.x - X(modes_[i].frequency)) < 8 &&
+    if (modes_[i].level > -72 && modes_[i].frequency >= 20 &&
+        std::abs(p.x - X(modes_[i].frequency)) < 8 &&
+        std::abs(p.y - Y(modes_[i].level)) < 8)
+      return i;
+  if (handlesOnly)
+    return -1;
+  for (int i = int(modes_.size()) - 1; i >= 0; --i)
+    if (modes_[i].level > -72 && modes_[i].frequency >= 20 &&
+        std::abs(p.x - X(modes_[i].frequency)) < 8 &&
         p.y >= Y(modes_[i].level) - 8)
       return i;
   return -1;
 }
 void ModalPlot::Store() {
   ReplaceModes(*document_, modes_);
+  edited_ = true;
   redraw();
   if (changed)
     changed();
 }
 void ModalPlot::mouseDown(const visage::MouseEvent &e) {
   if (!document_ || modes_.empty() || !e.isLeftButton() || e.position.x < 42 ||
+      e.position.x > width() - 18 || e.position.y < 14 ||
       e.position.y > height() - 30)
     return;
   requestKeyboardFocus();
   previous_ = e.position;
   dragging_ = true;
+  marquee_ = edited_ = false;
+  dragModes_ = modes_; // Baseline for both moving and painting cancellation.
   try {
-    if (tool != Tool::Edit) {
-      Paint(e.position, e);
-      return;
-    }
-    selected = Hit(e.position);
-    if (e.repeatClickCount() == 2) {
-      if (selected >= 0)
+    const int handle = Hit(e.position, true);
+    const int hit = handle >= 0                     ? handle
+                    : SelectionContains(e.position) ? selected
+                                                    : Hit(e.position);
+    if (tool == Tool::Edit && e.repeatClickCount() == 2) {
+      // Only a double-click on the circular handle deletes. Clicking the
+      // empty area below a tall stem must still allow inserting a new mode.
+      const int handle = Hit(e.position, true);
+      if (handle >= 0) {
+        SelectOnly(handle);
         Remove();
-      else {
-        selected = int(InsertMode(*document_, Snap(Frequency(e.position.x)),
-                                  std::max(-71.9, Level(e.position.y))));
+      } else {
+        const int slot =
+            int(InsertMode(*document_, Snap(Frequency(e.position.x)),
+                           std::max(-71.9, Level(e.position.y))));
         modes_ = Modes(*document_);
+        SelectOnly(slot);
         if (committed)
           committed();
       }
       dragging_ = false;
-    }
+    } else if (tool != Tool::Edit) {
+      Paint(e.position, e);
+      return;
+    } else
+      BeginSelection(e, hit);
     redraw();
     if (changed)
       changed();
   } catch (const std::exception &ex) {
-    dragging_ = false;
+    dragging_ = marquee_ = false;
+    redraw();
     if (error)
       error(ex.what());
   }
@@ -59,42 +81,53 @@ void ModalPlot::mouseDrag(const visage::MouseEvent &e) {
       Paint(e.position, e);
       return;
     }
+    if (marquee_) {
+      SelectRectangle(e.position);
+      return;
+    }
     if (selected < 0)
       return;
-    auto &m = modes_[selected];
-    if ((e.isCtrlDown() || e.isCmdDown()) &&
-        ModePrefix(*document_) == "resolved_")
-      m.turbulence =
-          std::clamp(m.turbulence + (e.position.x - previous_.x) / 100, 0., 2.);
-    else {
-      const float fine = e.isShiftDown() ? .1f : 1.f;
-      m.frequency =
-          Snap(Frequency(X(m.frequency) + (e.position.x - previous_.x) * fine));
-      m.level = Level(Y(m.level) + (e.position.y - previous_.y) * fine);
-    }
-    previous_ = e.position;
-    Store();
+    MoveSelection(e);
   } catch (const std::exception &ex) {
     if (error)
       error(ex.what());
   }
 }
 void ModalPlot::mouseUp(const visage::MouseEvent &e) {
-  if (e.isLeftButton() && dragging_ && committed)
+  if (!e.isLeftButton())
+    return;
+  if (dragging_ && edited_ && committed)
     committed();
-  dragging_ = false;
+  dragging_ = marquee_ = false;
+  redraw();
 }
 bool ModalPlot::mouseWheel(const visage::MouseEvent &e) {
   if (!document_ || selected < 0 || ModePrefix(*document_) != "resolved_")
     return false;
-  modes_[selected].turbulence = std::clamp(
-      modes_[selected].turbulence + e.precise_wheel_delta_y * .02, 0., 2.);
+  const bool group = e.isCtrlDown() || e.isCmdDown();
+  for (unsigned i = 0; i < modes_.size(); ++i)
+    if (group ? IsSelected(i) : int(i) == selected)
+      modes_[i].turbulence = std::clamp(
+          modes_[i].turbulence + e.precise_wheel_delta_y * .02, 0., 2.);
   Store();
   if (committed)
     committed();
   return true;
 }
 bool ModalPlot::keyPress(const visage::KeyEvent &e) {
+  if (e.keyCode() == visage::KeyCode::Escape) {
+    if (dragging_ && edited_) {
+      ReplaceModes(*document_, dragModes_);
+      modes_ = dragModes_;
+    }
+    edited_ = false;
+    SelectOnly(-1);
+    dragging_ = marquee_ = false;
+    redraw();
+    if (changed)
+      changed();
+    return true;
+  }
   if (e.keyCode() != visage::KeyCode::Delete &&
       e.keyCode() != visage::KeyCode::Backspace)
     return false;
@@ -104,8 +137,10 @@ bool ModalPlot::keyPress(const visage::KeyEvent &e) {
 void ModalPlot::Remove() {
   if (selected < 0)
     return;
-  modes_[selected].level = -72;
-  selected = -1;
+  for (unsigned i = 0; i < modes_.size(); ++i)
+    if (IsSelected(i))
+      modes_[i].level = -72;
+  SelectOnly(-1);
   Store();
   if (committed)
     committed();

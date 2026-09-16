@@ -8,6 +8,8 @@ void Workbench::resized() {
   const float left = LeftWidth();
   const float scale = TextSizeScale(analysis_.textSize);
   preset_.setBounds(16, 9, 150 * scale, 30);
+  undo_.setBounds(preset_.right() + 8, 9, 52, 30);
+  redo_.setBounds(undo_.right() + 4, 9, 52, 30);
   settings_.setBounds(width() - 16 - 100 * scale, 9, 100 * scale, 30);
   master_.setBounds(settings_.x() - 198, 1, 184, 44);
   limiter_.setBounds(master_.x() - 14 - 138 * scale, 9, 138 * scale, 30);
@@ -69,7 +71,7 @@ void Workbench::draw(visage::Canvas &c) {
   c.setColor(colours::Panel);
   c.fill(0, 0, width(), 48);
   c.fill(0, height() - 34, width(), 34);
-  const float titleX = preset_.right() + 16;
+  const float titleX = redo_.right() + 16;
   const float titleWidth = std::max(0.f, limiter_.x() - titleX - 16);
   const std::string title =
       document_.JsonValue().is_null()
@@ -87,8 +89,7 @@ void Workbench::draw(visage::Canvas &c) {
           left / 2 + 8, LeftControlsTop(), left / 2 - 20, 24);
   }
   char meter[96];
-  std::snprintf(meter, sizeof(meter),
-                "Reduction %.1f dB  |  Lookahead %.2f ms",
+  std::snprintf(meter, sizeof(meter), "Reduction %.1f dB  |  Lookahead %.2f ms",
                 std::max(0., reduction_), latency_);
   footer_.Set(meter, status_, error_, reduction_ > .1);
 }

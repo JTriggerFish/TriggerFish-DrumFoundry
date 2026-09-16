@@ -4,6 +4,7 @@
 #include <exception>
 namespace drumfoundry::ui {
 void Workbench::PollPerformance() {
+  UpdateHistoryButtons();
   preset_.setText("Presets ▾");
   audioRunning_ = !bridge_.audioRunning || bridge_.audioRunning();
   settings_.setActionButton(!audioRunning_);

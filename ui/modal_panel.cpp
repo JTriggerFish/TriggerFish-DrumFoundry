@@ -3,6 +3,14 @@
 namespace drumfoundry::ui {
 using namespace editing;
 ModalPanel::ModalPanel() {
+  tool_.help = "Select & move: drag empty space to box-select handles, then "
+               "drag anywhere in the yellow group or packet fill to move it. "
+               "Shift adds to "
+               "the selection or makes a drag finer. Ctrl-scroll changes all "
+               "selected sideband widths; plain scroll changes the active "
+               "handle. Delete removes the selection. Double-click empty "
+               "space to add a mode, or a circular handle to delete it. "
+               "Paint modes adds modes by dragging instead.";
   for (auto *frame : std::initializer_list<visage::Frame *>{
            &plot_, &series_, &tool_, &clear_, &remove_, &generate_, &guide_,
            &snap_, &brush_, &guidePitch_, &frequency_, &level_, &noisiness_,
@@ -24,12 +32,12 @@ ModalPanel::ModalPanel() {
   };
   tool_.onToggle() = [this](auto *, bool) {
     visage::PopupMenu menu;
-    menu.addOption(0, "Select & shape");
+    menu.addOption(0, "Select & move");
     menu.addOption(1, "Prominence brush");
     menu.addOption(2, "Paint modes");
     menu.onSelection() = [this](int value) {
       plot_.tool = ModalPlot::Tool(value);
-      tool_.setText(value == 0   ? "Select & shape"
+      tool_.setText(value == 0   ? "Select & move"
                     : value == 1 ? "Prominence brush"
                                  : "Paint modes");
     };
@@ -107,6 +115,15 @@ void ModalPanel::Sync() {
     slider->setAlphaTransparency(active ? 1.f : .4f);
   }
   remove_.setActive(selected);
+  const auto count = plot_.SelectionCount();
+  frequency_.SetLabel(count > 1 ? "Active centre frequency"
+                                : "Centre frequency");
+  level_.SetLabel(count > 1 ? "Active prominence" : "Prominence");
+  noisiness_.SetLabel(count > 1 ? "Active local noisiness" : "Local noisiness");
+  allocation_.SetLabel(count > 1 ? "Active sideband allocation"
+                                 : "Sideband allocation");
+  remove_.setText(count > 1 ? "Delete " + std::to_string(count) + " modes"
+                            : "Delete mode");
   remove_.setAlphaTransparency(selected ? 1.f : .4f);
   redraw();
 }

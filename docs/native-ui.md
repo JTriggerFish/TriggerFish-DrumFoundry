@@ -333,6 +333,56 @@ seed rejection, unchanged caller documents and render-block cancellation.
 The implementation is in `workbench/decay_hold`; it has no browser/Python runtime
 dependency and is excluded from headless engine builds.
 
+## Modal selection gestures
+
+In **Select & move**, drag empty plot space to draw a selection rectangle
+around mode handles. Drag anywhere inside the highlighted group rectangle or
+a selected packet's yellow fill to move the group in frequency
+and prominence. Frequency ratios and relative dB levels are preserved, including
+when the group reaches an editor boundary. With harmonic snapping enabled, the
+grabbed handle snaps; the group's other intervals stay intact.
+
+- Shift-click or Shift-drag an empty area adds to the selection. Shift while
+  moving a handle gives fine adjustment.
+- Ctrl+scroll (Command+scroll on macOS also works) widens/narrows the selected
+  modes' sidebands using their existing local noisiness values. Plain scrolling
+  edits only the active handle. Widths remain within their existing limits.
+- Delete/Backspace removes the selection; Escape cancels an in-progress move
+  or paint gesture and restores its starting modes, then clears the selection.
+- Double-click empty space to insert a mode, or a circular handle to delete it.
+  A stem below a handle is not a double-click deletion target. A full bank
+  reports its capacity error rather than replacing another mode.
+
+Selected modes are highlighted; the active handle has a light centre. The lower
+numeric controls edit that active handle, not the whole selection. The tool
+button's tooltip lists gestures. The brush tools retain their separate painting
+behaviour. Selecting modes never changes synthesis or triggers a new render.
+
+## Undo and redo
+
+The header buttons keep up to 128 edits per instrument instance, including
+modal painting/moving/deleting, curves, EQ, routing, macros, performance controls,
+reference choices and preset loading. A drag is one step. Accepted automatic
+Hold decay compensation merges with its initiating edit when it is still the
+latest edit. New edits discard the redo branch; unchanged clicks do not.
+Playback, MIDI strikes, viewport/layout changes and file writes are not undone.
+
+Windows/Linux: **Ctrl+Z**, **Ctrl+Y** or **Ctrl+Shift+Z**. macOS: **Cmd+Z** and
+**Cmd+Shift+Z**. These shortcuts are editor-local; text fields retain their own
+undo. In a DAW, focus the plugin editor first. A host may intercept shortcuts;
+the buttons remain available. This is a separate instrument-edit history, not
+the DAW's project undo history.
+
+History survives closing/reopening the editor in the same plugin instance. It
+is not saved in presets or projects; loading host state or an externally selected
+factory preset clears it. Restoring edits preserves unrelated live performance
+values and the current spectrogram view, and uses the normal host preparation
+path rather than touching the audio thread's live DSP state.
+Queued performance edits retain their requested value until the audio thread
+acknowledges them, so consecutive gestures remain distinct undo steps. Preset
+undo restores the host selector alongside the edited document, not factory
+defaults; stale queued strike-control edits cannot overwrite that restored patch.
+
 ## Dependency references
 
 - [Visage](https://github.com/VitalAudio/visage/tree/828037000d0893647ab29b66ae9c4a241c90f671):

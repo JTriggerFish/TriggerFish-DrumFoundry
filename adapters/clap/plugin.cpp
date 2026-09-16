@@ -32,7 +32,7 @@ Plugin::DesiredState Plugin::CaptureDesired() const {
   DesiredState state;
   auto &result = state.controls;
   for (clap_id id = Preset; id < ParameterEnd; ++id)
-    result[id - Preset] = Value(id);
+    result[id - Preset] = EditorValue(id);
   const int index = static_cast<int>(result[0]);
   state.document =
       index == documentPreset_ ? document_ : ParseJson(PresetJson.at(index));

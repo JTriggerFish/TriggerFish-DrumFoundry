@@ -22,9 +22,10 @@ private:
   editing::Document *document_{};
   ModalPlot plot_;
   SeriesPanel series_;
-  visage::UiButton tool_{"Select & shape"}, clear_{"Clear"},
-      remove_{"Delete mode"}, generate_{"Generate modes"},
-      guide_{"Harmonic guide OFF"}, snap_{"Snap OFF"};
+  HelpButton tool_{"Select & move"};
+  visage::UiButton clear_{"Clear"}, remove_{"Delete mode"},
+      generate_{"Generate modes"}, guide_{"Harmonic guide OFF"},
+      snap_{"Snap OFF"};
   Slider brush_{"Brush width", .15, 5, 1, " ERB"};
   Slider guidePitch_{"Guide pitch", 8, 8000, 55, " Hz"};
   Slider frequency_{"Centre frequency", 8, 15000, 110, " Hz"};

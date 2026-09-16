@@ -1,5 +1,6 @@
 #pragma once
 #include "adapters/shared/audio_tap.hpp"
+#include "edit_history.hpp"
 #include <functional>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -10,6 +11,7 @@ namespace drumfoundry::ui {
 // Main-thread UI boundary. Hosts enqueue performance edits; structural edits
 // use their preparation lifecycle. No widget reaches into a live DSP voice.
 struct Bridge {
+  std::shared_ptr<EditHistory> history;
   std::function<double(unsigned)> value;
   std::function<void(unsigned, double)> change;
   std::function<void(unsigned)> selectFactory;
@@ -24,6 +26,7 @@ struct Bridge {
   std::function<std::string()> status;
   std::function<nlohmann::json()> document;
   std::function<void(const nlohmann::json &)> applyDocument;
+  std::function<void(const nlohmann::json &, unsigned)> restoreDocument;
   std::function<unsigned()> revision;
   std::function<void(const nlohmann::json &)> layout;
   std::function<void(const nlohmann::json &, const nlohmann::json &)>

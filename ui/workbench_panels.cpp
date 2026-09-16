@@ -11,8 +11,7 @@ void Workbench::SetupPanels() {
     applyingHold_ = true;
     ApplyDocument();
     applyingHold_ = false;
-    reloadDocument_ =
-        true; // Rebuild the visible T60 curve and scalar values.
+    reloadDocument_ = true; // Rebuild the visible T60 curve and scalar values.
   };
   excitation_.outputSpectrum = &liveSpectrum_;
   excitation_.previewRate = [this] { return analysis_.RenderRate(); };
@@ -46,7 +45,13 @@ void Workbench::SetupAnalysis() {
   analysis_.error = [this](const auto &message) { Error(message); };
   analysis_.layoutChanged = [this] { LayoutRight(); };
   analysis_.play = bridge_.play;
-  analysis_.presentation = bridge_.presentation;
+  analysis_.presentation = [this](const auto &reference, const auto &analysis) {
+    if (!bridge_.presentation)
+      return;
+    const auto before = bridge_.document();
+    bridge_.presentation(reference, analysis);
+    RecordDocument(before, bridge_.document(), unsigned(bridge_.value(100)));
+  };
   analysis_.requestReferencePlay = [this] {
     if (!analysis_.HasReferenceSelection()) {
       Error("Choose a reference in the Reference menu above the plot first.");

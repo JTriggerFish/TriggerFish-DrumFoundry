@@ -9,15 +9,26 @@ using namespace editing;
 void ModalPlot::Load(Document &d) {
   setAcceptsKeystrokes(true);
   document_ = &d;
-  selected = -1;
+  SelectOnly(-1);
+  dragging_ = marquee_ = false;
   Refresh();
 }
 void ModalPlot::Refresh() {
   if (document_)
     modes_ = Modes(*document_);
+  selection_.resize(modes_.size(), false);
+  for (unsigned i = 0; i < modes_.size(); ++i)
+    if (modes_[i].level <= -72)
+      selection_[i] = false;
   if (selected >= int(modes_.size()) ||
       (selected >= 0 && modes_[selected].level <= -72))
     selected = -1;
+  if (selected < 0)
+    for (unsigned i = 0; i < selection_.size(); ++i)
+      if (selection_[i]) {
+        selected = int(i);
+        break;
+      }
   redraw();
   if (changed)
     changed();
@@ -31,10 +42,9 @@ float ModalPlot::Y(double level) const {
   return 14 + float((6 - level) / 78) * std::max(1.f, height() - 44);
 }
 double ModalPlot::Frequency(float x) const {
-  return 20 *
-         std::pow(750.,
-                  std::clamp(double((x - 42) / std::max(1.f, width() - 60)),
-                             0., 1.));
+  return 20 * std::pow(750., std::clamp(
+                                 double((x - 42) / std::max(1.f, width() - 60)),
+                                 0., 1.));
 }
 double ModalPlot::Level(float y) const {
   return std::clamp(6 - 78. * (y - 14) / std::max(1.f, height() - 44), -72.,
@@ -59,11 +69,9 @@ double ModalPlot::Spread(const Mode &m) const {
 }
 double ModalPlot::PacketFrequency(const Mode &m, double offset) const {
   if (document_->Value("field_distribution") == 4)
-    return std::clamp(m.frequency +
-                          offset * 24.7 * (1 + .00437 * m.frequency),
+    return std::clamp(m.frequency + offset * 24.7 * (1 + .00437 * m.frequency),
                       20., 15000.);
-  return InverseErb(
-      std::clamp(Erb(m.frequency) + offset, Erb(20), Erb(15000)));
+  return InverseErb(std::clamp(Erb(m.frequency) + offset, Erb(20), Erb(15000)));
 }
 void ModalPlot::draw(visage::Canvas &c) {
   c.setColor(colours::Plot);
@@ -90,6 +98,7 @@ void ModalPlot::draw(visage::Canvas &c) {
       c.setColor(c.color(colours::Secondary).withMultipliedAlpha(.3f));
       c.fill(X(f), 14, 1, height() - 44);
     }
+  const bool multiple = SelectionCount() > 1;
   for (unsigned i = 0; i < modes_.size(); ++i) {
     const auto &m = modes_[i];
     if (m.level <= -72 || m.frequency < 20)
@@ -106,15 +115,19 @@ void ModalPlot::draw(visage::Canvas &c) {
       }
       packet.lineTo(X(PacketFrequency(m, 3 * spread)), Y(-72));
       packet.close();
-      c.setColor(i == unsigned(selected)
+      c.setColor(IsSelected(i)
                      ? c.color(colours::Secondary).withMultipliedAlpha(.25f)
                      : c.color(colours::Accent).withMultipliedAlpha(.16f));
       c.fill(packet);
     }
-    c.setColor(i == unsigned(selected) ? colours::Secondary
-                                       : colours::Accent);
+    c.setColor(IsSelected(i) ? colours::Secondary : colours::Accent);
     c.fill(X(m.frequency) - .75f, Y(m.level), 1.5f, Y(-72) - Y(m.level));
     c.circle(X(m.frequency) - 4, Y(m.level) - 4, 8);
+    if (multiple && int(i) == selected) {
+      c.setColor(colours::Text);
+      c.circle(X(m.frequency) - 2, Y(m.level) - 2, 4);
+    }
   }
+  DrawSelection(c);
 }
 } // namespace drumfoundry::ui

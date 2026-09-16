@@ -19,14 +19,15 @@ int main(int argc, char **argv) {
   ParameterGroupTests(d);
   extern void EqTests(editing::Document);
   EqTests(d);
+  extern void ModalSelectionTests(editing::Document);
+  ModalSelectionTests(d);
   for (const auto *recipe :
        {"drum.kick.v1", "drum.membrane.v1", "drum.snare.v1"}) {
     editing::Document drum;
     drum.Load(WithFitEnvelope(DefaultPatch(recipe)));
     ParameterGroupTests(drum);
     EqTests(drum);
-    if (drum.Recipe() == "drum.snare.v1" ||
-        drum.Recipe() == "drum.membrane.v1")
+    if (drum.Recipe() == "drum.snare.v1" || drum.Recipe() == "drum.membrane.v1")
       Require(editing::Section(drum.Description("body_brightness")) ==
               "Membrane");
   }

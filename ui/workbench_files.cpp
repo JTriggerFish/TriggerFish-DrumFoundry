@@ -23,8 +23,7 @@ void Workbench::OpenFitFile(bool save, const editing::Json &document) {
             UserPresetDirectory() /
             (imported.at("id").get<std::string>() + ".json");
         editing::WriteNewFit(destination, imported);
-        bridge_.applyDocument(imported);
-        reloadDocument_ = true;
+        LoadPreset(imported);
       }
     };
     files_.Open(directory, save);

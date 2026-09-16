@@ -54,6 +54,7 @@ ui::Bridge GuiSession::Connect() {
   ui::Bridge bridge;
   bridge.audioRunning = [this] { return audio_ && audio_->Running(); };
   auto &plugin = clap_adapter::Plugin::Get(host_.Api());
+  bridge.history = plugin.editHistory;
   bridge.velocity = [&plugin] { return plugin.PreviewStrength(); };
   bridge.setVelocity = [&plugin](double v) { plugin.SetPreviewStrength(v); };
   bridge.sampleRate = [&plugin] { return plugin.AuditionRate(); };
@@ -95,15 +96,23 @@ ui::Bridge GuiSession::Connect() {
       audio_->Start();
     }
   };
-  bridge.value = [this](unsigned id) { return host_.Value(id); };
-  bridge.change = [this](unsigned id, double value) {
+  bridge.restoreDocument = [this, &plugin](const auto &document,
+                                           unsigned preset) {
+    plugin.EditDocument(document, int(preset));
+    if (audio_) {
+      audio_->Stop();
+      audio_->Start();
+    }
+  };
+  bridge.value = [&plugin](unsigned id) { return plugin.EditorValue(id); };
+  bridge.change = [this, &plugin](unsigned id, double value) {
     if (id == 100 || id == 106 || !audio_) {
       if (audio_)
         audio_->Stop();
       host_.SetStopped(id, value);
       if (audio_)
         audio_->Start();
-    } else if (!host_.controls.Push({false, id, value, {}}))
+    } else if (!plugin.QueueEdit(id, value))
       throw std::runtime_error("Control queue full");
   };
   bridge.strike = [this, &plugin](float velocity, float x) {

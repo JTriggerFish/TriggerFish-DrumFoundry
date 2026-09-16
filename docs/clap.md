@@ -71,6 +71,24 @@ values are lock-free atomics. Invalid states are rejected transactionally. State
 streams support partial reads/writes and a 1 MiB limit. No reference recordings
 are bundled.
 
+## Planned: full host automation (not implemented)
+
+The current automation surface is limited to hardness, implement, location,
+mute, master level and gesture spread. Factory selection and limiter enable
+are exposed but not marked automatable; gain reduction and latency are read-only.
+The remaining synthesis controls are saved in project state but are **not**
+host automation parameters. CLAP modulation and per-note parameter modulation
+are also not implemented.
+
+Planned work is to expose the sound-design controls through the authoritative
+parameter metadata, with stable IDs (including modal slots and curve points),
+correct units/ranges and host gesture notifications. Continuous controls need
+safe live updates and appropriate smoothing; simply exposing the existing
+voice-rebuilding edit path is insufficient. Structural edits such as routing
+or adding/removing modules must remain distinct from continuous automation.
+Coverage should include automation playback, state recall, preset changes and
+real-host tests. This feature is deferred, not part of the current UI changes.
+
 ## Verification and next boundary
 
 The host test loads the exported entry/factory and checks metadata, every preset,

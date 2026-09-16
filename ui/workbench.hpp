@@ -32,6 +32,10 @@ public:
   void SetControlWidth(float pixels);
   void SetTextSize(int size);
   void OpenLayout();
+  bool keyPress(const visage::KeyEvent &) override;
+  void Undo();
+  void Redo();
+  void LoadFactoryPreset(unsigned index);
   std::function<void()> textSizeChanged;
 
 private:
@@ -46,7 +50,16 @@ private:
   void LoadTheme(const editing::Json &, bool persist);
   void ChooseLayout(int item);
   void SelectPreset();
-  void Change(unsigned, double);
+  void SetupHistory();
+  void UpdateHistoryButtons();
+  void RestoreHistory(bool redo);
+  editing::Json HistoryState() const;
+  void RecordDocument(const editing::Json &before, const editing::Json &after,
+                      unsigned beforePreset, bool merge = false);
+  void LoadPreset(const editing::Json &);
+  void CommitPerformance();
+  void EditPerformance(unsigned id, double value);
+  editing::Json performanceBefore_, performanceAfter_;
   void SetupPanels();
   void SetupAnalysis();
   void SetupMetas();
@@ -67,6 +80,7 @@ private:
   visage::UiButton preset_{"Kick"}, settings_{"Settings"},
       limiter_{"Limiter ON"};
   visage::UiButton fixedStrike_{"Strike"};
+  HelpButton undo_{"Undo"}, redo_{"Redo"};
   Slider master_{"Master", -60, 0, -12, " dB"};
   Slider hardness_{"Tip hardness", 0, 1, .5};
   Slider velocity_{"Audition velocity", 0, 1, .8};

@@ -12,10 +12,11 @@ constexpr const char *factoryIds[]{"factory.kick",  "factory.snare",
 } // namespace
 Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   for (auto *frame : std::initializer_list<visage::Frame *>{
-           &preset_, &settings_, &limiter_, &master_, &location_, &mute_,
-           &excitation_, &resonance_, &excitationTab_, &resonanceTab_,
-           &columnSplit_, &footer_})
+           &preset_, &undo_, &redo_, &settings_, &limiter_, &master_,
+           &location_, &mute_, &excitation_, &resonance_, &excitationTab_,
+           &resonanceTab_, &columnSplit_, &footer_})
     addChild(frame);
+  SetupHistory();
   SetupPanels();
   SetupLayout();
   SetupRouting();
@@ -35,13 +36,6 @@ Workbench::~Workbench() { timer_.stopTimer(); }
 void Workbench::Error(const std::string &message) {
   error_ = message;
   redraw();
-}
-void Workbench::Change(unsigned id, double value) {
-  try {
-    bridge_.change(id, value);
-  } catch (const std::exception &e) {
-    Error(e.what());
-  }
 }
 void Workbench::SelectPreset() {
   try {
@@ -70,17 +64,14 @@ void Workbench::SelectPreset() {
     menu.onSelection() = [this, paths](int index) {
       try {
         if (index >= 1000 && unsigned(index - 1000) < paths.size()) {
-          bridge_.applyDocument(editing::ReadFit(paths[index - 1000]));
-          reloadDocument_ = true;
+          LoadPreset(editing::ReadFit(paths[index - 1000]));
         } else if (index == 200) {
           presetShade_.setVisible(true);
           presetSave_.Open(CaptureDocument());
         } else if (index == 201 || index == 202) {
           OpenFitFile(index == 202, CaptureDocument());
-        } else if (index >= 0 && index < 6 && bridge_.selectFactory)
-          bridge_.selectFactory(unsigned(index));
-        else if (index >= 0 && index < 6)
-          Change(100, index);
+        } else if (index >= 0 && index < 6)
+          LoadFactoryPreset(unsigned(index));
       } catch (const std::exception &e) {
         Error(e.what());
       }
@@ -124,10 +115,12 @@ void Workbench::ApplyDocument() {
     // Preserve the current performance controls rather than restoring the
     // gesture that happened to be active when the panel was populated.
     const auto current = bridge_.document();
+    const auto beforePreset = unsigned(bridge_.value(100));
     next["controls"]["event"] = current.at("controls").at("event");
     next["reference"] = current.at("reference");
     next["controls"]["analysis"] = current.at("controls").at("analysis");
     bridge_.applyDocument(next);
+    RecordDocument(current, bridge_.document(), beforePreset, applyingHold_);
     analysis_.UpdateModel(next);
     preview_.Reset(next);
     modal_.Refresh();

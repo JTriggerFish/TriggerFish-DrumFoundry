@@ -33,7 +33,12 @@ void ModalPanel::resized() {
     frame->setVisible(available_);
 }
 void ModalPanel::draw(visage::Canvas &c) {
-  Label(c, "MODAL PACKET DESIGN", 0, 0, width(), 22, colours::Heading);
+  const auto count = plot_.SelectionCount();
+  Label(c,
+        count > 1
+            ? "MODAL PACKET DESIGN / " + std::to_string(count) + " selected"
+            : "MODAL PACKET DESIGN",
+        0, 0, width(), 22, colours::Heading);
   if (!available_) {
     Label(c,
           "This recipe uses its membrane body controls instead of painted "
@@ -41,7 +46,11 @@ void ModalPanel::draw(visage::Canvas &c) {
           0, 34, width(), 24);
     return;
   }
-  Label(c, "Double-click: add/delete · Ctrl-drag: width · Shift: fine", 0,
-        height() - 30, width() - 130, 24, colours::Muted);
+  const auto hint = plot_.tool == ModalPlot::Tool::Edit
+                        ? "Drag: select/move · Ctrl-scroll: width · Del: delete"
+                    : plot_.tool == ModalPlot::Tool::Paint
+                        ? "Drag to paint new modes; select & move to reposition"
+                        : "Drag to reshape levels; select & move to add/delete";
+  Label(c, hint, 0, height() - 30, width() - 130, 24, colours::Muted);
 }
 } // namespace drumfoundry::ui

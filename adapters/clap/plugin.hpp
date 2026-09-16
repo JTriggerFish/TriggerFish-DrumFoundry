@@ -3,6 +3,7 @@
 #ifdef DRUMFOUNDRY_UI
 #include "../shared/audio_tap.hpp"
 #include "../shared/audition.hpp"
+#include "ui/edit_history.hpp"
 #endif
 #include "output/limiter.hpp"
 #include "runtime/voice.hpp"
@@ -67,6 +68,8 @@ public:
   void Event(const clap_event_header_t *) noexcept;
   void SetParameter(clap_id, double) noexcept;
   double Value(clap_id) const noexcept;
+  double EditorValue(
+      clap_id) const noexcept; // Main thread, includes queued edits.
   uint32_t LatencySamples() const noexcept { return latency_; }
   bool Save(const clap_ostream_t *);
   bool Load(const clap_istream_t *);
@@ -74,7 +77,7 @@ public:
   // performance automation remains on its separate sample-timed path.
   Json EditableDocument() const;
   void PrepareEditorPreset();
-  void EditDocument(Json);
+  void EditDocument(Json, int restoredPreset = -1);
   void SelectFactory(unsigned index);
   void EditPresentation(const Json &reference, const Json &analysis);
   double PreviewStrength() const { return previewStrength_.load(); }
@@ -92,6 +95,8 @@ public:
   }
 #ifdef DRUMFOUNDRY_UI
   std::unique_ptr<Editor> editor;
+  std::shared_ptr<ui::EditHistory> editHistory{
+      std::make_shared<ui::EditHistory>()};
   void EditLayout(const Json &positions);
   bool Audition(std::shared_ptr<const std::vector<float>>, unsigned rate,
                 double gain);
@@ -116,6 +121,7 @@ private:
   };
   DesiredState CaptureDesired() const;
   void PublishDocument(const Voice &validated, int preset);
+  void CancelEditorEdits(bool includeMonitor);
   const clap_host_t *host_{};
   const clap_host_params_t *hostParams_{};
   const clap_host_latency_t *hostLatency_{};
@@ -135,6 +141,14 @@ private:
   double reductionHold_{};
   std::atomic<bool> restartQueued_{};
   host::EventQueue<> editorParams_, editorNotes_;
+  struct PendingEdit {
+    double value{};
+    uint64_t serial{};
+  };
+  std::array<PendingEdit, ParameterCount> pendingEdits_{}; // Main thread only.
+  uint64_t editSerial_{};
+  std::array<std::atomic<uint64_t>, ParameterCount> acknowledgedEdits_{};
+  std::array<std::atomic<uint64_t>, ParameterCount> cancelledEdits_{};
   std::atomic<unsigned> editorNotificationErrors_{};
 #ifdef DRUMFOUNDRY_UI
   host::Audition audition_;

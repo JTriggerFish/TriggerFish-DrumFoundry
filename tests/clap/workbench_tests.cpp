@@ -29,6 +29,8 @@ void CheckChildren(visage::Frame &frame) {
 
 void WorkbenchTests() {
 #ifdef DRUMFOUNDRY_UI
+  extern void WorkbenchHistoryTests();
+  WorkbenchHistoryTests();
   using namespace drumfoundry;
   using namespace clap_adapter;
   clap_host_t host{CLAP_VERSION, nullptr, "Test", "TriggerFish", "", "1"};
@@ -157,7 +159,7 @@ void WorkbenchTests() {
         if (dynamic_cast<visage::UiButton *>(child))
           ++headerButtons;
       }
-      Check(headerButtons == 3); // Preset, limiter, Settings; one row only.
+      Check(headerButtons == 5); // Preset, undo/redo, limiter, Settings.
       Check(small.paletteValue(ui::TextScale) == ui::TextSizeScale(textSize));
       for (bool spectrum : {true, false})
         for (bool visible : {true, false}) {

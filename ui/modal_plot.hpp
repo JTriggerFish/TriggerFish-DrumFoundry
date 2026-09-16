@@ -16,6 +16,8 @@ public:
   bool keyPress(const visage::KeyEvent &) override;
   void Remove();
   void SnapAll();
+  bool IsSelected(unsigned slot) const;
+  unsigned SelectionCount() const;
   int selected{-1};
   Tool tool{Tool::Edit};
   double brush{1}, base{55};
@@ -31,12 +33,22 @@ private:
   double Snap(double) const;
   double Spread(const editing::Mode &) const;
   double PacketFrequency(const editing::Mode &, double offset) const;
-  int Hit(visage::Point) const;
+  int Hit(visage::Point, bool handlesOnly = false) const;
   void Paint(visage::Point, const visage::MouseEvent &);
   void Store();
+  void SelectOnly(int slot);
+  void BeginSelection(const visage::MouseEvent &, int hit);
+  void SelectRectangle(visage::Point);
+  void MoveSelection(const visage::MouseEvent &);
+  void DrawSelection(visage::Canvas &);
+  visage::Bounds SelectionBounds() const;
+  bool SelectionContains(visage::Point) const;
   editing::Document *document_{};
   std::vector<editing::Mode> modes_;
-  bool dragging_{};
-  visage::Point previous_;
+  std::vector<bool> selection_, selectionBefore_;
+  std::vector<editing::Mode> dragModes_;
+  bool dragging_{}, marquee_{}, edited_{};
+  float widthMovement_{};
+  visage::Point previous_, origin_, corner_, movement_;
 };
 } // namespace drumfoundry::ui

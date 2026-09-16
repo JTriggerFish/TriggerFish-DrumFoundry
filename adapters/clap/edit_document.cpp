@@ -63,7 +63,11 @@ void Plugin::PrepareEditorPreset() {
   Voice validated(static_cast<float>(sampleRate_), desired.document);
   if (Value(Preset) != controls[0])
     return; // A newer selection is pending.
+  CancelEditorEdits(false);
   document_ = validated.Document();
+#ifdef DRUMFOUNDRY_UI
+  editHistory->Clear(); // External host preset selection replaces the timeline.
+#endif
   documentPreset_ = static_cast<int>(controls[0]);
   for (clap_id id = Hardness; id <= Mute; ++id)
     values_[id - Preset].store(controls[id - Preset]);
@@ -73,7 +77,7 @@ void Plugin::PrepareEditorPreset() {
   ++documentRevision_;
 }
 Json Plugin::EditableDocument() const { return CaptureDesired().document; }
-void Plugin::EditDocument(Json document) {
+void Plugin::EditDocument(Json document, int restoredPreset) {
   document = WithFitEnvelope(std::move(document));
 #ifdef DRUMFOUNDRY_UI
   ui::ValidateAnalysisDocument(document);
@@ -82,10 +86,17 @@ void Plugin::EditDocument(Json document) {
   auto next = validated.Document();
   const auto recipe = Instrument(next).at("recipe").get<std::string>();
   const int selected = static_cast<int>(Value(Preset));
-  const int preset = recipe == "drum.kick.v1"    ? 0
+  const int preset = restoredPreset >= 0         ? restoredPreset
+                     : recipe == "drum.kick.v1"  ? 0
                      : recipe == "drum.snare.v1" ? 1
                      : selected >= 2             ? selected
                                                  : 3;
+  if (preset < 0 || preset >= int(PresetNames.size()) ||
+      (recipe == "drum.kick.v1"    ? preset != 0
+       : recipe == "drum.snare.v1" ? preset != 1
+                                   : preset < 2))
+    throw std::invalid_argument(
+        "Restored factory selector does not match the instrument");
   PublishDocument(validated, preset);
 }
 void Plugin::SelectFactory(unsigned index) {
@@ -97,6 +108,7 @@ void Plugin::PublishDocument(const Voice &validated, int preset) {
   const auto strike = validated.Event();
   auto next = validated.Document();
   const double strength = next.at("controls").at("event").at("strength");
+  CancelEditorEdits(false);
   document_ = std::move(next);
   documentPreset_ = preset;
   values_[Preset - Preset].store(preset);

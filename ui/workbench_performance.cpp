@@ -15,27 +15,25 @@ void Workbench::SetupPerformance() {
   for (unsigned i = 0; i < implements_.size(); ++i) {
     right_.addScrolledChild(&implements_[i]);
     implements_[i].onToggle() = [this, i](auto *, bool) {
-      Change(102, i * .5);
+      EditPerformance(102, i * .5);
+      CommitPerformance();
     };
   }
   preset_.onToggle() = [this](auto *, bool) { SelectPreset(); };
   limiter_.onToggle() = [this](auto *, bool) {
-    Change(106, bridge_.value(106) < .5);
+    EditPerformance(106, bridge_.value(106) < .5);
+    CommitPerformance();
   };
   settings_.onToggle() = [this](auto *, bool) { OpenSettings(); };
-  master_.changed = [this](double v) { Change(105, v); };
-  hardness_.changed = [this](double v) { Change(101, v); };
-  spread_.changed = [this](double v) { Change(109, v); };
-  velocity_.changed = [this](double v) {
-    try {
-      if (bridge_.setVelocity)
-        bridge_.setVelocity(v);
-    } catch (const std::exception &e) {
-      Error(e.what());
-    }
-  };
-  location_.changed = [this](double v) { Change(103, v); };
-  mute_.changed = [this](double v) { Change(104, v); };
+  master_.changed = [this](double v) { EditPerformance(105, v); };
+  hardness_.changed = [this](double v) { EditPerformance(101, v); };
+  spread_.changed = [this](double v) { EditPerformance(109, v); };
+  velocity_.changed = [this](double v) { EditPerformance(0, v); };
+  location_.changed = [this](double v) { EditPerformance(103, v); };
+  mute_.changed = [this](double v) { EditPerformance(104, v); };
+  for (auto *slider :
+       {&master_, &hardness_, &spread_, &velocity_, &location_, &mute_})
+    slider->committed = [this] { CommitPerformance(); };
   strike_.strike = [this](float v, float x) {
     try {
       if (!EnsureAudio())
