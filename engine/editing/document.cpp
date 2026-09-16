@@ -1,4 +1,5 @@
 #include "document.hpp"
+#include "parameters/validation.hpp"
 #include "runtime/voice.hpp"
 #include <algorithm>
 #include <cmath>
@@ -7,9 +8,8 @@
 namespace drumfoundry::editing {
 namespace {
 void Validate(const Parameter &p, double value) {
-  if (!std::isfinite(value) || float(value) < float(p.minimum) ||
-      float(value) > float(p.maximum) ||
-      (p.scale >= 2 && value != std::floor(value)))
+  if (!ValidParameterValue(value, float(p.minimum), float(p.maximum),
+                           static_cast<ParameterScale>(p.scale)))
     throw std::invalid_argument("Invalid value for " + p.key);
 }
 } // namespace

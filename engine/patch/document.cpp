@@ -62,17 +62,7 @@ void ApplyPatch(detail::Session &session, Json &patch) {
         throw std::invalid_argument("Unknown or misplaced parameter: " + key);
       SetParameter(session, found->second, value.get<double>());
     }
-    const auto &p = node.at("parameters");
-    if (p.contains("body_decay_frequency_7")) {
-      for (int i = 1; i < 7; ++i) {
-        const auto suffix = std::to_string(i);
-        if (p.at("body_decay_active_" + suffix).get<double>() >= .5 &&
-            p.at("body_decay_frequency_" + suffix).get<double>() >
-                p.at("body_decay_frequency_7").get<double>())
-          throw std::invalid_argument(
-              "Active decay knots must not exceed the upper endpoint");
-      }
-    }
+    ValidateDecayParameters(node.at("parameters"));
   }
   std::size_t index = 0;
   for (const auto &expected : Topology(session.recipe).at("connections")) {

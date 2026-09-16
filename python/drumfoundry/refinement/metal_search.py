@@ -2,6 +2,7 @@
 
 import numpy as np
 from scipy.optimize import minimize
+from drumfoundry.editing import SeriesRangeError, transform_series
 
 
 def shared_edit(base, values):
@@ -18,15 +19,15 @@ def shared_edit(base, values):
         body_brightness=tilt,
         body_excitation_centre=centre,
     )
-    for i in range(32):
-        if base[f"resolved_level_{i}"] <= -71.99:
-            continue
+    active = [i for i in range(32) if base[f"resolved_level_{i}"] > -71.99]
+    # Apply the editor's native protected-core stretch as a relative deformation
+    # of the saved series. Negative search coordinates contract by its reciprocal.
+    frequencies = transform_series(
+        [base[f"resolved_frequency_{i}"] for i in active], scale, stretch, core=3
+    )
+    for i, frequency in zip(active, frequencies):
         f = base[f"resolved_frequency_{i}"]
-        # Concentrate stretching above 500 Hz, with zero offset at 120 Hz.
-        bend = np.log2(1 + (f / 500) ** 2) - np.log2(1 + (120 / 500) ** 2)
-        p[f"resolved_frequency_{i}"] = float(
-            np.clip(f * scale * 2 ** (stretch * bend), 1, 15000)
-        )
+        p[f"resolved_frequency_{i}"] = frequency
         db = np.interp(
             np.log(f),
             np.log([100, 300, 1000, 3000, 15000]),
@@ -37,6 +38,19 @@ def shared_edit(base, values):
                 np.clip(base[f"resolved_level_{i}"] + db, -72, 6)
             )
     return p
+
+
+def _feasible_score(edit, base, values, evaluate, label):
+    """Reject range overflow before rendering; never record it as a fit trial.
+
+    Infinity is an optimizer constraint, not a serialized loss or penalty weight.
+    Unexpected validation/rendering errors still propagate to the caller.
+    """
+    try:
+        parameters = edit(base, values)
+    except SeriesRangeError:
+        return np.inf
+    return evaluate(parameters, label)
 
 
 def texture_cases(base):
@@ -144,8 +158,11 @@ def fit_shared_series(initial, rows, evaluate, budget):
     lower, upper = np.asarray(bounds).T
 
     def score(x):
-        return evaluate(
-            shared_edit(base, lower + np.asarray(x) * (upper - lower)),
+        return _feasible_score(
+            shared_edit,
+            base,
+            lower + np.asarray(x) * (upper - lower),
+            evaluate,
             "shared series/dynamics",
         )
 
@@ -201,8 +218,11 @@ def fit_locked_texture(initial, evaluate, budget):
     )
 
     def score(x):
-        return evaluate(
-            tuning_decay_edit(initial, lower + x * (upper - lower)),
+        return _feasible_score(
+            tuning_decay_edit,
+            initial,
+            lower + x * (upper - lower),
+            evaluate,
             "texture-locked tuning/decay",
         )
 

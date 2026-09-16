@@ -1,4 +1,5 @@
 #include "live_controls.hpp"
+#include "parameters/validation.hpp"
 #include <cmath>
 #include <stdexcept>
 
@@ -26,11 +27,14 @@ bool IsLiveParameter(std::string_view recipe, std::string_view key) {
 
 bool ValidLiveDecay(const CrashMacroValues &values) noexcept {
   const auto upper = values[std::size_t(CrashMacro::BodyDecayMaximumFrequency)];
-  for (std::size_t k = 0; k < BodyDecayInteriorPointCount; ++k)
-    if (values[std::size_t(CrashMacro::BodyDecayActiveFirst) + k] >= .5f &&
-        values[std::size_t(CrashMacro::BodyDecayFrequencyFirst) + k] > upper)
-      return false;
-  return true;
+  return ValidDecayEndpoints(
+      upper,
+      [&](unsigned i) {
+        return values[std::size_t(CrashMacro::BodyDecayFrequencyFirst) + i - 1];
+      },
+      [&](unsigned i) {
+        return values[std::size_t(CrashMacro::BodyDecayActiveFirst) + i - 1];
+      });
 }
 
 bool ValidateLiveEdit(const Json &before, const Json &next) {
@@ -64,9 +68,7 @@ bool ValidateLiveEdit(const Json &before, const Json &next) {
       if (!description || !value.is_number())
         throw std::invalid_argument("Invalid live parameter: " + key);
       const auto v = value.get<double>();
-      if (!std::isfinite(v) || float(v) < description->minimum ||
-          float(v) > description->maximum ||
-          (int(description->scale) >= 2 && v != std::floor(v)))
+      if (!ValidParameterValue(*description, v))
         throw std::invalid_argument("Invalid live parameter: " + key);
       value = old.at(key);
     }
@@ -74,17 +76,8 @@ bool ValidateLiveEdit(const Json &before, const Json &next) {
   if (topology != oldPatch)
     return false;
   ValidateEnvelope(next);
-  for (const auto &node : patch.at("nodes")) {
-    const auto &p = node.at("parameters");
-    if (!p.contains("body_decay_frequency_7"))
-      continue;
-    for (int k = 1; k < 7; ++k)
-      if (p.at("body_decay_active_" + std::to_string(k)).get<double>() >= .5 &&
-          p.at("body_decay_frequency_" + std::to_string(k)) >
-              p.at("body_decay_frequency_7"))
-        throw std::invalid_argument(
-            "Active decay knots must not exceed the upper endpoint");
-  }
+  for (const auto &node : patch.at("nodes"))
+    ValidateDecayParameters(node.at("parameters"));
   return true;
 }
 } // namespace drumfoundry

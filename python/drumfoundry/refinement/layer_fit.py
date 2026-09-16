@@ -3,36 +3,58 @@
 import numpy as np
 from scipy.optimize import minimize
 from drumfoundry.fitting import _coordinates
+from .layer_evaluation import LayerEvaluation
 
 
 class LayerFit:
     """One parameter vector serves every layer; no per-hit fitted gain/velocity."""
 
-    def __init__(self, saved, layers, parameters, seconds=3):
+    def __init__(self, saved, layers, parameters, seconds=3, *, workers=1):
         if not layers:
             raise ValueError("At least one reference layer is required")
         self.saved, self.layers, self.seconds = saved, layers, seconds
         self.best = dict(parameters)
         self.score = float("inf")
         self.rows = []
+        self.evaluation = LayerEvaluation(saved, layers, seconds, workers)
+
+    def close(self):
+        self.evaluation.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
 
     def evaluate(self, parameters, label, seed=1944, accept=True):
-        errors = []
-        for layer in self.layers:
-            audio = self.saved.render(
-                parameters, self.seconds, seed=seed, event=layer["event"]
-            )
-            errors.append(layer["loss"].diagnostics(audio)["error_db"])
+        parts = self.evaluation.measure(
+            parameters, seed, lambda loss, audio: loss.diagnostics(audio)
+        )
+        errors = [part["error_db"] for part in parts]
         score = float(np.sqrt(np.mean(np.square(errors))))
+        return self.record(
+            parameters,
+            label,
+            score,
+            seed,
+            accept,
+            components=parts,
+            layer_errors_db=errors,
+        )
+
+    def record(self, parameters, label, score, seed=1944, accept=True, **details):
+        """One trial/acceptance contract for scalar and residual-based searches."""
         if not np.isfinite(score):
             raise ValueError("Layer objective returned a non-finite score")
         self.rows.append(
             dict(
                 stage=label,
                 seed=seed,
+                layer_seeds=self.evaluation.seeds(seed),
                 score=score,
-                layer_errors_db=errors,
                 parameters=dict(parameters),
+                **details,
             )
         )
         if accept and score < self.score:

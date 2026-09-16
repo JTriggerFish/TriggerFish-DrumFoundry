@@ -1,5 +1,7 @@
 #include "native.h"
+#include "editing/modes.hpp"
 #include "runtime/voice.hpp"
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <exception>
@@ -30,6 +32,54 @@ void Require(const void *pointer) {
 } // namespace
 extern "C" {
 const char *df_last_error() { return error; }
+
+int df_generate_series(const df_series *s, df_mode *output, uint32_t *count) {
+  return Checked([&] {
+    Require(s);
+    Require(output);
+    Require(count);
+    if (s->family > 1 || s->truncate_to_range > 1)
+      throw std::invalid_argument("Invalid series option");
+    using namespace drumfoundry::editing;
+    const Series settings{static_cast<SeriesFamily>(s->family),
+                          s->fundamental,
+                          s->stretch,
+                          s->level,
+                          s->rolloff,
+                          s->turbulence,
+                          s->count,
+                          s->harmonic_core,
+                          s->first,
+                          s->truncate_to_range != 0};
+    const auto modes = GenerateSeries(settings, s->minimum, s->maximum, 32);
+    for (std::size_t i = 0; i < modes.size(); ++i) {
+      const auto &m = modes[i];
+      output[i] = {m.frequency, m.level, m.turbulence, m.allocation};
+    }
+    *count = static_cast<uint32_t>(modes.size());
+  });
+}
+int df_transform_series(const double *frequencies, uint32_t count, double pitch,
+                        double stretch, uint32_t core, double minimum,
+                        double maximum, double *output) {
+  int status = 1;
+  const int valid = Checked([&] {
+    Require(frequencies);
+    Require(output);
+    if (count > 32)
+      throw std::invalid_argument("Too many source modes");
+    const auto result = drumfoundry::editing::TransformSeries(
+        std::vector<double>(frequencies, frequencies + count), pitch, stretch,
+        core, minimum, maximum);
+    if (!result) {
+      status = 2;
+      return;
+    }
+    std::copy(result->begin(), result->end(), output);
+  });
+  return valid ? status : 0;
+}
+
 df_voice *df_create(float sampleRate, const char *document) {
   df_voice *result = nullptr;
   Checked([&] {

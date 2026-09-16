@@ -20,6 +20,30 @@ class Strike(ct.Structure):
     ] + [("seed", ct.c_uint32)]
 
 
+class Series(ct.Structure):
+    _fields_ = [
+        (key, ct.c_double)
+        for key in (
+            "fundamental",
+            "stretch",
+            "level",
+            "rolloff",
+            "turbulence",
+            "minimum",
+            "maximum",
+        )
+    ] + [
+        (key, ct.c_uint32)
+        for key in ("count", "harmonic_core", "first", "family", "truncate_to_range")
+    ]
+
+
+class Mode(ct.Structure):
+    _fields_ = [
+        (key, ct.c_double) for key in ("frequency", "level", "turbulence", "allocation")
+    ]
+
+
 def library_path():
     """Resolve an explicit override or this checkout's native build."""
     if os.environ.get("DRUMFOUNDRY_LIBRARY"):
@@ -45,6 +69,23 @@ def load_library():
     pointer, string, integer = ct.c_void_p, ct.c_char_p, ct.c_int
     signatures = {
         "df_last_error": (string, []),
+        "df_generate_series": (
+            integer,
+            [ct.POINTER(Series), ct.POINTER(Mode), ct.POINTER(ct.c_uint32)],
+        ),
+        "df_transform_series": (
+            integer,
+            [
+                ct.POINTER(ct.c_double),
+                ct.c_uint32,
+                ct.c_double,
+                ct.c_double,
+                ct.c_uint32,
+                ct.c_double,
+                ct.c_double,
+                ct.POINTER(ct.c_double),
+            ],
+        ),
         "df_create": (pointer, [ct.c_float, string]),
         "df_destroy": (None, [pointer]),
         "df_configure": (integer, [pointer, string]),

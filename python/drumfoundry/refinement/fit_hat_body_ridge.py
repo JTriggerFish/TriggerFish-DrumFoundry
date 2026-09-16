@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 from scipy.optimize import minimize
 from .fit_open_hat import prepare
-from .parallel_layer_fit import ParallelLayerFit
+from .layer_fit import LayerFit
 from .artifacts import write_json
 from .hat_audition import export_state
 
@@ -33,7 +33,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     saved, layers = prepare(args.source, args.root)
     base = json.loads(args.checkpoint.read_text(encoding="utf8"))["parameters"]
-    search = ParallelLayerFit(saved, layers, base)
+    search = LayerFit(saved, layers, base, workers=len(layers))
     try:
         search.evaluate(base, "before")
         bounds = np.array([[0, 18], [430, 510], [0.15, 1.0]])

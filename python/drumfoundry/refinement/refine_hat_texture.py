@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 from .fit_open_hat import prepare
-from .parallel_layer_fit import ParallelLayerFit
+from .layer_fit import LayerFit
 from .temporal_metal_loss import TemporalMetalLoss
 from .fit_temporal_hat import stage
 from .artifacts import write_json
@@ -25,7 +25,7 @@ def main():
         dict(layer, training_seed=seed) for seed in (1944, 7823) for layer in layers
     ]
     p = json.loads(args.checkpoint.read_text())["parameters"]
-    search = ParallelLayerFit(saved, training, p)
+    search = LayerFit(saved, training, p, workers=len(training))
     try:
         search.evaluate(p, "initial")
         if args.tail_only:

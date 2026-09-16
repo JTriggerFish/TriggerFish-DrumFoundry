@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from .fit_open_hat import prepare
 from .fit_temporal_hat import prominence_tilt
-from .parallel_layer_fit import ParallelLayerFit
+from .layer_fit import LayerFit
 from .temporal_metal_loss import TemporalMetalLoss
 from .artifacts import write_json
 
@@ -19,7 +19,7 @@ def main():
     saved, layers = prepare(args.source, args.root)
     for layer in layers:
         layer["loss"] = TemporalMetalLoss(layer["reference"].window(3), 44100)
-    search = ParallelLayerFit(saved, layers, saved.initial)
+    search = LayerFit(saved, layers, saved.initial, workers=len(layers))
     try:
         search.evaluate(saved.initial, "published")
         for brightness in (-28, -12, 0):

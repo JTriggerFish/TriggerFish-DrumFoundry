@@ -1,6 +1,6 @@
 """Explicit whole-series coordinates; never optimize individual painted modes."""
 
-import math
+from drumfoundry.editing import generate_series
 
 
 def stretched_series(parameters, fundamental, stretch, count=24, core=3, level=-12):
@@ -9,18 +9,14 @@ def stretched_series(parameters, fundamental, stretch, count=24, core=3, level=-
     No runtime macro/hidden state is introduced. Each handle has equal prominence,
     allocation and local turbulence; all decay shaping uses the global curve.
     """
-    if not 1 <= count <= 32 or not 1 <= core <= 8 or not 0 <= stretch <= 1:
-        raise ValueError("Invalid series shape")
-    frequencies = [
-        fundamental * n * math.hypot(1, stretch * max(0, (n - core) / core))
-        for n in range(1, count + 1)
-    ]
-    if not all(math.isfinite(f) and 1 <= f <= 20000 for f in frequencies):
-        raise ValueError("Series exceeds the modal editor range")
+    modes = generate_series(
+        fundamental, stretch, count=count, core=core, level=level, rolloff=0
+    )
+    frequencies = [mode["frequency"] for mode in modes]
     result = dict(parameters)
     for i in range(32):
         result[f"resolved_frequency_{i}"] = frequencies[min(i, count - 1)]
-        result[f"resolved_level_{i}"] = level if i < count else -72
+        result[f"resolved_level_{i}"] = modes[i]["level"] if i < count else -72
         result[f"resolved_turbulence_{i}"] = 1
         result[f"resolved_allocation_{i}"] = 1
     for i in range(1, 7):

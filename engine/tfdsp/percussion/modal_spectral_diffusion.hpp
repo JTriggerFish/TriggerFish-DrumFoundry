@@ -2,14 +2,14 @@
 
 #include <algorithm>
 #include <array>
-#include <cstddef>
 #include <cmath>
+#include <cstddef>
 
 namespace tfdsp::percussion {
 
 // Finite-volume energy diffusion on sorted packet centres, not oscillator
 // phases. Coordinates are f/1000 Hz; energy is measured in unit-strike units.
-// See docs/TfPercussion-spectral-diffusion.md for the equation and limitations.
+// See docs/spectral-diffusion.md for the equation and limitations.
 // No allocation, iteration to convergence, output normalization or energy sink.
 template <std::size_t Capacity> class ModalSpectralDiffusion {
 public:
@@ -21,25 +21,30 @@ public:
     bins_ = 0;
     reference_.fill(0.0);
     for (std::size_t i = 0; i < packets_; ++i) {
-      const double x = std::clamp(double(frequencyHz[i]), 0.0,
-                                  double(sampleRate) * .5) / 1000.0;
-      if (!bins_ || x != centre_[bins_ - 1]) centre_[bins_++] = x;
+      const double x =
+          std::clamp(double(frequencyHz[i]), 0.0, double(sampleRate) * .5) /
+          1000.0;
+      if (!bins_ || x != centre_[bins_ - 1])
+        centre_[bins_++] = x;
       const auto bin = bins_ - 1;
       bin_[i] = bin;
       reference_[bin] += referenceEnergy[i];
       packetReference_[i] = referenceEnergy[i];
     }
-    const double upper = bins_ > 1 ? centre_[bins_-1] +
-        .5 * (centre_[bins_-1]-centre_[bins_-2]) : double(sampleRate) / 2000.0;
+    const double upper =
+        bins_ > 1 ? centre_[bins_ - 1] +
+                        .5 * (centre_[bins_ - 1] - centre_[bins_ - 2])
+                  : double(sampleRate) / 2000.0;
     for (std::size_t i = 0; i < bins_; ++i) {
-      const double left = i ? .5 * (centre_[i-1] + centre_[i]) : 0.0;
+      const double left = i ? .5 * (centre_[i - 1] + centre_[i]) : 0.0;
       // Extend the last represented cell by half its neighbour spacing. A
       // Nyquist-wide empty cell would change diffusion when only Fs changes.
-      const double right = i+1 < bins_ ? .5 * (centre_[i] + centre_[i+1])
-          : std::min(upper, double(sampleRate) / 2000.0);
+      const double right = i + 1 < bins_
+                               ? .5 * (centre_[i] + centre_[i + 1])
+                               : std::min(upper, double(sampleRate) / 2000.0);
       width_[i] = right - left;
-      if (i+1 < bins_)
-        geometry_[i] = right / (centre_[i+1] - centre_[i]);
+      if (i + 1 < bins_)
+        geometry_[i] = right / (centre_[i + 1] - centre_[i]);
     }
   }
 
@@ -49,15 +54,19 @@ public:
   void Process(const std::array<float, Capacity> &energy,
                std::array<float, Capacity> &result,
                const double referenceEnergy, const double step,
-               const double concentration, const double energySensitivity) noexcept {
+               const double concentration,
+               const double energySensitivity) noexcept {
     std::copy_n(energy.begin(), packets_, result.begin());
-    if (bins_ < 2 || !(step > 0) || !(referenceEnergy > 0)) return;
+    if (bins_ < 2 || !(step > 0) || !(referenceEnergy > 0))
+      return;
     std::fill_n(original_.begin(), bins_, 0.0);
     for (std::size_t i = 0; i < packets_; ++i)
       original_[bin_[i]] += double(energy[i]) / referenceEnergy;
     double total = 0;
-    for (std::size_t i = 0; i < bins_; ++i) total += original_[i];
-    if (!(total > 0)) return;
+    for (std::size_t i = 0; i < bins_; ++i)
+      total += original_[i];
+    if (!(total > 0))
+      return;
     for (std::size_t i = 0; i < bins_; ++i)
       density_[i] = original_[i] / width_[i];
     BuildConductance(step, total, std::clamp(concentration, 0.0, 1.0),
@@ -67,9 +76,10 @@ public:
       const auto bin = bin_[i];
       // Coincident handles share one cell. Existing energy proportions are
       // retained; an initially silent cell uses declared excitation weights.
-      const double share = original_[bin] > 0
-          ? (double(energy[i]) / referenceEnergy) / original_[bin]
-          : ReferenceShare(i);
+      const double share =
+          original_[bin] > 0
+              ? (double(energy[i]) / referenceEnergy) / original_[bin]
+              : ReferenceShare(i);
       result[i] = float(density_[bin] * width_[bin] * referenceEnergy * share);
     }
   }
@@ -94,16 +104,21 @@ private:
   }
 
   void BuildConductance(const double step, const double total,
-                        const double concentration, const double sensitivity) noexcept {
+                        const double concentration,
+                        const double sensitivity) noexcept {
     // Separate total stored energy from spectral shape. Normalizing density
     // here changes coefficients only: no oscillator energy is normalized.
-    const double activity = sensitivity == 0 ? 1.0 : std::pow(total, sensitivity);
+    const double activity =
+        sensitivity == 0 ? 1.0 : std::pow(total, sensitivity);
     const double inverseTotal = 1.0 / total;
-    for (std::size_t i = 0; i+1 < bins_; ++i) {
-      const double a = density_[i] * inverseTotal, b = density_[i+1] * inverseTotal;
-      const double quadratic = (a*a + a*b + b*b) / 3.0;
-      const double shape = concentration == 0 ? 1.0 :
-          concentration == 1 ? quadratic : std::pow(quadratic, concentration);
+    for (std::size_t i = 0; i + 1 < bins_; ++i) {
+      const double a = density_[i] * inverseTotal,
+                   b = density_[i + 1] * inverseTotal;
+      const double quadratic = (a * a + a * b + b * b) / 3.0;
+      const double shape = concentration == 0 ? 1.0
+                           : concentration == 1
+                               ? quadratic
+                               : std::pow(quadratic, concentration);
       conductance_[i] = step * geometry_[i] * activity * shape;
     }
     conductance_[bins_ - 1] = 0.0;
@@ -116,15 +131,16 @@ private:
     diagonal_[0] = remainder + conductance_[0];
     rhs_[0] = original_[0];
     for (std::size_t i = 1; i < bins_; ++i) {
-      const double left = conductance_[i-1];
+      const double left = conductance_[i - 1];
       const double ratio = left / (remainder + left);
       remainder = width_[i] + ratio * remainder;
       diagonal_[i] = remainder + conductance_[i];
-      rhs_[i] = original_[i] + ratio * rhs_[i-1];
+      rhs_[i] = original_[i] + ratio * rhs_[i - 1];
     }
-    density_[bins_-1] = rhs_[bins_-1] / diagonal_[bins_-1];
-    for (std::size_t i = bins_-1; i-- > 0;)
-      density_[i] = (rhs_[i] + conductance_[i] * density_[i+1]) / diagonal_[i];
+    density_[bins_ - 1] = rhs_[bins_ - 1] / diagonal_[bins_ - 1];
+    for (std::size_t i = bins_ - 1; i-- > 0;)
+      density_[i] =
+          (rhs_[i] + conductance_[i] * density_[i + 1]) / diagonal_[i];
   }
 
   std::array<std::size_t, Capacity> bin_{};

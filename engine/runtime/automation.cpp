@@ -1,4 +1,5 @@
 #include "live_controls.hpp"
+#include "parameters/validation.hpp"
 #include "voice.hpp"
 #include <cmath>
 
@@ -8,8 +9,7 @@ bool Voice::StageParameter(std::size_t i, float value) noexcept {
     return false;
   auto &s = *session_;
   const auto &d = *detail::Description(s, i);
-  if (value < d.minimum || value > d.maximum ||
-      (int(d.scale) >= 2 && value != std::floor(value)))
+  if (!ValidParameterValue(d, value))
     return false;
   if (s.recipe == detail::Recipe::MetallicPlate) {
     // Preserve the same endpoint constraint as the curve editor/JSON contract.

@@ -90,8 +90,10 @@ finite differences and records sensitivities. A single smooth observation tilt
 and the prominent low packets' prominence/coherence may change; the upper series
 is not freely painted. No DSP topology or runtime parameter is added.
 
-Each evaluation uses all four layers. `ParallelLayerFit` gives each worker its
-own native voice; tests verify equivalence to serial evaluation. Each stage
+Each evaluation uses all four layers. `LayerFit(..., workers=N)` uses the same
+evaluation/seed/logging path at every worker count. Concurrent tasks own separate
+native voices; tests verify serial/parallel parity with per-layer training seeds.
+Each stage
 records full parameter vectors, bounds and layer errors. Exported layer views
 share synthesis parameters and differ only in saved strike/reference metadata.
 

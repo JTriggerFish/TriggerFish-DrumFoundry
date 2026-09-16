@@ -34,23 +34,25 @@ def test_silent_tail_does_not_dilute_attack_error():
     assert loss.components(noise * np.exp(-12 * t))["envelope"] > 5
 
 
-def test_parallel_native_layers_match_serial():
+@pytest.mark.parametrize("explicit_seeds", [False, True])
+def test_parallel_native_layers_match_serial(explicit_seeds):
     from pathlib import Path
     from drumfoundry.refinement.saved import SavedFitRenderer
     from drumfoundry.refinement.layer_loss import LayerLoss
     from drumfoundry.refinement.layer_fit import LayerFit
-    from drumfoundry.refinement.parallel_layer_fit import ParallelLayerFit
 
     source = Path(__file__).resolve().parents[2] / "presets/factory/hihat.fit.json"
     with SavedFitRenderer(source, 16000) as saved:
         layers = []
-        for strength in (0.25, 0.75):
+        for i, strength in enumerate((0.25, 0.75)):
             event = dict(strength=strength)
             target = saved.render(saved.initial, 3, seed=1944, event=event)
             layers.append(dict(event=event, loss=LayerLoss(target, 16000)))
+            if explicit_seeds:
+                layers[-1]["training_seed"] = 100 + i
         p = saved.initial | {"model_level_db": -20}
         serial = LayerFit(saved, layers, p)
-        parallel = ParallelLayerFit(saved, layers, p)
+        parallel = LayerFit(saved, layers, p, workers=2)
         try:
             assert parallel.evaluate(p, "test") == pytest.approx(
                 serial.evaluate(p, "test"), abs=1e-12
@@ -58,8 +60,13 @@ def test_parallel_native_layers_match_serial():
             assert (
                 parallel.rows[0]["layer_errors_db"] == serial.rows[0]["layer_errors_db"]
             )
+            assert parallel.rows == serial.rows
+            assert serial.rows[0]["layer_seeds"] == (
+                [100, 101] if explicit_seeds else [1944, 1944]
+            )
         finally:
             parallel.close()
+            serial.close()
 
 
 def test_low_prominence_does_not_also_boost_contact():

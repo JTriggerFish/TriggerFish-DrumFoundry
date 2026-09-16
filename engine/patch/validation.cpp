@@ -1,3 +1,4 @@
+#include "parameters/validation.hpp"
 #include "document.hpp"
 #include <cmath>
 #include <stdexcept>
@@ -17,6 +18,21 @@ void ValidateStrike(const Strike &s) {
   Unit(s.implement);
   Unit(s.contactSpread);
   Unit(s.constraint);
+}
+void ValidateDecayParameters(const Json &p) {
+  if (!p.contains("body_decay_frequency_7"))
+    return;
+  if (!ValidDecayEndpoints(
+          p.at("body_decay_frequency_7").get<float>(),
+          [&](unsigned i) {
+            return p.at("body_decay_frequency_" + std::to_string(i))
+                .get<double>();
+          },
+          [&](unsigned i) {
+            return p.at("body_decay_active_" + std::to_string(i)).get<double>();
+          }))
+    throw std::invalid_argument(
+        "Active decay knots must not exceed the upper endpoint");
 }
 Strike ReadStrike(const Json &event, bool fixedBeater) {
   Strike s;

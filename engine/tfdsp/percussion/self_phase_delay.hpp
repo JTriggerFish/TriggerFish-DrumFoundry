@@ -1,8 +1,8 @@
 #pragma once
 
+#include "fixed_oversampling.hpp"
 #include "self_phase_delay_core.hpp"
 #include "tfdsp/finite_audio.hpp"
-#include "tfdsp/sampleRate.hpp"
 
 #include <Eigen/Dense>
 #include <algorithm>
@@ -12,20 +12,6 @@
 
 namespace tfdsp::percussion {
 
-template <typename ResamplerType> struct SelfPhaseResamplerFactory;
-
-template <> struct SelfPhaseResamplerFactory<tfdsp::DummyResampler> {
-  static auto Create() { return tfdsp::CreateDummyResampler(); }
-};
-
-template <> struct SelfPhaseResamplerFactory<tfdsp::X2Resampler_Order7> {
-  static auto Create() { return tfdsp::CreateX2Resampler_Chebychev7(); }
-};
-
-template <> struct SelfPhaseResamplerFactory<tfdsp::X4Resampler_Order7> {
-  static auto Create() { return tfdsp::CreateX4Resampler_Cheby7(); }
-};
-
 // The production stage uses 2x oversampling. The template remains public so
 // tests and offline tools can render the identical nonlinear core at 4x.
 template <typename ResamplerType> class OversampledSelfPhaseDelay {
@@ -33,8 +19,8 @@ public:
   static constexpr int OversamplingFactor = ResamplerType::ResamplingFactor;
 
   OversampledSelfPhaseDelay()
-      : interpolator_(SelfPhaseResamplerFactory<ResamplerType>::Create()),
-        decimator_(SelfPhaseResamplerFactory<ResamplerType>::Create()) {}
+      : interpolator_(FixedResamplerFactory<ResamplerType>::Create()),
+        decimator_(FixedResamplerFactory<ResamplerType>::Create()) {}
 
   void Prepare(const float sampleRate, const float maximumDelaySamples) {
     core_.Prepare(sampleRate * OversamplingFactor,
@@ -92,8 +78,8 @@ private:
         peakSample = sample;
       }
     }
-    const auto centre = static_cast<std::size_t>(std::lround(
-        linear.centreDelaySamples));
+    const auto centre =
+        static_cast<std::size_t>(std::lround(linear.centreDelaySamples));
     resamplingLatencySamples_ = peakSample > centre ? peakSample - centre : 0;
   }
 

@@ -4,7 +4,7 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 from hashlib import sha256
 import json
-import math
+from drumfoundry.editing import generate_series
 from pathlib import Path
 import numpy as np
 from scipy.optimize import minimize
@@ -14,6 +14,7 @@ from .saved import SavedFitRenderer
 from .tonal_layer_loss import TonalLayerLoss
 from .hat_audition import export_state
 from .layer_fit import LayerFit
+from .open_hat_stages import INITIAL_STAGES
 from drumfoundry._native import library_path
 
 
@@ -21,10 +22,11 @@ def series(parameters, base, stretch, first=1, tilt=-3):
     """Even stretched series and one smooth prominence tilt; no independent bars."""
     p = dict(parameters)
     frequencies = [
-        base * n * math.hypot(1, stretch * max(0, (n - 3) / 3))
-        for n in range(first, first + 32)
+        m["frequency"]
+        for m in generate_series(
+            base, stretch, count=32, core=3, first=first, truncate=True
+        )
     ]
-    frequencies = [f for f in frequencies if f <= 14500]
     for i in range(32):
         f = frequencies[min(i, len(frequencies) - 1)]
         p[f"resolved_frequency_{i}"] = f
@@ -128,21 +130,8 @@ def geometry_stage(search, geometry, budget):
     return best_geometry
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("source", "root", "output"):
-        parser.add_argument("--" + name, type=Path, required=True)
-    parser.add_argument("--budget", type=int, default=140)
-    args = parser.parse_args()
-    args.output.mkdir(parents=True, exist_ok=False)
-    write_json(
-        args.output / "run.json",
-        dict(
-            native_sha256=sha256(library_path().read_bytes()).hexdigest(),
-            source_sha256=sha256(args.source.read_bytes()).hexdigest(),
-            budget=args.budget,
-        ),
-    )
+def choose_family(args):
+    """Compare structured starting families, each with its own native voice."""
     families = [
         (base, stretch, first, tilt, noise, blur)
         for base, stretch, first in (
@@ -167,49 +156,32 @@ def main():
                 flush=True,
             )
     write_json(args.output / "families.json", results)
-    winner = min(results, key=lambda r: r["score"])
+    return min(results, key=lambda r: r["score"])
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name in ("source", "root", "output"):
+        parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--budget", type=int, default=140)
+    args = parser.parse_args()
+    args.output.mkdir(parents=True, exist_ok=False)
+    write_json(
+        args.output / "run.json",
+        dict(
+            native_sha256=sha256(library_path().read_bytes()).hexdigest(),
+            source_sha256=sha256(args.source.read_bytes()).hexdigest(),
+            budget=args.budget,
+        ),
+    )
+    winner = choose_family(args)
     saved, layers = prepare(args.source, args.root)
     try:
         search = LayerFit(saved, layers, winner["parameters"])
         before = search.evaluate(saved.initial, "published", accept=False)
         search.evaluate(winner["parameters"], "best-family")
-        stages = [
-            (
-                "spectral-balance",
-                {
-                    "body_brightness": (-8, 14, False),
-                    "body_excitation_centre": (400, 7000, True),
-                    "bloom_rate": (0, 6, False),
-                },
-            ),
-            (
-                "decay",
-                {
-                    "body_decay_seconds_0": (0.2, 5, True),
-                    "body_decay_seconds_7": (0.2, 5, True),
-                },
-            ),
-            (
-                "texture",
-                {
-                    "field_turbulence": (0.2, 1.6, True),
-                    "field_packet_spread": (0.2, 4, True),
-                    "field_phase_bandwidth": (0.00002, 0.04, True),
-                    "field_phase_tilt": (-1, 1, False),
-                },
-            ),
-            (
-                "strike",
-                {
-                    "impact_tone_noise": (0.1, 1, False),
-                    "impact_width": (0.25, 2, True),
-                    "direct_gain": (0, 1, False),
-                    "velocity_brightness": (0, 12, False),
-                },
-            ),
-        ]
         geometry = winner["family"]
-        for label, bounds in stages:
+        for label, bounds in INITIAL_STAGES:
             search.stage(bounds, args.budget, label)
             print(label, search.score, flush=True)
             write_json(
@@ -218,7 +190,7 @@ def main():
             )
         geometry = geometry_stage(search, geometry, args.budget)
         print("geometry", geometry, search.score, flush=True)
-        search.stage(stages[1][1], args.budget, "decay-revisit")
+        search.stage(INITIAL_STAGES[1][1], args.budget, "decay-revisit")
         write_json(args.output / "source.fit.json", saved.fit)
         write_json(
             args.output / "summary.json",

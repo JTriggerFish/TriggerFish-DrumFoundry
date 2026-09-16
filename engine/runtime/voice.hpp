@@ -3,7 +3,7 @@
 #include <memory>
 
 namespace drumfoundry {
-// One owned voice, used identically by offline renderers and future host
+// One owned voice, used identically by offline renderers and native host
 // adapters. Configure is transactional and non-realtime. Trigger/Process do not
 // allocate. A caller must serialize access to one voice; separate voices are
 // independent.

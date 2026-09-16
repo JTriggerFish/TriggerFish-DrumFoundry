@@ -1,5 +1,6 @@
 #include "design_parameters.hpp"
 #include "parameters/access.hpp"
+#include "parameters/validation.hpp"
 #include <cmath>
 #include <stdexcept>
 
@@ -52,10 +53,7 @@ const DesignParameter *FindDesignParameter(clap_id id) noexcept {
   return slot < DesignCapacity ? &DesignParameters()[slot] : nullptr;
 }
 bool ValidDesignValue(const DesignParameter &p, double value) noexcept {
-  const auto &d = *p.descriptor;
-  return std::isfinite(value) && float(value) >= d.minimum &&
-         float(value) <= d.maximum &&
-         (int(d.scale) < 2 || value == std::floor(value));
+  return ValidParameterValue(*p.descriptor, value);
 }
 int DesignEditPriority(const DesignParameter &p, double value,
                        double current) noexcept {
