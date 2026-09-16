@@ -27,6 +27,18 @@ def test_sound_identity_ignores_reference_but_not_strike_or_patch():
     assert sound_identity(document) != event_identity
 
 
+def test_explicit_legacy_endpoint_retains_oracle_identity():
+    document = json.loads((ROOT / "presets/factory/hihat.fit.json").read_text())
+    body = next(
+        n["parameters"] for n in document["instrument"]["nodes"] if n["id"] == "body"
+    )
+    explicit = sound_identity(document)
+    assert body.pop("body_decay_frequency_7") == 15000
+    assert sound_identity(document) == explicit
+    body["body_decay_frequency_7"] = 20000
+    assert sound_identity(document) != explicit
+
+
 @pytest.mark.parametrize(
     "case",
     BASELINE["cases"],

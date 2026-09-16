@@ -53,9 +53,10 @@ unlimited, and the future UI must expose bypass, latency and gain reduction.
   not require these design-time tools to render; do not reimplement them
   independently in Visage/Python.
 - Prepare safe audio-thread publication of structural changes, retirement of old
-  state, parameter smoothing and sample-accurate host events.
-- Extend host automation beyond performance controls, and finish native UI
-  migration review. The shared Visage editor, reference analysis, fit storage,
+  state, and further state-preserving resonator/texture edits. Scalar live edits
+  already use the bounded publication path below.
+- Extend live automation to state-preserving modal/texture edits, and finish
+  native UI migration review. The shared Visage editor, reference analysis, fit storage,
   routing and graphical device management are described in [native-ui.md](native-ui.md).
   CLAP integration is documented in [clap.md](clap.md), and the audio/MIDI host
   in [standalone.md](standalone.md).
@@ -63,3 +64,35 @@ unlimited, and the future UI must expose bypass, latency and gain reduction.
 The current runtime still embeds storage for each available recipe inside an
 owned session. This is not a global instance limit, but can be reduced to active
 recipe storage before polyphonic/multi-instrument host integration.
+
+## Live control edits
+
+`runtime/live_controls` validates design edits on the main thread without creating
+a replacement voice. UI changes enter a bounded single-producer/single-consumer
+parameter queue, drained at the next audio block. CLAP host automation enters
+the same runtime setters at the event's sample offset. The adapter validates
+the final same-sample curve and orders coupled scalar edits safely.
+`Voice::StageParameter` validates each scalar state; `FlushParameters` applies
+the completed batch before the next sample or strike. No audio-thread JSON,
+allocation, lock, voice reset, or device restart is involved. Preset replacement cancels stale queued
+edits. The adapter overlays current parameter values into saved JSON;
+`Voice::Document()` remains the original configuration, not an audio-thread mirror.
+
+Final EQ/bypass and gains transition over 5 ms (coefficient/gain smoothing, **not
+latency**). Filters retain their history and stay warm while bypassed. Modal
+damping changes preserve stored quadrature state; bloom-rate edits preserve
+transport/random history. Contact and thump/FM envelope templates apply to the
+next strike rather than restarting an ongoing gesture. The live-key classifier
+is shared with UI help, and every advertised live parameter is regression-tested
+against a freshly configured render after transitions settle.
+
+The shared classifier also determines CLAP automation coverage. Recipe/key-derived
+IDs are stable, independent of descriptor order; inactive recipes remain registered
+but hidden. UI drags emit one begin/end host gesture, with values throughout.
+Host playback updates visible controls without rebuilding them, and unrelated
+automation is excluded from UI undo history. See [clap.md](clap.md).
+
+Changes to routing, modal placement/allocation, packet texture or observation
+delay still take the preparation lifecycle on commit. They are not blindly
+applied to existing oscillator indices. Offline spectrogram previews remain an
+independent, debounced worker and never gate live control delivery.

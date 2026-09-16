@@ -63,6 +63,11 @@ public:
   float Process() noexcept;
   float MembraneEnergy() const noexcept { return membrane_.ModalEnergy(); }
   float WireEnergy() const noexcept { return wires_.StoredEnergy(); }
+  void SetLiveControls(const SnareDrumParameters &parameters) noexcept;
+  void
+  SetLiveDecay(const std::array<float, MembraneModeCount> &radii) noexcept {
+    membrane_.SetLiveDecay(radii);
+  }
 
 private:
   MembraneDrum membrane_{};
@@ -71,6 +76,8 @@ private:
   ObservationEqualizer equalizer_{};
   SnareDrumRouting routing_{};
   float outputGain_{.2f};
+  LiveGain liveOutput_{};
+  float sampleRate_{48000.f};
 };
 
 } // namespace tfdsp::percussion

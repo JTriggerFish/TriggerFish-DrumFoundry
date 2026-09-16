@@ -2,6 +2,7 @@
 
 #include "tfdsp/percussion/biquad.hpp"
 #include "tfdsp/percussion/biquad_design.hpp"
+#include "tfdsp/percussion/live_output_eq.hpp"
 #include "tfdsp/percussion/radiation_filter.hpp"
 
 #include <algorithm>
@@ -90,12 +91,38 @@ void TestRadiationChain() {
         "radiation chain sanitizes non-finite input");
 }
 
+void TestLiveEq() {
+  using namespace tfdsp::percussion;
+  for (float rate : {32000.f, 44100.f, 48000.f, 96000.f, 192000.f}) {
+    LiveOutputEq live;
+    RadiationFilterParameters p;
+    live.Prepare(rate, p, false);
+    for (unsigned i = 0; i < unsigned(rate); ++i) {
+      if (i % 127 == 0) {
+        const bool up = (i / 127) % 2;
+        p.lowCutHz = up ? 1000 : 5;
+        p.highCutHz = up ? 22000 : 500;
+        p.colourFrequencyHz = up ? 20000 : 40;
+        p.colourGainDb = up ? 24 : -24;
+        live.SetTarget(p, (i / 127) % 3 != 0);
+      }
+      const float input = .05f * percussion_test::Sine(i, 83.f, rate) +
+                          .05f * percussion_test::Sine(i, 7000.f, rate);
+      const float out = live.Process(input);
+      if (!std::isfinite(out) || std::abs(out) > 8.f) {
+        Check(false, "Rapid full-range EQ/bypass edits remain bounded");
+        break;
+      }
+    }
+  }
+}
 } // namespace
 
 int main() {
   TestBiquadResponses();
   TestLowCutoffLinearity();
   TestRadiationChain();
+  TestLiveEq();
   if (percussion_test::failures == 0)
     std::cout << "All percussion radiation tests passed\n";
   return percussion_test::failures == 0 ? 0 : 1;

@@ -13,7 +13,7 @@ public:
   void Load(editing::Document &, bool rightColumn);
   void resized() override;
   void draw(visage::Canvas &) override;
-  std::function<void()> committed;
+  std::function<void()> changed, committed;
   std::function<void(const std::string &)> error;
   std::function<void(bool size)> meta;
   visage::Frame
@@ -25,12 +25,12 @@ public:
     if (preview_)
       preview_->redraw();
   }
+  void SyncValues(editing::Document &);
 
 private:
   void AddGroup(const std::string &section);
   void AddParameter(editing::Document &, const editing::Parameter &);
   void AddOutputPreview(editing::Document &);
-  void SyncValues(editing::Document &);
   struct Row {
     Row(std::unique_ptr<visage::Frame> item, int h)
         : owner(std::move(item)), frame(owner.get()), height(h) {}
@@ -48,6 +48,7 @@ private:
   };
   std::vector<Group> groups_;
   std::vector<std::pair<Slider *, std::string>> sliders_;
+  std::vector<std::pair<HelpButton *, editing::Parameter>> buttons_;
   visage::Frame *preview_{};
   std::shared_ptr<int> generation_;
 };

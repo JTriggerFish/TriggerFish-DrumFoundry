@@ -63,6 +63,8 @@ void DecayEditor::mouseDrag(const visage::MouseEvent &e) {
     }
     previous_ = e.position;
     Sync();
+    if (changed)
+      changed();
   } catch (const std::exception &ex) {
     if (error)
       error(ex.what());

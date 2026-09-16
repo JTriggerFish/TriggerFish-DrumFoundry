@@ -26,6 +26,7 @@ public:
   std::function<void(const std::string &)> error;
 
 private:
+  double MaximumFrequency() const { return maximumFrequency_; }
   float X(double) const;
   float Y(double) const;
   double Frequency(float) const;
@@ -44,6 +45,7 @@ private:
   visage::Bounds SelectionBounds() const;
   bool SelectionContains(visage::Point) const;
   editing::Document *document_{};
+  double maximumFrequency_{20000};
   std::vector<editing::Mode> modes_;
   std::vector<bool> selection_, selectionBefore_;
   std::vector<editing::Mode> dragModes_;

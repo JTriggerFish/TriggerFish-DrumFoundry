@@ -83,6 +83,8 @@ ui::Bridge GuiSession::Connect() {
     plugin.EditPresentation(ref, analysis);
   };
   bridge.revision = [&plugin] { return plugin.DocumentRevision(); };
+  bridge.automationRevision = [&plugin] { return plugin.AutomationRevision(); };
+  bridge.finishLive = [&plugin] { plugin.EndDesignGesture(); };
   bridge.layout = [&plugin](const auto &positions) {
     plugin.EditLayout(positions);
   };
@@ -91,7 +93,7 @@ ui::Bridge GuiSession::Connect() {
     // thread only; audio owns its existing Voice until Stop joins its
     // callback.
     plugin.EditDocument(document);
-    if (audio_) {
+    if (audio_ && plugin.RestartPending()) {
       audio_->Stop();
       audio_->Start();
     }
@@ -99,10 +101,13 @@ ui::Bridge GuiSession::Connect() {
   bridge.restoreDocument = [this, &plugin](const auto &document,
                                            unsigned preset) {
     plugin.EditDocument(document, int(preset));
-    if (audio_) {
+    if (audio_ && plugin.RestartPending()) {
       audio_->Stop();
       audio_->Start();
     }
+  };
+  bridge.liveDocument = [&plugin](const auto &document) {
+    return plugin.EditLiveDocument(document);
   };
   bridge.value = [&plugin](unsigned id) { return plugin.EditorValue(id); };
   bridge.change = [this, &plugin](unsigned id, double value) {

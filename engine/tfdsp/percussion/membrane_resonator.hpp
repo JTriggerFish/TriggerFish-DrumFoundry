@@ -105,6 +105,10 @@ public:
     updateCountdown_ = 0;
   }
 
+  void SetDecayRadii(const std::array<float, ModeCount> &radii) noexcept {
+    radii_ = radii; // Damping only: does not change quadrature state or pitch.
+  }
+
   Drive Project(const float force, const float location) const noexcept {
     Drive result{};
     const float safeForce = tfdsp::FiniteNormalOrZero(force);

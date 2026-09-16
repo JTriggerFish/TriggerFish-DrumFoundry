@@ -70,7 +70,8 @@ void ModalPlot::MoveSelection(const visage::MouseEvent &e) {
   } else {
     movement_.x += (e.position.x - previous_.x) * fine;
     movement_.y += (e.position.y - previous_.y) * fine;
-    double shift = movement_.x / std::max(1.f, width() - 60) * std::log(750.);
+    double shift = movement_.x / std::max(1.f, width() - 60) *
+                   std::log(MaximumFrequency() / 20);
     double gain = -78. * movement_.y / std::max(1.f, height() - 44);
     // Snap only the grabbed handle; preserve the group's frequency ratios.
     if (guide && snap && movement_.x != 0) {
@@ -83,7 +84,7 @@ void ModalPlot::MoveSelection(const visage::MouseEvent &e) {
         continue;
       const auto &m = dragModes_[i];
       low = std::max(low, std::log(20 / m.frequency));
-      high = std::min(high, std::log(15000 / m.frequency));
+      high = std::min(high, std::log(MaximumFrequency() / m.frequency));
       quiet = std::max(quiet, -71.9 - m.level);
       loud = std::min(loud, 6 - m.level);
     }
@@ -92,8 +93,8 @@ void ModalPlot::MoveSelection(const visage::MouseEvent &e) {
     for (unsigned i = 0; i < modes_.size(); ++i) {
       if (!IsSelected(i))
         continue;
-      modes_[i].frequency =
-          std::clamp(dragModes_[i].frequency * std::exp(shift), 20., 15000.);
+      modes_[i].frequency = std::clamp(
+          dragModes_[i].frequency * std::exp(shift), 20., MaximumFrequency());
       modes_[i].level = std::clamp(dragModes_[i].level + gain, -71.9, 6.);
     }
   }

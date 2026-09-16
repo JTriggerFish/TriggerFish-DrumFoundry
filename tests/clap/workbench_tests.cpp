@@ -31,6 +31,8 @@ void WorkbenchTests() {
 #ifdef DRUMFOUNDRY_UI
   extern void WorkbenchHistoryTests();
   WorkbenchHistoryTests();
+  extern void WorkbenchLiveTests();
+  WorkbenchLiveTests();
   using namespace drumfoundry;
   using namespace clap_adapter;
   clap_host_t host{CLAP_VERSION, nullptr, "Test", "TriggerFish", "", "1"};

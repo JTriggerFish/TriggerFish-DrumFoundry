@@ -26,8 +26,11 @@ struct Bridge {
   std::function<std::string()> status;
   std::function<nlohmann::json()> document;
   std::function<void(const nlohmann::json &)> applyDocument;
+  std::function<bool(const nlohmann::json &)> liveDocument;
+  std::function<void()> finishLive;
   std::function<void(const nlohmann::json &, unsigned)> restoreDocument;
   std::function<unsigned()> revision;
+  std::function<unsigned()> automationRevision;
   std::function<void(const nlohmann::json &)> layout;
   std::function<void(const nlohmann::json &, const nlohmann::json &)>
       presentation;

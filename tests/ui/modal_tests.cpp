@@ -64,4 +64,15 @@ int main(int argc, char **argv) {
   ui::DecayEditor decay(d);
   decay.setBounds(0, 0, 300, 366);
   Require(d.JsonValue() == before); // Merely opening editors must not retune.
+  const auto upper = editing::DecayKnots(d).back();
+  e.repeat_click_count = 1;
+  e.position = {36 + float((editing::Erb(upper.frequency) - editing::Erb(40)) /
+                           (editing::Erb(20000) - editing::Erb(40))) *
+                         250,
+                22 + float(1 - editing::DecayPosition(upper.seconds)) * 176};
+  decay.mouseDown(e);
+  e.position.x = 286;
+  decay.mouseDrag(e);
+  decay.mouseUp(e);
+  Require(std::abs(d.Value("body_decay_frequency_7") - 20000) < .01);
 }

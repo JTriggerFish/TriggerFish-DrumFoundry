@@ -5,6 +5,7 @@ FetchContent_Declare(clap
   SOURCE_SUBDIR unused)
 FetchContent_MakeAvailable(clap)
 add_library(drumfoundry_clap_sdk INTERFACE)
+find_package(Threads REQUIRED)
 target_include_directories(drumfoundry_clap_sdk SYSTEM INTERFACE ${clap_SOURCE_DIR}/include)
 
 # Only public, reference-free factory assets belong in the binaries.
@@ -28,13 +29,15 @@ add_library(drumfoundry_clap_objects OBJECT
   adapters/clap/factory.cpp adapters/clap/plugin.cpp adapters/clap/parameters.cpp
   adapters/clap/processing.cpp adapters/clap/state.cpp adapters/clap/extensions.cpp
   adapters/clap/editor_events.cpp adapters/clap/edit_document.cpp)
+target_sources(drumfoundry_clap_objects PRIVATE adapters/clap/design_parameters.cpp
+  adapters/clap/design_editing.cpp adapters/clap/event_batch.cpp)
 if(DRUMFOUNDRY_BUILD_UI)
   target_sources(drumfoundry_clap_objects PRIVATE adapters/clap/gui.cpp adapters/clap/gui_extension.cpp)
   target_compile_definitions(drumfoundry_clap_objects PUBLIC DRUMFOUNDRY_UI=1)
   target_link_libraries(drumfoundry_clap_objects PUBLIC drumfoundry_ui)
 endif()
 target_include_directories(drumfoundry_clap_objects PRIVATE "${PROJECT_BINARY_DIR}/generated")
-target_link_libraries(drumfoundry_clap_objects PUBLIC drumfoundry_engine drumfoundry_output drumfoundry_clap_sdk)
+target_link_libraries(drumfoundry_clap_objects PUBLIC drumfoundry_engine drumfoundry_output drumfoundry_clap_sdk Threads::Threads)
 set_target_properties(drumfoundry_clap_objects PROPERTIES
   CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN YES)
 add_library(drumfoundry_clap MODULE)

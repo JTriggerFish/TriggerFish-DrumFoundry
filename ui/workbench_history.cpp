@@ -61,6 +61,7 @@ void Workbench::RecordDocument(const editing::Json &before,
   UpdateHistoryButtons();
 }
 void Workbench::LoadPreset(const editing::Json &next) {
+  FinishLiveEdit();
   CommitPerformance();
   const auto before = bridge_.document();
   const auto beforePreset = unsigned(bridge_.value(100));
@@ -71,6 +72,7 @@ void Workbench::LoadPreset(const editing::Json &next) {
 void Workbench::Undo() { RestoreHistory(false); }
 void Workbench::Redo() { RestoreHistory(true); }
 void Workbench::LoadFactoryPreset(unsigned index) {
+  FinishLiveEdit();
   if (!bridge_.selectFactory)
     throw std::runtime_error("The host bridge cannot load factory presets");
   CommitPerformance();
@@ -82,6 +84,7 @@ void Workbench::LoadFactoryPreset(unsigned index) {
 }
 void Workbench::RestoreHistory(bool redo) {
   try {
+    FinishLiveEdit();
     CommitPerformance();
     auto &history = *bridge_.history;
     if (redo ? !history.CanRedo() : !history.CanUndo())

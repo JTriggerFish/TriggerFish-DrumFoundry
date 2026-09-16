@@ -1,6 +1,7 @@
 #include "editing/files.hpp"
 #include "ui/analysis_panel.hpp"
 #include "ui/analysis_view.hpp"
+#include "ui/frequency_axis.hpp"
 #include "ui/preview_tracker.hpp"
 #include "workbench/analysis/worker.hpp"
 #include <chrono>
@@ -14,6 +15,18 @@ void Require(bool condition) {
 }
 int main(int argc, char **argv) {
   Require(argc == 2);
+  for (double topHz : {20000., 16000., 12750.}) {
+    for (float h : {100.f, 400.f}) {
+      const auto ticks = ui::FrequencyAxisTicks(20, topHz, 20, h, 16);
+      Require(!ticks.empty() && ticks.front().frequency == topHz &&
+              ticks.front().labelY == 20);
+      for (unsigned i = 0; i < ticks.size(); ++i) {
+        Require(ticks[i].labelY >= 20 && ticks[i].labelY + 16 <= 20 + h);
+        if (i)
+          Require(ticks[i].labelY >= ticks[i - 1].labelY + 18);
+      }
+    }
+  }
   analysis::Audio tone{48000, 1, std::vector<float>(48000)};
   for (unsigned i = 0; i < tone.samples.size(); ++i)
     tone.samples[i] =
@@ -24,8 +37,8 @@ int main(int argc, char **argv) {
   Require(std::abs(spectrum.Peak(.45, .55, 700, 800) + 6.0206) < .001);
   Require(spectrum.Peak(-.1, -.01, 700, 800) == -180);
   Require(spectrum.Peak(1.2, 1.3, 700, 800) == -180);
-  analysis::Spectrogram sparse{
-      48000, 2048, 512, 8, 1025, std::vector<float>(8 * 1025, -180)};
+  analysis::Spectrogram sparse{48000, 2048, 512,
+                               8,     1025, std::vector<float>(8 * 1025, -180)};
   sparse.db[4 * 1025 + 777] = -12;
   Require(sparse.At(.04, 18000) == -180);
   Require(sparse.Peak(.02, .06, 17000, 19000) == -12);
@@ -79,22 +92,21 @@ int main(int argc, char **argv) {
   {
     auto document = request.document;
     document["reference"] = nullptr;
-    document["controls"]["analysis"]["view"] = {
-        {"comparison", 3},
-        {"pan", .25},
-        {"span", 2},
-        {"split", .4},
-        {"modelOffset", .003},
-        {"differenceDb", 12},
-        {"renderSeconds", .25},
-        {"frequencyLow", 100},
-        {"frequencyHigh", 5000},
-        {"analysisShare", 450. / 1100},
-        {"leftShare", .4},
-        {"showSpectrogram", 1},
-        {"showModalEditor", 1},
-        {"singleColumn", 0},
-        {"textSize", 2}};
+    document["controls"]["analysis"]["view"] = {{"comparison", 3},
+                                                {"pan", .25},
+                                                {"span", 2},
+                                                {"split", .4},
+                                                {"modelOffset", .003},
+                                                {"differenceDb", 12},
+                                                {"renderSeconds", .25},
+                                                {"frequencyLow", 100},
+                                                {"frequencyHigh", 5000},
+                                                {"analysisShare", 450. / 1100},
+                                                {"leftShare", .4},
+                                                {"showSpectrogram", 1},
+                                                {"showModalEditor", 1},
+                                                {"singleColumn", 0},
+                                                {"textSize", 2}};
     ui::AnalysisPanel panel;
     panel.SetDocument(document);
     Require(panel.Settings().at("view") ==

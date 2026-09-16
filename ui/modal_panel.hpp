@@ -28,7 +28,7 @@ private:
       snap_{"Snap OFF"};
   Slider brush_{"Brush width", .15, 5, 1, " ERB"};
   Slider guidePitch_{"Guide pitch", 8, 8000, 55, " Hz"};
-  Slider frequency_{"Centre frequency", 8, 15000, 110, " Hz"};
+  Slider frequency_{"Centre frequency", 1, 20000, 110, " Hz"};
   Slider level_{"Prominence", -72, 6, 0, " dB"};
   Slider noisiness_{"Local noisiness", 0, 2, 1};
   Slider allocation_{"Sideband allocation", 0, 4, 1};

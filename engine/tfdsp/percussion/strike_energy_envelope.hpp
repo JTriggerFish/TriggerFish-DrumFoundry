@@ -22,6 +22,13 @@ public:
                const StrikeEnergyEnvelopeParameters &parameters) {
     if (!std::isfinite(sampleRate) || sampleRate < 1.f)
       throw std::invalid_argument("strike-energy sample rate must be positive");
+    SetParameters(sampleRate, parameters);
+    Reset();
+  }
+
+  void
+  SetParameters(float sampleRate,
+                const StrikeEnergyEnvelopeParameters &parameters) noexcept {
     capacity_ = std::clamp(
         tfdsp::FiniteNormalOrZero(parameters.capacity), .001f, 64.f);
     tensionOctaves_ = std::clamp(
@@ -29,7 +36,6 @@ public:
     const float release = std::clamp(
         tfdsp::FiniteNormalOrZero(parameters.releaseSeconds), .001f, 30.f);
     releaseCoefficient_ = std::exp(-1.f / (release * sampleRate));
-    Reset();
   }
 
   void Reset() noexcept { value_ = 0.f; }

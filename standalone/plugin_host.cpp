@@ -23,7 +23,9 @@ PluginHost::PluginHost() {
     static const clap_host_params_t params{
         [](const clap_host_t *, clap_param_rescan_flags) {},
         [](const clap_host_t *, clap_id, clap_param_clear_flags) {},
-        [](const clap_host_t *) {}};
+        [](const clap_host_t *h) {
+          static_cast<PluginHost *>(h->host_data)->flushRequested_ = true;
+        }};
     if (!std::strcmp(id, CLAP_EXT_LATENCY))
       return &latency;
     if (!std::strcmp(id, CLAP_EXT_PARAMS))
@@ -102,6 +104,10 @@ double PluginHost::Value(clap_id id) const {
   return value;
 }
 void PluginHost::Service() {
+  // With no device callback, honor CLAP's inactive main-thread flush contract
+  // so editing cannot accumulate an unbounded backlog waiting for playback.
+  if (!active_ && flushRequested_.exchange(false))
+    params_->flush(plugin_, nullptr, nullptr);
   if (callbackRequested_.exchange(false))
     plugin_->on_main_thread(plugin_);
 }

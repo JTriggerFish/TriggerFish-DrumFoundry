@@ -63,8 +63,10 @@ void Plugin::PrepareEditorPreset() {
   Voice validated(static_cast<float>(sampleRate_), desired.document);
   if (Value(Preset) != controls[0])
     return; // A newer selection is pending.
+  EndDesignGesture();
   CancelEditorEdits(false);
   document_ = validated.Document();
+  InitializeDesignParameters(document_);
 #ifdef DRUMFOUNDRY_UI
   editHistory->Clear(); // External host preset selection replaces the timeline.
 #endif
@@ -79,6 +81,11 @@ void Plugin::PrepareEditorPreset() {
 Json Plugin::EditableDocument() const { return CaptureDesired().document; }
 void Plugin::EditDocument(Json document, int restoredPreset) {
   document = WithFitEnvelope(std::move(document));
+  if ((restoredPreset < 0 || restoredPreset == int(Value(Preset))) &&
+      EditLiveDocument(document)) {
+    EndDesignGesture();
+    return;
+  }
 #ifdef DRUMFOUNDRY_UI
   ui::ValidateAnalysisDocument(document);
 #endif
@@ -105,11 +112,13 @@ void Plugin::SelectFactory(unsigned index) {
   PublishDocument(validated, int(index));
 }
 void Plugin::PublishDocument(const Voice &validated, int preset) {
+  EndDesignGesture();
   const auto strike = validated.Event();
   auto next = validated.Document();
   const double strength = next.at("controls").at("event").at("strength");
   CancelEditorEdits(false);
   document_ = std::move(next);
+  InitializeDesignParameters(document_);
   documentPreset_ = preset;
   values_[Preset - Preset].store(preset);
   values_[Hardness - Preset].store(strike.hardness);
@@ -124,5 +133,26 @@ void Plugin::PublishDocument(const Voice &validated, int preset) {
   if (hostParams_ && hostParams_->rescan)
     hostParams_->rescan(host_, CLAP_PARAM_RESCAN_VALUES);
   Dirty(host_);
+}
+bool Plugin::EditLiveDocument(Json next) {
+  if (int(Value(Preset)) != documentPreset_ || restartQueued_.load())
+    return false;
+  next = WithFitEnvelope(std::move(next));
+  const auto before = EditableDocument();
+  if (before == next)
+    return true;
+  // Performance changes use the sample-timed queue, not a design snapshot.
+  if (next.at("controls").at("event") != before.at("controls").at("event"))
+    return false;
+#ifdef DRUMFOUNDRY_UI
+  ui::ValidateAnalysisDocument(next);
+#endif
+  if (!ValidateLiveEdit(before, next))
+    return false;
+  QueueDesignEdits(before, next);
+  document_ = std::move(next);
+  ++documentRevision_;
+  Dirty(host_);
+  return true;
 }
 } // namespace drumfoundry::clap_adapter

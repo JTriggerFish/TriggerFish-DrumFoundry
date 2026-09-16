@@ -40,12 +40,9 @@ enum class CrashMacro : std::size_t {
   OutputColourGain,
   OutputHighCut,
   BodyDecayFrequencyFirst,
-  BodyDecaySecondsFirst =
-      BodyDecayFrequencyFirst + BodyDecayInteriorPointCount,
-  BodyDecayActiveFirst =
-      BodyDecaySecondsFirst + BodyDecayCurvePointCount,
-  ResolvedFrequencyFirst =
-      BodyDecayActiveFirst + BodyDecayInteriorPointCount,
+  BodyDecaySecondsFirst = BodyDecayFrequencyFirst + BodyDecayInteriorPointCount,
+  BodyDecayActiveFirst = BodyDecaySecondsFirst + BodyDecayCurvePointCount,
+  ResolvedFrequencyFirst = BodyDecayActiveFirst + BodyDecayInteriorPointCount,
   ResolvedLevelFirst = ResolvedFrequencyFirst + ResolvedModePointCount,
   ResolvedTurbulenceFirst = ResolvedLevelFirst + ResolvedModePointCount,
   ImpactChirpPitch = ResolvedTurbulenceFirst + ResolvedModePointCount,
@@ -65,6 +62,7 @@ enum class CrashMacro : std::size_t {
   FieldMotionDepth,
   FieldMotionRate,
   FieldMotionSharing,
+  BodyDecayMaximumFrequency,
   Count
 };
 

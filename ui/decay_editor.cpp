@@ -10,17 +10,13 @@ DecayEditor::DecayEditor(Document &d) : document_(d) {
   addChild(&remove_);
   seconds_.position = DecayPosition;
   seconds_.valueAt = DecaySeconds;
-  frequency_.position = [](double f) {
-    return (Erb(f) - Erb(40)) / (Erb(15000) - Erb(40));
-  };
-  frequency_.valueAt = [](double p) {
-    return InverseErb(Erb(40) + p * (Erb(15000) - Erb(40)));
-  };
   for (auto *slider : {&seconds_, &frequency_}) {
     slider->changed = [this](double) {
       try {
         SetDecay(document_, selected_, frequency_.Value(), seconds_.Value());
         Sync();
+        if (changed)
+          changed();
       } catch (const std::exception &e) {
         if (error)
           error(e.what());
@@ -38,9 +34,29 @@ void DecayEditor::Sync() {
   for (auto p : DecayKnots(document_))
     if (p.slot == selected_) {
       seconds_.Set(p.seconds);
+      seconds_.SetDefault(
+          document_.Description("body_decay_seconds_" + std::to_string(p.slot))
+              .initial);
+      const double low = p.slot == 7 ? 15000 : 40;
+      frequency_.SetRange(low, 20000);
+      frequency_.position = [low](double f) {
+        return (Erb(f) - Erb(low)) / (Erb(20000) - Erb(low));
+      };
+      frequency_.valueAt = [low](double v) {
+        return InverseErb(Erb(low) + v * (Erb(20000) - Erb(low)));
+      };
       frequency_.Set(p.frequency);
-      frequency_.setIgnoresMouseEvents(p.boundary, false);
-      frequency_.setAlphaTransparency(p.boundary ? .5f : 1.f);
+      frequency_.SetDefault(p.slot == 0
+                                ? 40
+                                : document_
+                                      .Description("body_decay_frequency_" +
+                                                   std::to_string(p.slot))
+                                      .initial);
+      frequency_.setIgnoresMouseEvents(p.slot == 0, false);
+      frequency_.setAlphaTransparency(p.slot == 0 ? .5f : 1.f);
+      frequency_.help =
+          "Move the upper endpoint from 15 to 20 kHz to shape the very top "
+          "end. Beyond the endpoint, decay stays constant.";
       remove_.setActive(!p.boundary);
       remove_.setAlphaTransparency(p.boundary ? .4f : 1.f);
     }
@@ -64,7 +80,7 @@ void DecayEditor::resized() {
   remove_.setBounds(0, height() - 30, width(), 28);
 }
 float DecayEditor::X(double f) const {
-  return 36 + float((Erb(f) - Erb(40)) / (Erb(15000) - Erb(40))) *
+  return 36 + float((Erb(f) - Erb(40)) / (Erb(20000) - Erb(40))) *
                   std::max(1.f, width() - 50);
 }
 float DecayEditor::Y(double s) const {
@@ -74,7 +90,7 @@ double DecayEditor::Frequency(float x) const {
   return InverseErb(
       Erb(40) +
       std::clamp(double((x - 36) / std::max(1.f, width() - 50)), 0., 1.) *
-          (Erb(15000) - Erb(40)));
+          (Erb(20000) - Erb(40)));
 }
 double DecayEditor::Seconds(float y) const {
   return DecaySeconds(1 - (y - 22) / std::max(1.f, height() - 190));
@@ -85,13 +101,13 @@ void DecayEditor::draw(visage::Canvas &c) {
         std::to_string(points.size()) +
             "/8 knots  ·  drag middle to move all",
         0, 0, width(), 18, colours::Muted);
-  for (double f : {40., 1000., 15000.}) {
+  for (double f : {40., 1000., 20000.}) {
     c.setColor(colours::Grid);
     c.fill(X(f), 22, 1, height() - 190);
     Label(c,
           f == 40     ? "40 Hz"
           : f == 1000 ? "1k"
-                      : "15k",
+                      : "20k",
           X(f) - 18, height() - 163, 42, 18);
   }
   for (double s : {.1, 1., 5., 15., 30.}) {

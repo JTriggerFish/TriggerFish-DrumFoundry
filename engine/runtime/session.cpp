@@ -21,19 +21,24 @@ void Initialize(Session &session, const Recipe recipe,
 
 const ParameterDescriptor *Description(const Session &session,
                                        const std::size_t index) noexcept {
-  switch (session.recipe) {
+  return Description(session.recipe, index);
+}
+const ParameterDescriptor *Description(Recipe recipe,
+                                       std::size_t index) noexcept {
+  switch (recipe) {
   case Recipe::MetallicPlate:
     return index < ActiveCrashMacroCount ? &ActiveCrashMacroDescription(index)
                                          : nullptr;
   case Recipe::Kick:
-    return index < session.kickValues.size() ? &KickParameterDescription(index)
-                                             : nullptr;
+    return index < KickParameterValues{}.size()
+               ? &KickParameterDescription(index)
+               : nullptr;
   case Recipe::MembraneDrum:
-    return index < session.membraneValues.size()
+    return index < MembraneParameterValues{}.size()
                ? &MembraneParameterDescription(index)
                : nullptr;
   case Recipe::SnareDrum:
-    return index < session.snareValues.size()
+    return index < SnareParameterValues{}.size()
                ? &SnareParameterDescription(index)
                : nullptr;
   default:
@@ -42,15 +47,18 @@ const ParameterDescriptor *Description(const Session &session,
 }
 
 std::size_t ParameterCount(const Session &session) noexcept {
-  switch (session.recipe) {
+  return ParameterCount(session.recipe);
+}
+std::size_t ParameterCount(Recipe recipe) noexcept {
+  switch (recipe) {
   case Recipe::MetallicPlate:
     return ActiveCrashMacroCount;
   case Recipe::Kick:
-    return session.kickValues.size();
+    return KickParameterValues{}.size();
   case Recipe::MembraneDrum:
-    return session.membraneValues.size();
+    return MembraneParameterValues{}.size();
   case Recipe::SnareDrum:
-    return session.snareValues.size();
+    return SnareParameterValues{}.size();
   default:
     return 0;
   }

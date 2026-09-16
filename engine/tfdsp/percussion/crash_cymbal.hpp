@@ -1,6 +1,7 @@
 #pragma once
 
 #include "crash_cymbal_parameters.hpp"
+#include "live_output_eq.hpp"
 #include "modal_constraint.hpp"
 #include "tfdsp/finite_audio.hpp"
 
@@ -38,6 +39,12 @@ public:
   CrashCymbalFrame ProcessFrame() noexcept;
   float Process() noexcept;
   void SetMute(float amount) noexcept;
+  // Control-only updates: retain modal/contact state and transport history.
+  void SetLiveControls(const CrashCymbalFitParameters &fit) noexcept;
+  void SetLiveDecayCurve(const CrashCymbalFitParameters &fit) noexcept {
+    modalField_.SetOrderedDecayRadii(
+        CrashDecayRadii(sampleRate_, fit, modalField_.Frequencies()));
+  }
 
   double StoredBodyEnergy() const noexcept;
   float StoredBodyEnergyCentroidHz() const noexcept;
@@ -51,7 +58,8 @@ private:
 
   ContactExciter contact_{};
   CrashModalField modalField_{};
-  RadiationFilter outputEq_{};
+  LiveOutputEq outputEq_{};
+  LiveGain liveContact_, liveBody_, liveOutput_, liveExcitation_;
   float contactLevel_{};
   float bodyLevel_{};
   ModalConstraintController modalConstraint_{};

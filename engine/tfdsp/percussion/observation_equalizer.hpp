@@ -2,6 +2,7 @@
 
 #include "biquad.hpp"
 #include "biquad_design.hpp"
+#include "live_output_eq.hpp"
 #include "radiation_filter.hpp"
 #include "tfdsp/finite_audio.hpp"
 
@@ -40,13 +41,12 @@ public:
     if (!std::isfinite(sampleRate) || sampleRate < 1.f)
       throw std::invalid_argument("observation EQ sample rate must be positive");
     sampleRate_ = sampleRate;
-    radiation_.Prepare(sampleRate, parameters.radiation);
     SetStaticParameters(parameters);
     Reset();
   }
 
   void Reset() noexcept {
-    radiation_.Reset();
+    liveRadiation_.Reset();
     highpass_.Reset();
     lowpass_.Reset();
     for (auto &band : bands_) band.Reset();
@@ -55,7 +55,8 @@ public:
   void SetStaticParameters(
       const ObservationEqualizerParameters &parameters) noexcept {
     mode_ = parameters.mode;
-    radiation_.SetStaticParameters(parameters.radiation);
+    liveRadiation_.Prepare(sampleRate_, parameters.radiation,
+                           mode_ == ObservationEqualizerMode::Radiation);
     highpass_.SetCoefficients(biquad_design::Highpass(
         parameters.lowCutHz, .707f, sampleRate_));
     lowpass_.SetCoefficients(biquad_design::Lowpass(
@@ -71,8 +72,9 @@ public:
 
   float Process(float input) noexcept {
     input = tfdsp::FiniteNormalOrZero(input);
-    if (mode_ == ObservationEqualizerMode::Radiation)
-      return tfdsp::FiniteNormalOrZero(outputGain_ * radiation_.Process(input));
+    if (mode_ != ObservationEqualizerMode::Multiband)
+      return tfdsp::FiniteNormalOrZero(outputGain_ *
+                                       liveRadiation_.Process(input));
     if (mode_ == ObservationEqualizerMode::Multiband) {
       input = highpass_.Process(input);
       for (auto &band : bands_) input = band.Process(input);
@@ -81,8 +83,16 @@ public:
     return tfdsp::FiniteNormalOrZero(outputGain_ * input);
   }
 
+  // The native control surface exposes only radiation/bypass, not multiband.
+  void SetLiveParameters(const ObservationEqualizerParameters &p) noexcept {
+    mode_ = p.mode;
+    liveRadiation_.SetTarget(p.radiation,
+                             p.mode == ObservationEqualizerMode::Radiation);
+    outputGain_ = p.outputGain;
+  }
+
 private:
-  RadiationFilter radiation_{};
+  LiveOutputEq liveRadiation_{};
   Biquad highpass_{};
   Biquad lowpass_{};
   std::array<Biquad, 4> bands_{};

@@ -41,6 +41,11 @@ public:
   float Process() noexcept;
   float StrikeEnergy() const noexcept { return strikeEnergy_.Value(); }
   float ModalEnergy() const noexcept { return membrane_.StoredEnergy(); }
+  void SetLiveControls(const MembraneDrumParameters &parameters) noexcept;
+  void
+  SetLiveDecay(const std::array<float, MembraneModeCount> &radii) noexcept {
+    membrane_.SetDecayRadii(radii);
+  }
 
 private:
   struct EventVoice {
@@ -88,6 +93,9 @@ private:
   FixedMixer<2> directMixer_{};
   FixedMixer<2> bodyMixer_{};
   MembraneDrumParameters parameters_{};
+  float sampleRate_{48000.f};
+  std::array<LiveGain, 4> liveMix_{};
+  LiveGain liveOutput_{};
   std::uint64_t generation_{};
 };
 

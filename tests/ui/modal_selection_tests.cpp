@@ -8,9 +8,13 @@ void Check(bool condition, const char *message) {
   if (!condition)
     throw std::runtime_error(message);
 }
-bool Near(double a, double b) { return std::abs(a - b) < 1e-4; }
+bool Near(double a, double b) {
+  // Screen coordinates are floats; log-frequency round trips need relative
+  // tolerance.
+  return std::abs(a - b) < 1e-4 + 5e-7 * std::abs(b);
+}
 visage::Point Point(double f, double level) {
-  return {42 + float(std::log(f / 20) / std::log(750.)) * 740,
+  return {42 + float(std::log(f / 20) / std::log(1000.)) * 740,
           14 + float((6 - level) / 78) * 256};
 }
 struct Editor {
@@ -69,7 +73,7 @@ void GroupMovement(editing::Document d) {
   event.position = {4000, -4000};
   e.plot.processMouseDrag(event);
   modes = editing::Modes(e.d);
-  Check(Near(modes[1].frequency, 15000) && Near(modes[0].frequency, 7500) &&
+  Check(Near(modes[1].frequency, 20000) && Near(modes[0].frequency, 10000) &&
             Near(modes[0].level, 6) && Near(modes[1].level, 0),
         "Clamping must not squeeze the group");
   event.position = Point(300, -9);
@@ -142,6 +146,11 @@ void SelectionAndWidth(editing::Document d) {
 }
 void Insertions(editing::Document d) {
   Editor e(d);
+  e.Click(Point(19000, -24), 2);
+  Check(Near(editing::Modes(e.d)[3].frequency, 19000),
+        "Upper octave supports double-click insertion");
+  e.Click(Point(19000, -24), 2);
+  e.commits = 0;
   // A real double-click includes the first click and both releases.
   e.Click(Point(900, -24));
   e.Click(Point(900, -24), 2);

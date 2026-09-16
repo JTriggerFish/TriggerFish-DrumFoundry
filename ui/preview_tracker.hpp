@@ -9,7 +9,7 @@ inline editing::Json SoundIdentity(const editing::Json &document) {
           {"event", document.at("controls").at("event")}};
 }
 // A brief pause in a drag can render a preview before mouse-up. This never
-// prepares/replaces the live voice; committed edits use the host lifecycle.
+// prepares/replaces the live voice; live-safe edits use the parameter queue.
 class PreviewTracker {
 public:
   void Reset(const editing::Json &document) {

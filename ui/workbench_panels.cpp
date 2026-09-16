@@ -17,6 +17,7 @@ void Workbench::SetupPanels() {
   excitation_.previewRate = [this] { return analysis_.RenderRate(); };
   for (auto *panel : {&excitation_, &resonance_}) {
     panel->committed = [this] { ApplyDocument(); };
+    panel->changed = [this] { PreviewLiveDocument(); };
     panel->error = [this](const auto &text) { Error(text); };
     panel->meta = [this](bool size) {
       meta_.Open(document_, size);

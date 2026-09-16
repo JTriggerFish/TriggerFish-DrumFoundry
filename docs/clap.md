@@ -40,8 +40,8 @@ native pad gestures retain their unquantized floating-point velocity. The saved
 seed remains in the instrument document. No fitting values are changed.
 
 The host's generic editor exposes the selector, five strike controls, master
-level, limiter, gain reduction and actual latency. These are an initial host
-surface, **not** the full native workbench's design controls. Kick ignores location as in
+level, limiter, gain reduction, actual latency and the live-safe sound-design
+controls described below. Kick ignores location as in
 the core. Mute currently affects metallic voices only. Full JSON plus these
 explicit performance overrides are stored in CLAP project state.
 Gesture spread is appended at ID109; IDs100–108 remain unchanged. Earlier preview
@@ -71,23 +71,50 @@ values are lock-free atomics. Invalid states are rejected transactionally. State
 streams support partial reads/writes and a 1 MiB limit. No reference recordings
 are bundled.
 
-## Planned: full host automation (not implemented)
+## Live design automation
 
-The current automation surface is limited to hardness, implement, location,
-mute, master level and gesture spread. Factory selection and limiter enable
+Every parameter classified as live by `runtime/live_controls` is exposed from
+the authoritative C++ metadata, in addition to the original performance controls:
+
+- Final EQ/bypass, model and source gains.
+- Metallic bloom/diffusion strength, concentration and energy sensitivity;
+  modal T60 knot frequencies, times and enables.
+- Contact and thump/FM templates, membrane damping and tension controls.
+
+The registered list is fixed across presets. Each design ID is FNV-1a of
+`recipe/key`, in the separate `0x40000000` namespace; collisions fail initialization.
+Inactive recipe parameters are hidden, not removed or reassigned. Units, ranges
+and defaults come from the same descriptors as JSON and the editor.
+
+Events are applied at their sample offset without preparing/resetting a voice.
+EQ and gains use 5 ms coefficient/gain smoothing, not added latency. Damping
+and diffusion edits preserve stored energy; contact/envelope edits shape the
+next strike. UI drags deliver values before release and emit one host begin/end
+gesture. Host automation updates UI readouts without recreating the controls.
+Saved project state includes current automated values and unconsumed UI edits.
+Same-sample host parameter events (or one inactive `params.flush` batch) are
+validated together: coupled T60 edits do not depend on event order. Invalid
+curves are rejected as a unit without dropping unrelated EQ/gain changes.
+Notes at that sample observe the completed parameter batch.
+
+Saved design values use an atomic sequence-checked snapshot. Only the main-thread
+reader retries; the audio writer never locks or waits. Pending UI edits are
+included when their combination with the current host values is valid; otherwise
+the accepted curve remains visible until the queue resolves the conflicting edit.
+
+A structural preset awaiting restart has separate main-thread parameter storage.
+The editor and saved project state show that validated pending preset, while host
+automation continues to affect only the old sounding voice. When processing
+stops, the pending values are accepted before preparing the replacement voice;
+old-voice automation is not copied into the new preset. UI design edits resume
+after activation. Coupled UI edit priorities are captured from the starting
+document before sorting, never read from moving automation during the sort.
+
+Routing, mode geometry/allocation and packet texture still require preparation
+on release and are **not** automatable yet. Factory selection and limiter enable
 are exposed but not marked automatable; gain reduction and latency are read-only.
-The remaining synthesis controls are saved in project state but are **not**
-host automation parameters. CLAP modulation and per-note parameter modulation
-are also not implemented.
-
-Planned work is to expose the sound-design controls through the authoritative
-parameter metadata, with stable IDs (including modal slots and curve points),
-correct units/ranges and host gesture notifications. Continuous controls need
-safe live updates and appropriate smoothing; simply exposing the existing
-voice-rebuilding edit path is insufficient. Structural edits such as routing
-or adding/removing modules must remain distinct from continuous automation.
-Coverage should include automation playback, state recall, preset changes and
-real-host tests. This feature is deferred, not part of the current UI changes.
+CLAP modulation and per-note modulation remain future work. Real-host recording
+and playback smoke testing remains necessary in addition to the automated test host.
 
 ## Verification and next boundary
 

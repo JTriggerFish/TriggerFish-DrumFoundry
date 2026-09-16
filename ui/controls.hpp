@@ -25,6 +25,7 @@ public:
          std::string unit = "");
   void Set(double value);
   void SetDefault(double value);
+  void SetRange(double low, double high);
   // Explicit text entry is strict: invalid/out-of-range input never changes
   // sound.
   bool SubmitText(const std::string &text);

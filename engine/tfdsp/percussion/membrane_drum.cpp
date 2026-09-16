@@ -141,6 +141,12 @@ void MembraneDrum::Prepare(const MembraneDrumPreparedParameters &prepared) {
 void MembraneDrum::PrepareComponents(const float sampleRate,
                                      const MembraneDrumParameters &parameters) {
   parameters_ = parameters;
+  sampleRate_ = sampleRate;
+  liveMix_[0].Reset(parameters.contactDirectLevel);
+  liveMix_[1].Reset(parameters.fmDirectLevel);
+  liveMix_[2].Reset(parameters.contactBodyLevel);
+  liveMix_[3].Reset(parameters.fmBodyLevel);
+  liveOutput_.Reset(parameters.outputGain);
   for (auto &voice : voices_)
     voice.Prepare(sampleRate);
   strikeEnergy_.Prepare(sampleRate, parameters.strikeEnergy);
@@ -191,6 +197,19 @@ void MembraneDrum::Trigger(const MembraneDrumHit &hit) noexcept {
 }
 
 MembraneDrumSources MembraneDrum::ProcessSources() noexcept {
+  if (liveMix_[0].Moving() || liveMix_[1].Moving() || liveMix_[2].Moving() ||
+      liveMix_[3].Moving()) {
+    directMixer_.SetGains(
+        {liveMix_[0].Next() *
+             parameters_.routing.Enabled(MembraneDrumRoute::ContactToDirect),
+         liveMix_[1].Next() *
+             parameters_.routing.Enabled(MembraneDrumRoute::FmToDirect)});
+    bodyMixer_.SetGains(
+        {liveMix_[2].Next() *
+             parameters_.routing.Enabled(MembraneDrumRoute::ContactToBody),
+         liveMix_[3].Next() *
+             parameters_.routing.Enabled(MembraneDrumRoute::FmToBody)});
+  }
   MembraneResonator<MembraneModeCount>::Drive membraneDrive{};
   float direct = 0.f;
   for (auto &voice : voices_) {
@@ -212,11 +231,27 @@ MembraneDrumSources MembraneDrum::ProcessSources() noexcept {
 MembraneDrumFrame MembraneDrum::ProcessFrame() noexcept {
   const auto sources = ProcessSources();
   const float observed = observation_.Process({sources.direct, sources.body});
-  const float output = tfdsp::FiniteNormalOrZero(parameters_.outputGain *
+  const float output = tfdsp::FiniteNormalOrZero(liveOutput_.Next() *
                                                  equalizer_.Process(observed));
   return {sources.direct, sources.body, output};
 }
 
 float MembraneDrum::Process() noexcept { return ProcessFrame().output; }
+
+void MembraneDrum::SetLiveControls(const MembraneDrumParameters &p) noexcept {
+  // Contact/FM templates affect new hits, never reset an ongoing gesture.
+  parameters_.contact = p.contact;
+  parameters_.fm = p.fm;
+  parameters_.contactNoiseObservationOnly = p.contactNoiseObservationOnly;
+  parameters_.contactPulseDriveOnly = p.contactPulseDriveOnly;
+  strikeEnergy_.SetParameters(sampleRate_, p.strikeEnergy);
+  liveMix_[0].Target(p.contactDirectLevel, sampleRate_);
+  liveMix_[1].Target(p.fmDirectLevel, sampleRate_);
+  liveMix_[2].Target(p.contactBodyLevel, sampleRate_);
+  liveMix_[3].Target(p.fmBodyLevel, sampleRate_);
+  liveOutput_.Target(p.outputGain, sampleRate_);
+  observation_.SetLiveGains(p.observation);
+  equalizer_.SetLiveParameters(p.equalizer);
+}
 
 } // namespace tfdsp::percussion

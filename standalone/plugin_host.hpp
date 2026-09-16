@@ -33,6 +33,7 @@ private:
   const clap_plugin_params_t *params_{};
   clap_host_t host_{};
   std::atomic<bool> callbackRequested_{};
+  std::atomic<bool> flushRequested_{};
   bool active_{}, processing_{};
   unsigned maximum_{}, count_{};
   std::size_t nextQueue_{};

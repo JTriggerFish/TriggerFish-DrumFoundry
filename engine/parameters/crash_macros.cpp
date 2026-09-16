@@ -8,6 +8,7 @@
 
 namespace drumfoundry {
 namespace {
+using tfdsp::percussion::CrashModalMaximumFrequencyHz;
 
 using tfdsp::percussion::CrashCymbalFitParameters;
 using tfdsp::percussion::CrashModalMinimumFrequencyHz;
@@ -61,7 +62,8 @@ std::array<CrashMacroDescriptor, CrashMacroCount> BuildDescriptors() {
              fit.bodyTiltDbPerOctave));
   set(CrashMacro::BodyExcitationCentre,
       Logarithmic("body_excitation_centre", "Excitation centre", "Hz",
-                  CrashModalMinimumFrequencyHz, 15000.f, fit.bodyExcitationCentreHz));
+                  CrashModalMinimumFrequencyHz, CrashModalMaximumFrequencyHz,
+                  fit.bodyExcitationCentreHz));
   set(CrashMacro::FieldTurbulence,
       Linear("field_turbulence", "Noisiness at 1 kHz", "", 0.f, 4000.f,
              fit.fieldTurbulence));
@@ -129,13 +131,17 @@ std::array<CrashMacroDescriptor, CrashMacroCount> BuildDescriptors() {
       Logarithmic("output_high_cut", "Low-pass", "Hz", 500.f, 22000.f,
                   fit.outputHighCutHz));
 
+  set(CrashMacro::BodyDecayMaximumFrequency,
+      Logarithmic("body_decay_frequency_7", "Upper decay frequency", "Hz",
+                  15000.f, CrashModalMaximumFrequencyHz,
+                  fit.bodyDecayMaximumFrequencyHz));
   for (std::size_t interior = 0; interior < BodyDecayInteriorPointCount;
        ++interior) {
     const std::size_t point = interior + 1;
     result[Index(CrashMacro::BodyDecayFrequencyFirst) + interior] = Logarithmic(
         "body_decay_frequency_" + std::to_string(point),
-        "Decay centre " + std::to_string(point + 1), "Hz", 40.f, 15000.f,
-        fit.bodyDecayFrequencyHz[interior]);
+        "Decay centre " + std::to_string(point + 1), "Hz", 40.f,
+        CrashModalMaximumFrequencyHz, fit.bodyDecayFrequencyHz[interior]);
   }
   for (std::size_t point = 0; point < BodyDecayCurvePointCount; ++point) {
     result[Index(CrashMacro::BodyDecaySecondsFirst) + point] = Logarithmic(
@@ -157,10 +163,11 @@ std::array<CrashMacroDescriptor, CrashMacroCount> BuildDescriptors() {
         "resolved_allocation_" + std::to_string(point),
         "Sideband allocation " + std::to_string(point + 1), "x", 0.f, 4.f,
         fit.fieldAllocationWeight[point]);
-    result[Index(CrashMacro::ResolvedFrequencyFirst) + point] = Logarithmic(
-        "resolved_frequency_" + std::to_string(point),
-        "Resolved mode " + std::to_string(point + 1), "Hz", CrashModalMinimumFrequencyHz, 15000.f,
-        fit.sparseFrequencyHz[point]);
+    result[Index(CrashMacro::ResolvedFrequencyFirst) + point] =
+        Logarithmic("resolved_frequency_" + std::to_string(point),
+                    "Resolved mode " + std::to_string(point + 1), "Hz",
+                    CrashModalMinimumFrequencyHz, CrashModalMaximumFrequencyHz,
+                    fit.sparseFrequencyHz[point]);
     const float levelDb = 20.f * std::log10(
         std::max(fit.sparseAmplitude[point], 1.e-8f));
     result[Index(CrashMacro::ResolvedLevelFirst) + point] = Linear(
@@ -221,6 +228,8 @@ void ApplyResolvedPaint(CrashCymbalFitParameters &fit,
 
 void ApplyBodyDecay(CrashCymbalFitParameters &fit,
                     const CrashMacroValues &values) noexcept {
+  fit.bodyDecayMaximumFrequencyHz =
+      Value(values, CrashMacro::BodyDecayMaximumFrequency);
   for (std::size_t interior = 0; interior < BodyDecayInteriorPointCount;
        ++interior) {
     fit.bodyDecayFrequencyHz[interior] = ValueAt(

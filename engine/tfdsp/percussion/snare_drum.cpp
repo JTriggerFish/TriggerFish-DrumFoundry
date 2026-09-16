@@ -117,6 +117,8 @@ void SnareDrum::Prepare(const SnareDrumPreparedParameters &prepared) {
   equalizer_.Prepare(prepared.sampleRate, prepared.equalizer);
   routing_ = prepared.routing;
   outputGain_ = prepared.outputGain;
+  liveOutput_.Reset(outputGain_);
+  sampleRate_ = prepared.sampleRate;
   Reset();
 }
 
@@ -144,11 +146,18 @@ SnareDrumFrame SnareDrum::ProcessFrame() noexcept {
            membrane.body,
        (routing_.Enabled(SnareDrumRoute::WiresToObservation) ? 1.f : 0.f) *
            wires});
-  const float output =
-      tfdsp::FiniteNormalOrZero(outputGain_ * equalizer_.Process(observed));
+  const float output = tfdsp::FiniteNormalOrZero(liveOutput_.Next() *
+                                                 equalizer_.Process(observed));
   return {membrane.direct, membrane.body, wires, output};
 }
 
 float SnareDrum::Process() noexcept { return ProcessFrame().output; }
+
+void SnareDrum::SetLiveControls(const SnareDrumParameters &p) noexcept {
+  membrane_.SetLiveControls(p.membrane);
+  observation_.SetLiveGains(p.observation);
+  equalizer_.SetLiveParameters(p.equalizer);
+  liveOutput_.Target(p.outputGain, sampleRate_);
+}
 
 } // namespace tfdsp::percussion

@@ -15,9 +15,15 @@ struct Event {
   float strikeVelocity{}; // Native pad gestures retain continuous strength.
   uint64_t
       editSerial{}; // UI control acknowledgement; zero for host/MIDI events.
+  unsigned gesture{}; // 0: discrete edit; 1/2: design begin/update; 3: end.
 };
 template <std::size_t Size = 256> class EventQueue {
 public:
+  std::size_t Available() const noexcept {
+    const auto write = write_.load(std::memory_order_relaxed);
+    const auto read = read_.load(std::memory_order_acquire);
+    return (read + Size - write - 1) % Size;
+  }
   bool Push(Event e) noexcept {
     const auto write = write_.load(std::memory_order_relaxed);
     const auto next = (write + 1) % Size;

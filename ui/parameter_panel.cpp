@@ -1,6 +1,7 @@
 #include "parameter_panel.hpp"
 #include "decay_editor.hpp"
 #include "eq_plot.hpp"
+#include "runtime/live_controls.hpp"
 #include <algorithm>
 #include <exception>
 
@@ -9,6 +10,7 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
   generation_ = std::make_shared<int>(0);
   preview_ = nullptr;
   sliders_.clear();
+  buttons_.clear();
   for (auto &row : rows_)
     removeScrolledChild(row.frame);
   rows_.clear();
@@ -55,6 +57,10 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     }
     if (section == "Modal T60") {
       auto editor = std::make_unique<DecayEditor>(document);
+      editor->changed = [this] {
+        if (changed)
+          changed();
+      };
       editor->committed = [this] {
         if (committed)
           committed();
@@ -83,6 +89,8 @@ void ParameterPanel::AddParameter(editing::Document &document,
     try {
       document.Set(key, v);
       RefreshSpectrum();
+      if (changed)
+        changed();
     } catch (const std::exception &e) {
       if (error)
         error(e.what());
@@ -126,16 +134,19 @@ void ParameterPanel::AddParameter(editing::Document &document,
       menu.show(widget);
     };
     addScrolledChild(widget);
+    buttons_.push_back({widget, p});
     rows_.push_back({std::move(button), 38});
   } else {
     auto slider = std::make_unique<Slider>(
         p.key == "model_level_db" ? "Output level" : editing::ControlName(p),
         p.minimum, p.maximum, p.initial, " " + p.unit);
     slider->Set(document.Value(p.key));
-    slider->help =
-        ParameterHelp(p.key) + " " + slider->help +
-        " Release to update the live voice; paused drags update the "
-        "offline preview.";
+    slider->help = ParameterHelp(p.key) + " " + slider->help +
+                   (IsLiveParameter(document.Recipe(), p.key)
+                        ? " Updates during playback; contact/envelope edits "
+                          "shape the next strike."
+                        : " Release to prepare this structural edit; paused "
+                          "drags update the preview.");
     slider->position = [p](double v) { return editing::Position(p, v); };
     slider->valueAt = [p](double v) { return editing::ValueAt(p, v); };
     slider->changed = change;
@@ -152,7 +163,11 @@ void ParameterPanel::AddOutputPreview(editing::Document &document) {
   if (editing::HasOutputEq(document)) {
     auto eq = std::make_unique<EqPlot>(document, outputSpectrum);
     eq->previewRate = previewRate;
-    eq->changed = [this, &document] { SyncValues(document); };
+    eq->changed = [this, &document] {
+      SyncValues(document);
+      if (changed)
+        changed();
+    };
     eq->committed = [this] {
       if (committed)
         committed();
@@ -173,5 +188,15 @@ void ParameterPanel::AddOutputPreview(editing::Document &document) {
 void ParameterPanel::SyncValues(editing::Document &document) {
   for (const auto &[slider, key] : sliders_)
     slider->Set(document.Value(key));
+  for (const auto &[button, p] : buttons_) {
+    button->setText(editing::ControlName(p) + ": " +
+                    editing::ChoiceName(p, int(document.Value(p.key))));
+    if (p.scale == 2)
+      button->setActionButton(document.Value(p.key) >= .5);
+  }
+  for (const auto &row : rows_)
+    if (auto *decay = dynamic_cast<DecayEditor *>(row.frame))
+      decay->Refresh();
+  RefreshSpectrum();
 }
 } // namespace drumfoundry::ui

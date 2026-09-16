@@ -17,7 +17,7 @@ inline constexpr std::size_t CrashModalFieldModeCount = 512;
 inline constexpr float CrashModalMinimumFrequencyHz = 1.f;
 // Keep the existing decay curve's coordinate; its low value extends below it.
 inline constexpr float CrashDecayMinimumFrequencyHz = 40.f;
-inline constexpr float CrashModalMaximumFrequencyHz = 15000.f;
+inline constexpr float CrashModalMaximumFrequencyHz = 20000.f;
 inline constexpr std::size_t CrashBodyDecayPointCount = 8;
 inline constexpr std::size_t CrashBodyDecayInteriorPointCount =
     CrashBodyDecayPointCount - 2;
@@ -52,6 +52,8 @@ struct CrashCymbalFitParameters {
   float fieldDoubletSplitHz{1.25f};
   float fieldBeatDepth{.3f}; // weaker/stronger centre amplitude ratio
   float fieldBeatRateTilt{.25f}; // octaves of rate per frequency octave, at 125 Hz
+  // Explicit endpoint preserves existing curves; the editor can extend it.
+  float bodyDecayMaximumFrequencyHz{15000.f};
   std::array<float, CrashBodyDecayInteriorPointCount> bodyDecayFrequencyHz{
       500.f, 1500.f, 5000.f, 8000.f, 12000.f, 14000.f};
   std::array<float, CrashBodyDecayPointCount> bodyDecaySeconds{
@@ -121,6 +123,9 @@ struct CrashCymbalPreparedParameters {
 // Shared by synthesis and the native response display; no duplicate EQ mapping.
 RadiationFilterParameters CrashOutputEqParameters(
     const CrashCymbalFitParameters &fit) noexcept;
+CrashModalField::Projection CrashDecayRadii(float sampleRate,
+    const CrashCymbalFitParameters &fit,
+    const CrashModalField::Projection &frequencies) noexcept;
 CrashCymbalParameters DefaultCrashCymbalParameters(
     float sampleRate, const CrashCymbalFitParameters &fit = {});
 CrashCymbalPreparedParameters PrepareCrashCymbalParameters(

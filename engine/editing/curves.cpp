@@ -28,7 +28,7 @@ std::vector<DecayKnot> DecayKnots(const Document &d) {
     result.push_back(
         {i,
          i == 0   ? 40
-         : i == 7 ? 15000
+         : i == 7 ? d.Value("body_decay_frequency_7")
                   : d.Value("body_decay_frequency_" + std::to_string(i)),
          d.Value("body_decay_seconds_" + std::to_string(i)), i == 0 || i == 7});
   }
@@ -38,7 +38,7 @@ std::vector<DecayKnot> DecayKnots(const Document &d) {
 }
 double DecayAt(const Document &d, double frequency) {
   const auto points = DecayKnots(d);
-  const double x = Erb(std::clamp(frequency, 40., 15000.));
+  const double x = Erb(std::clamp(frequency, 40., points.back().frequency));
   for (std::size_t i = 1; i < points.size(); ++i) {
     if (frequency > points[i].frequency && i + 1 < points.size())
       continue;
@@ -58,7 +58,11 @@ void SetDecay(Document &d, int slot, double frequency, double seconds) {
     throw std::invalid_argument("Select an active decay knot");
   if (!std::isfinite(frequency) || !std::isfinite(seconds))
     throw std::invalid_argument("Invalid decay point");
-  if (!it->boundary) {
+  if (slot == 7) {
+    const double low = std::min(
+        20000., std::max(15000., InverseErb(Erb((it - 1)->frequency) + .22)));
+    d.Set("body_decay_frequency_7", std::clamp(frequency, low, 20000.));
+  } else if (!it->boundary) {
     const double low = Erb((it - 1)->frequency) + .22;
     const double high = Erb((it + 1)->frequency) - .22;
     frequency =
@@ -70,8 +74,9 @@ void SetDecay(Document &d, int slot, double frequency, double seconds) {
 }
 int InsertDecay(Document &d, double frequency, double seconds) {
   if (!std::isfinite(frequency) || !std::isfinite(seconds) || frequency <= 40 ||
-      frequency >= 15000)
-    throw std::invalid_argument("Add decay knots between 40 Hz and 15 kHz");
+      frequency >= d.Value("body_decay_frequency_7"))
+    throw std::invalid_argument("Add decay knots between the endpoints; move "
+                                "the upper endpoint right to extend the curve");
   for (const auto &point : DecayKnots(d))
     if (std::abs(Erb(frequency) - Erb(point.frequency)) < .22)
       throw std::invalid_argument(

@@ -58,6 +58,7 @@
           "body_decay_frequency_4": 8000,
           "body_decay_frequency_5": 12000,
           "body_decay_frequency_6": 14000,
+          "body_decay_frequency_7": 15000,
           "body_decay_seconds_0": 29.993400367471025,
           "body_decay_seconds_1": 13.435053629896897,
           "body_decay_seconds_2": 2.3728408813476562,

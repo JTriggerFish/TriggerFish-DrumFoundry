@@ -42,6 +42,7 @@ private:
   void Poll();
   void PollPreview();
   void PollPerformance();
+  void PollAutomation();
   void LayoutRight();
   float LeftWidth() const;
   bool SingleColumn() const;
@@ -71,6 +72,17 @@ private:
   float LeftControlsTop() const { return 94 + (routingOpen_ ? 156.f : 0.f); }
   void RefreshDocument();
   void ApplyDocument();
+  void PreviewLiveDocument();
+  void FinishLiveEdit();
+  editing::Json LiveEditBaseline(const editing::Json &after) const;
+  editing::Json liveEditBefore_;
+  editing::Json displayedDocument_;
+  editing::Json MergedEdit(const editing::Json &current);
+  // Keys owned by this gesture, including controls returned to their start.
+  editing::Json gestureDocument_;
+  std::vector<std::string> gestureKeys_;
+  unsigned automationRevision_{};
+  unsigned liveEditPreset_{};
   editing::Json CaptureDocument() const;
   void OpenFitFile(bool save, const editing::Json &);
   Bridge bridge_;

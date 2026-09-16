@@ -6,6 +6,8 @@ namespace drumfoundry::clap_adapter {
 namespace {
 ui::Bridge Connect(Plugin &plugin) {
   ui::Bridge bridge;
+  bridge.automationRevision = [&plugin] { return plugin.AutomationRevision(); };
+  bridge.finishLive = [&plugin] { plugin.EndDesignGesture(); };
   bridge.history = plugin.editHistory;
   bridge.value = [&plugin](unsigned id) { return plugin.EditorValue(id); };
   bridge.velocity = [&plugin] { return plugin.PreviewStrength(); };
@@ -34,6 +36,9 @@ ui::Bridge Connect(Plugin &plugin) {
   bridge.service = [&plugin] { plugin.PrepareEditorPreset(); };
   bridge.applyDocument = [&plugin](const auto &document) {
     plugin.EditDocument(document);
+  };
+  bridge.liveDocument = [&plugin](const auto &document) {
+    return plugin.EditLiveDocument(document);
   };
   bridge.restoreDocument = [&plugin](const auto &document, unsigned preset) {
     plugin.EditDocument(document, int(preset));

@@ -32,7 +32,13 @@ Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   timer_.startTimer(33);
   Poll();
 }
-Workbench::~Workbench() { timer_.stopTimer(); }
+Workbench::~Workbench() {
+  timer_.stopTimer();
+  try {
+    FinishLiveEdit();
+  } catch (...) { /* Destructor must not throw. */
+  }
+}
 void Workbench::Error(const std::string &message) {
   error_ = message;
   redraw();
@@ -82,10 +88,14 @@ void Workbench::SelectPreset() {
   }
 }
 void Workbench::RefreshDocument() {
+  gestureKeys_.clear();
+  gestureDocument_ = nullptr;
+  liveEditBefore_ = nullptr;
   holdDecay_.Cancel();
   help_.Hide();
   metaShade_.setVisible(false);
   document_.Load(bridge_.document());
+  displayedDocument_ = document_.JsonValue();
   routingShade_.setVisible(false);
   routing_.Load(document_);
   routes_.Load(document_);
@@ -111,25 +121,78 @@ void Workbench::RefreshDocument() {
 }
 void Workbench::ApplyDocument() {
   try {
-    auto next = document_.JsonValue();
     // Preserve the current performance controls rather than restoring the
     // gesture that happened to be active when the panel was populated.
     const auto current = bridge_.document();
+    auto next = MergedEdit(current);
     const auto beforePreset = unsigned(bridge_.value(100));
     next["controls"]["event"] = current.at("controls").at("event");
     next["reference"] = current.at("reference");
     next["controls"]["analysis"] = current.at("controls").at("analysis");
     bridge_.applyDocument(next);
-    RecordDocument(current, bridge_.document(), beforePreset, applyingHold_);
+    const auto before = liveEditBefore_.is_null()
+                            ? current
+                            : LiveEditBaseline(bridge_.document());
+    RecordDocument(before, bridge_.document(),
+                   liveEditBefore_.is_null() ? beforePreset : liveEditPreset_,
+                   applyingHold_);
+    liveEditBefore_ = nullptr;
+    gestureKeys_.clear();
+    gestureDocument_ = nullptr;
+    // Merge incoming automation into the editable model too; otherwise the
+    // next gesture could mistake stale widget values for intentional edits.
+    std::vector<std::pair<std::string, double>> accepted;
+    for (const auto &node : next.at("instrument").at("nodes"))
+      for (const auto &[key, value] : node.at("parameters").items())
+        if (document_.Value(key) != value.get<double>())
+          accepted.emplace_back(key, value.get<double>());
+    document_.SetMany(accepted);
+    excitation_.SyncValues(document_);
+    resonance_.SyncValues(document_);
+    displayedDocument_ = next;
     analysis_.UpdateModel(next);
     preview_.Reset(next);
     modal_.Refresh();
     documentRevision_ = bridge_.revision ? bridge_.revision() : 0;
     if (!applyingHold_)
-      holdDecay_.Edited(current, next, analysis_.RenderRate());
+      holdDecay_.Edited(before, next, analysis_.RenderRate());
   } catch (const std::exception &e) {
     Error(e.what());
     reloadDocument_ = true;
   }
+}
+void Workbench::PreviewLiveDocument() {
+  if (!bridge_.liveDocument)
+    return;
+  try {
+    const auto current = bridge_.document();
+    auto next = MergedEdit(current);
+    next["controls"]["event"] = current.at("controls").at("event");
+    next["reference"] = current.at("reference");
+    next["controls"]["analysis"] = current.at("controls").at("analysis");
+    if (next == current)
+      return;
+    if (!bridge_.liveDocument(next))
+      return;
+    if (liveEditBefore_.is_null()) {
+      liveEditBefore_ = current;
+      liveEditPreset_ = unsigned(bridge_.value(100));
+    }
+    // Do not rebuild widgets in response to our own live publication.
+    documentRevision_ = bridge_.revision ? bridge_.revision() : 0;
+  } catch (const std::exception &e) {
+    Error(e.what());
+  }
+}
+void Workbench::FinishLiveEdit() {
+  if (liveEditBefore_.is_null())
+    return;
+  if (bridge_.finishLive)
+    bridge_.finishLive();
+  const auto after = bridge_.document();
+  RecordDocument(LiveEditBaseline(after), after, liveEditPreset_);
+  liveEditBefore_ = nullptr;
+  gestureKeys_.clear();
+  gestureDocument_ = nullptr;
 }
 } // namespace drumfoundry::ui

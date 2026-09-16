@@ -9,6 +9,9 @@ using namespace editing;
 void ModalPlot::Load(Document &d) {
   setAcceptsKeystrokes(true);
   document_ = &d;
+  const auto prefix = ModePrefix(d);
+  maximumFrequency_ =
+      prefix.empty() ? 20000. : d.Description(prefix + "frequency_0").maximum;
   SelectOnly(-1);
   dragging_ = marquee_ = false;
   Refresh();
@@ -34,17 +37,18 @@ void ModalPlot::Refresh() {
     changed();
 }
 float ModalPlot::X(double f) const {
-  return 42 +
-         float(std::log(std::clamp(f, 20., 15000.) / 20) / std::log(750.)) *
-             std::max(1.f, width() - 60);
+  return 42 + float(std::log(std::clamp(f, 20., MaximumFrequency()) / 20) /
+                    std::log(MaximumFrequency() / 20)) *
+                  std::max(1.f, width() - 60);
 }
 float ModalPlot::Y(double level) const {
   return 14 + float((6 - level) / 78) * std::max(1.f, height() - 44);
 }
 double ModalPlot::Frequency(float x) const {
-  return 20 * std::pow(750., std::clamp(
-                                 double((x - 42) / std::max(1.f, width() - 60)),
-                                 0., 1.));
+  return 20 *
+         std::pow(MaximumFrequency() / 20,
+                  std::clamp(double((x - 42) / std::max(1.f, width() - 60)), 0.,
+                             1.));
 }
 double ModalPlot::Level(float y) const {
   return std::clamp(6 - 78. * (y - 14) / std::max(1.f, height() - 44), -72.,
@@ -53,9 +57,9 @@ double ModalPlot::Level(float y) const {
 double ModalPlot::Snap(double f) const {
   if (guide && snap)
     f = std::clamp(std::round(f / base), std::ceil(20 / base),
-                   std::floor(15000 / base)) *
+                   std::floor(MaximumFrequency() / base)) *
         base;
-  return std::clamp(f, 20., 15000.);
+  return std::clamp(f, 20., MaximumFrequency());
 }
 double ModalPlot::Spread(const Mode &m) const {
   if (!document_ || ModePrefix(*document_) != "resolved_")
@@ -70,14 +74,17 @@ double ModalPlot::Spread(const Mode &m) const {
 double ModalPlot::PacketFrequency(const Mode &m, double offset) const {
   if (document_->Value("field_distribution") == 4)
     return std::clamp(m.frequency + offset * 24.7 * (1 + .00437 * m.frequency),
-                      20., 15000.);
-  return InverseErb(std::clamp(Erb(m.frequency) + offset, Erb(20), Erb(15000)));
+                      20., MaximumFrequency());
+  return InverseErb(
+      std::clamp(Erb(m.frequency) + offset, Erb(20), Erb(MaximumFrequency())));
 }
 void ModalPlot::draw(visage::Canvas &c) {
   c.setColor(colours::Plot);
   c.fill(0, 0, width(), height());
   for (double f :
-       {20., 50., 100., 200., 500., 1000., 2000., 5000., 10000., 15000.}) {
+       {20., 50., 100., 200., 500., 1000., 2000., 5000., 10000., 20000.}) {
+    if (f > MaximumFrequency())
+      f = MaximumFrequency();
     c.setColor(colours::Grid);
     c.fill(X(f), 14, 1, height() - 44);
     char label[24];
@@ -92,7 +99,7 @@ void ModalPlot::draw(visage::Canvas &c) {
           Y(level) - 10, 36, 20);
   }
   if (guide && base >= 8)
-    for (double f = base; f <= 15000; f += base) {
+    for (double f = base; f <= MaximumFrequency(); f += base) {
       if (f < 20)
         continue;
       c.setColor(c.color(colours::Secondary).withMultipliedAlpha(.3f));

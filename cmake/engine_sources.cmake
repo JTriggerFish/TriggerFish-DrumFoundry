@@ -17,6 +17,8 @@ set(DRUMFOUNDRY_ENGINE_SOURCES
   engine/parameters/snare_macros.cpp
   engine/runtime/session.cpp
   engine/runtime/voice.cpp
+  engine/runtime/live_controls.cpp
+  engine/runtime/automation.cpp
   engine/patch/document.cpp
   engine/patch/fit_envelope.cpp
   engine/patch/output_eq_upgrade.cpp

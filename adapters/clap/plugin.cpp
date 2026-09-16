@@ -7,11 +7,14 @@
 namespace drumfoundry::clap_adapter {
 static_assert(std::atomic<double>::is_always_lock_free,
               "Host controls require lock-free scalar publication");
+static_assert(std::atomic<uint64_t>::is_always_lock_free,
+              "Saved-state publication requires lock-free sequencing");
 bool Plugin::Init() {
   for (std::size_t i = 0; i < Controls.size(); ++i)
     values_[i].store(Controls[i].initial);
   Voice initial(48000, ParseJson(PresetJson[0]));
   document_ = initial.Document();
+  InitializeDesignParameters(document_);
   const auto &strike = initial.Event();
   values_[Hardness - Preset] = strike.hardness;
   values_[Implement - Preset] = strike.implement;
@@ -36,6 +39,8 @@ Plugin::DesiredState Plugin::CaptureDesired() const {
   const int index = static_cast<int>(result[0]);
   state.document =
       index == documentPreset_ ? document_ : ParseJson(PresetJson.at(index));
+  if (index == documentPreset_)
+    OverlayDesignParameters(state.document);
   auto &event = state.document["controls"]["event"];
   const bool kick =
       state.document.at("instrument").at("recipe") == "drum.kick.v1";
@@ -71,6 +76,7 @@ bool Plugin::Activate(double rate, uint32_t minimum, uint32_t maximum) {
     previewStrength_ =
         stored.at("controls").at("event").at("strength").get<double>();
   document_ = std::move(stored);
+  InitializeDesignParameters(document_);
   fixedBeater_ = document_.at("instrument").at("recipe") == "drum.kick.v1";
   documentPreset_ = static_cast<int>(controls[0]);
   voice_ = std::move(next);
@@ -113,6 +119,7 @@ void Plugin::Deactivate() noexcept {
 #endif
   processing = active = false;
   voice_.reset(); // Only after the host has stopped calling Process.
+  AcceptPendingDesign();
   // These are active-output readouts, not saved synthesis parameters.
   latency_ = 0;
   values_[Latency - Preset].store(0);

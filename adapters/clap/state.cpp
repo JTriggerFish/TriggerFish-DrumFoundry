@@ -68,8 +68,10 @@ bool Plugin::Load(const clap_istream_t *stream) {
   if (!hasSpread)
     next[ContactSpread - Preset] = validated.Event().contactSpread;
   const double strength = document.at("controls").at("event").at("strength");
+  EndDesignGesture();
   CancelEditorEdits(true);
   document_ = std::move(document);
+  InitializeDesignParameters(document_);
 #ifdef DRUMFOUNDRY_UI
   editHistory->Clear(); // Loading host state starts a new editing timeline.
 #endif

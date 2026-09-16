@@ -4,6 +4,10 @@ These are offline development tools, not runtime dependencies. All synthesis
 uses the native C++ voice through `drumfoundry.Renderer`. There is no server,
 Node transport, alternate Python synthesizer or automatic preset publication.
 
+For separately auditionable hi-hat states fitted jointly across velocity layers,
+see [static hi-hat fitting](hi-hat-fitting.md). That experiment uses a shared
+stretched series and does not add pedal interpolation yet.
+
 ## Inputs and invariants
 
 Start from one locally saved fit and its selected WAV. Keep the saved strike
@@ -119,3 +123,13 @@ DSP component and block-deadline benchmark as an opt-in target.
 Historical server scripts, automatic calibration publication, per-ridge search
 recipes and obsolete linear observation surrogates are not active dependencies.
 Shared numerical losses remain usable with explicit native fitting coordinates.
+
+## Upper-frequency coverage
+
+The metallic stretched-series helper supports the native 20 kHz modal limit.
+Temporal-metal v4 and tonal-layer v3 score spectrum and ridge texture through
+20 kHz (or 0.48 times the sample rate when lower), including explicit upper-band
+temporal diagnostics. Earlier objective scores are not directly comparable:
+re-evaluate both baseline and candidate with the same version. Existing saved
+fits are not modified by this change. Known-answer tests check that removing
+upper-band energy worsens the loss, alongside identity and gain invariance.

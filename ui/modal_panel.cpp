@@ -68,11 +68,6 @@ ModalPanel::ModalPanel() {
     snap_.setText(plot_.snap ? "Snap ON" : "Snap OFF");
   };
   brush_.changed = [this](double v) { plot_.brush = v; };
-  guidePitch_.position = frequency_.position = [](double f) {
-    return std::log(f / 8) / std::log(15000. / 8);
-  };
-  guidePitch_.valueAt =
-      frequency_.valueAt = [](double p) { return 8 * std::pow(15000. / 8, p); };
   guidePitch_.changed = [this](double v) {
     plot_.base = v;
     plot_.redraw();
@@ -92,6 +87,17 @@ ModalPanel::ModalPanel() {
 void ModalPanel::Load(Document &d) {
   document_ = &d;
   available_ = !ModePrefix(d).empty();
+  if (available_) {
+    const auto &p = d.Description(ModePrefix(d) + "frequency_0");
+    const double low = p.minimum, high = p.maximum;
+    frequency_.SetRange(low, high);
+    frequency_.position = [low, high](double f) {
+      return std::log(f / low) / std::log(high / low);
+    };
+    frequency_.valueAt = [low, high](double v) {
+      return low * std::pow(high / low, v);
+    };
+  }
   plot_.Load(d);
   series_.Load(d);
   resized();

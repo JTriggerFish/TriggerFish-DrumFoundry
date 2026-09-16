@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 from scipy.signal import stft, welch
 
 
-def plots(signals, rate, output):
+def plots(signals, rate, output, *, title="Crash", seconds=6):
     """Every plot uses fixed gains and identical analysis on source and synth."""
     bands = [
         (100, 300),
@@ -64,18 +64,18 @@ def plots(signals, rate, output):
     fig.update_xaxes(type="log", range=[np.log10(60), np.log10(16000)], row=1)
     fig.update_yaxes(range=[-100, -20], row=1)
     for row in range(2, 5):
-        fig.update_xaxes(range=[0, 6], row=row)
+        fig.update_xaxes(range=[0, seconds], row=row)
         fig.update_yaxes(range=[-95, -10], row=row)
     fig.update_layout(
         template="plotly_dark",
         width=1450,
         height=1100,
-        title="Crash: fixed-level spectrum and decay; no gain matching",
+        title=f"{title}: fixed-level spectrum and decay; no gain matching",
     )
     (output / "inspection.plotly.json").write_text(fig.to_json(), encoding="utf8")
 
 
-def spectrograms(reference, audio, rate, output):
+def spectrograms(reference, audio, rate, output, *, seconds=4):
     """Reference-anchored colour and signed excess/missing energy, zero black."""
     spectra = [stft(x, rate, nperseg=4096, noverlap=3584) for x in (reference, audio)]
     f, t, _ = spectra[0]
@@ -122,6 +122,6 @@ def spectrograms(reference, audio, rate, output):
     )
     ticks = [100, 300, 1000, 3000, 10000]
     fig.update_yaxes(tickvals=np.log10(ticks), ticktext=[str(f) for f in ticks])
-    fig.update_xaxes(range=[0, 4])
+    fig.update_xaxes(range=[0, seconds])
     fig.update_layout(template="plotly_dark", width=1450, height=1100)
     (output / "spectra.plotly.json").write_text(fig.to_json(), encoding="utf8")

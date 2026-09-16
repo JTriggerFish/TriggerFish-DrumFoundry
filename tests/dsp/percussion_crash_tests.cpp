@@ -807,6 +807,41 @@ void TestSharedOutputEq() {
   }
 }
 
+void TestUpperModalRangeAndDecay() {
+  using namespace tfdsp::percussion;
+  CrashCymbalFitParameters fit;
+  fit.sparseAmplitude.fill(0.f);
+  fit.sparseAmplitude[0] = 1.f;
+  fit.sparseFrequencyHz[0] = 19000.f;
+  fit.fieldTurbulence = 0.f;
+  fit.bodyDecayActive.fill(false);
+  fit.bodyDecaySeconds.front() = 8.f;
+  fit.bodyDecaySeconds.back() = 2.f;
+  const auto legacy = DefaultCrashCymbalParameters(48000.f, fit);
+  CheckNear(legacy.modalField[0].frequencyHz, 19000, .01,
+            "upper modal centre is not clipped at 15 kHz");
+  CheckNear(legacy.modalField[0].decaySeconds, 2, 1.e-5,
+            "legacy decay extends flat above its 15 kHz endpoint");
+  fit.bodyDecayMaximumFrequencyHz = 20000.f;
+  for (float rate : {32000.f, 44100.f, 48000.f, 96000.f}) {
+    const auto p = DefaultCrashCymbalParameters(rate, fit);
+    Check(p.modalField[0].frequencyHz <= .48f * rate,
+          "extended modes respect sample-rate guard");
+    if (rate >= 44100)
+      Check(p.modalField[0].decaySeconds > 2.f &&
+                p.modalField[0].decaySeconds < 2.1f,
+            "extended endpoint controls decay above 15 kHz");
+    CrashCymbal voice;
+    voice.Prepare(rate, p);
+    for (int hit = 0; hit < 3; ++hit) {
+      voice.Trigger({1.f, .5f, .65f, 91});
+      for (int sample = 0; sample < 2000; ++sample)
+        Check(std::isfinite(voice.Process()),
+              "upper-range restrikes remain finite");
+    }
+  }
+}
+
 void TestMaximumBloomRemainsBounded() {
   using namespace tfdsp::percussion;
   CrashCymbalFitParameters fit;
@@ -851,6 +886,7 @@ int main() {
   TestRestrikeAddsWithoutRecolouringStoredEnergy();
   TestRepeatedHitsAccumulateBodyEnergy();
   TestMaximumBloomRemainsBounded();
+  TestUpperModalRangeAndDecay();
   TestSharedOutputEq();
   if (percussion_test::failures == 0)
     std::cout << "All percussion crash tests passed\n";

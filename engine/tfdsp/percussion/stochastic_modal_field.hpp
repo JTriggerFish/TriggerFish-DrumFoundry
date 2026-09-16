@@ -148,6 +148,22 @@ public:
   }
 
   std::size_t ActiveModeCount() const noexcept { return activeModeCount_; }
+  const Projection &Frequencies() const noexcept { return frequencyHz_; }
+  void SetOrderedDecayRadii(const Projection &radii) noexcept {
+    const std::array<float, 3> gain{damping_.low, damping_.middle,
+                                    damping_.high};
+    for (std::size_t i = 0; i < activeModeCount_; ++i) {
+      radius_[i] = radii[i];
+      effectiveRadius_[i] = radii[i] * damping_.broadband * gain[band_[i]];
+    }
+  }
+
+  void SetCascadeRates(float rate, float concentration, float energy) noexcept {
+    cascadeParameters_.rateOctavesPerSecond = rate;
+    cascadeParameters_.energyAcceleration = concentration;
+    cascadeParameters_.energySensitivity = energy;
+    cascade_.SetRates(rate, concentration, energy);
+  }
 
   double StoredEnergy() const noexcept {
     double result = 0.0;

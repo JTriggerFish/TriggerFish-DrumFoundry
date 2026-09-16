@@ -1,4 +1,5 @@
 #include "voice.hpp"
+#include "live_controls.hpp"
 #include <cmath>
 #include <stdexcept>
 
@@ -22,6 +23,12 @@ void Voice::Configure(Json document) {
   ApplyPatch(*next, patch);
   detail::Prepare(*next);
   session_.swap(next);
+  liveIndices_.fill(false);
+  const auto recipeName = patch.at("recipe").get<std::string>();
+  for (std::size_t i = 0; i < detail::ParameterCount(*session_); ++i)
+    liveIndices_[i] =
+        IsLiveParameter(recipeName, detail::Description(*session_, i)->key);
+  liveDirty_ = decayDirty_ = false;
   document_ = std::move(document);
   event_ = event;
 }
@@ -44,6 +51,7 @@ void Voice::Reset() noexcept {
   }
 }
 void Voice::Trigger(const Strike &e) noexcept {
+  FlushParameters();
   auto &s = *session_;
   const tfdsp::percussion::MembraneDrumHit hit{
       e.strength, e.location, e.hardness, e.implement, e.contactSpread, e.seed};
@@ -74,6 +82,8 @@ void Voice::SetMute(float amount) noexcept {
     session_->cymbal.SetMute(amount);
 }
 void Voice::Process(float *output, std::size_t frames) noexcept {
+  if (frames)
+    FlushParameters();
   for (std::size_t i = 0; i < frames; ++i)
     output[i] = detail::Process(*session_);
 }

@@ -29,6 +29,11 @@ int main() {
     Require(frequency.PreferredHeight(530) == 44); // Widening unwraps again.
   }
   Slider slider("Test", -60, 0, -12);
+  frequency.SetRange(15000, 20000);
+  frequency.Set(18000);
+  Require(frequency.Value() == 18000 && !frequency.SubmitText("14000"));
+  frequency.SetRange(40, 15000);
+  Require(frequency.Value() == 15000 && !frequency.SubmitText("18000"));
   slider.setBounds(0, 0, 212, 44);
   slider.Set(100);
   Require(slider.Value() == 0);

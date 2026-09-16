@@ -23,8 +23,10 @@ class BodyDecayEnvelope {
 public:
   BodyDecayEnvelope(const float sampleRate,
                     const CrashCymbalFitParameters &fit) noexcept {
-    const float maximumFrequency = std::min(
-        CrashModalMaximumFrequencyHz, .48f * sampleRate);
+    const float maximumFrequency =
+        std::min(std::clamp(Positive(fit.bodyDecayMaximumFrequencyHz, 15000.f),
+                            15000.f, CrashModalMaximumFrequencyHz),
+                 .48f * sampleRate);
     points_[count_++] = {ErbRate(CrashDecayMinimumFrequencyHz),
         std::log(std::clamp(
             Positive(fit.bodyDecaySeconds.front(), 1.f), .02f, 30.f))};
@@ -327,6 +329,18 @@ CrashCymbalParameters DefaultCrashCymbalParameters(
       ModalFieldSeed ^ 0x43415343u, fit.bloomSpectralDiffusion,
       std::clamp(fit.bloomEnergySensitivity, 0.f, 2.f)};
   result.outputEq = CrashOutputEqParameters(fit);
+  return result;
+}
+
+CrashModalField::Projection
+CrashDecayRadii(float sampleRate, const CrashCymbalFitParameters &fit,
+                const CrashModalField::Projection &frequencies) noexcept {
+  const BodyDecayEnvelope curve(sampleRate, fit);
+  CrashModalField::Projection result{};
+  for (std::size_t i = 0; i < result.size(); ++i)
+    result[i] = std::exp(
+        std::log(.001f) /
+        (std::clamp(curve.At(frequencies[i]), .02f, 30.f) * sampleRate));
   return result;
 }
 

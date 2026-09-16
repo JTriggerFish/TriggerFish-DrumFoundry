@@ -62,6 +62,21 @@ public:
     return output;
   }
 
+  // Preserve filter memory; Biquad ramps stable denominator coefficients.
+  void SetTargetParameters(const RadiationFilterParameters &p) noexcept {
+    const auto samples =
+        std::max<std::size_t>(1, std::size_t(.005f * sampleRate_));
+    highpass_.SetTargetCoefficients(
+        biquad_design::Highpass(p.lowCutHz, p.lowCutQ, sampleRate_), samples);
+    colour_.SetTargetCoefficients(
+        biquad_design::Peaking(p.colourFrequencyHz, p.colourQ, p.colourGainDb,
+                               sampleRate_),
+        samples);
+    lowpass_.SetTargetCoefficients(
+        biquad_design::Lowpass(p.highCutHz, p.highCutQ, sampleRate_), samples);
+    outputGain_ = std::clamp(p.outputGain, 0.f, 16.f);
+  }
+
 private:
   Biquad highpass_{};
   Biquad colour_{};

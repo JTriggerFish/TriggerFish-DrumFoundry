@@ -1,7 +1,5 @@
-#include "plugin_host.hpp"
-#ifdef DRUMFOUNDRY_UI
 #include "adapters/clap/plugin.hpp"
-#endif
+#include "plugin_host.hpp"
 #include <cstdlib>
 #include <iostream>
 #include <new>
@@ -33,6 +31,20 @@ void operator delete[](void *p, std::size_t) noexcept { ::operator delete(p); }
 
 int main() {
   drumfoundry::standalone::PluginHost host;
+  auto &stoppedPlugin = drumfoundry::clap_adapter::Plugin::Get(host.Api());
+  for (const auto &p : drumfoundry::clap_adapter::DesignParameters())
+    if (p.recipe == drumfoundry::detail::Recipe::Kick &&
+        p.descriptor->key == "output_colour_gain") {
+      for (int i = 0; i < 2200; ++i) {
+        if (!stoppedPlugin.QueueEdit(p.id, i % 2 ? 3 : 4))
+          return 1;
+        host.Service();
+      }
+      stoppedPlugin.EndDesignGesture();
+      host.Service();
+      if (stoppedPlugin.Value(p.id) != 3)
+        return 1;
+    }
   // Restart retains pending parameter edits, but clears old manual/MIDI notes.
   host.Prepare(48000, 128);
   host.controls.Push({false, 105, -20, {}});
@@ -62,11 +74,31 @@ int main() {
     host.SetStopped(100, preset);
     host.Prepare(48000, 128);
     std::array<float, 256> output{};
+    auto &livePlugin = drumfoundry::clap_adapter::Plugin::Get(host.Api());
+    auto liveDocument = livePlugin.EditableDocument();
+    for (auto &node : liveDocument["instrument"]["nodes"])
+      if (node["parameters"].contains("output_colour_gain"))
+        node["parameters"]["output_colour_gain"] = 7.;
+    if (!livePlugin.EditLiveDocument(liveDocument))
+      return 1;
+    std::vector<std::pair<clap_id, double>> automated;
+    for (const auto &p : drumfoundry::clap_adapter::DesignParameters())
+      if (p.recipe == livePlugin.DesignRecipe()) {
+        const auto &d = *p.descriptor;
+        const double v = int(d.scale) >= 2
+                             ? d.defaultValue
+                             : d.minimum + .37 * (d.maximum - d.minimum);
+        automated.emplace_back(p.id, v);
+      }
     watching = true;
     for (int block = 0; block < 128; ++block) {
       if (block % 16 == 0)
         host.midi[0].Push({true, 0, 0, {0x90, 60, 100}});
       host.controls.Push({false, 105, -18.0, {}});
+      // Exercise every advertised live setter in the actual audio callback.
+      if (std::size_t(block) < automated.size())
+        host.controls.Push(
+            {false, automated[block].first, automated[block].second, {}});
       host.Process(output.data(), 128);
     }
     watching = false;

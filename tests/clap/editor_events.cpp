@@ -10,6 +10,20 @@ void Require(bool result) {
     throw std::runtime_error("CLAP editor event regression");
 }
 int main(int argc, char **argv) {
+  extern void LiveControlsTests();
+  LiveControlsTests();
+  extern void DesignAutomationTests();
+  DesignAutomationTests();
+  if (argc > 2 && std::string(argv[1]) == "--audit-presets") {
+    std::vector<drumfoundry::Json> documents;
+    for (int i = 2; i < argc; ++i) {
+      std::ifstream source(argv[i]);
+      documents.push_back(drumfoundry::Json::parse(source));
+    }
+    extern void PresetSwitchParity(const std::vector<drumfoundry::Json> &);
+    PresetSwitchParity(documents);
+    return 0;
+  }
   extern void DocumentHostTests();
   DocumentHostTests();
   extern void WorkbenchTests();
@@ -26,8 +40,7 @@ int main(int argc, char **argv) {
     const auto original = presets.EditableDocument();
     presets.EditPresentation({{"libraryPath", "test/kick.wav"}},
                              original.at("controls").at("analysis"));
-    Require(
-        presets.EditableDocument().at("reference").contains("libraryPath"));
+    Require(presets.EditableDocument().at("reference").contains("libraryPath"));
     presets.SelectFactory(i);
     const auto factory = presets.EditableDocument();
     Require(factory.at("reference").is_null());
@@ -44,8 +57,7 @@ int main(int argc, char **argv) {
   plugin.EditPresentation({{"id", "fixture"}, {"sha256", "test"}}, analysis);
   Require(plugin.DocumentRevision() == revision);
   Require(plugin.EditableDocument().at("reference").at("id") == "fixture");
-  Require(plugin.EditableDocument().at("controls").at("analysis") ==
-          analysis);
+  Require(plugin.EditableDocument().at("controls").at("analysis") == analysis);
   Require(!plugin.QueueEdit(Master, 12));
   Require(plugin.QueueEdit(Master, -20));
   Require(plugin.Value(Master) ==

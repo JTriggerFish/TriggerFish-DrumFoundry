@@ -1,5 +1,6 @@
 #pragma once
 
+#include "live_gain.hpp"
 #include "observation_delay.hpp"
 #include "radiation_filter.hpp"
 #include "tfdsp/finite_audio.hpp"
@@ -57,6 +58,7 @@ public:
       const float magnitude = std::clamp(
           tfdsp::FiniteNormalOrZero(parameters[source].gain), 0.f, 16.f);
       gains_[source] = parameters[source].invertPolarity ? -magnitude : magnitude;
+      liveGains_[source].Reset(gains_[source]);
       const float seconds = std::clamp(
           std::isfinite(parameters[source].delaySeconds)
               ? parameters[source].delaySeconds : 0.f,
@@ -72,9 +74,16 @@ public:
       float path = delays_[source].Process(sources[source]);
       if (parameters_[source].radiationEnabled)
         path = filters_[source].Process(path);
-      output += gains_[source] * path;
+      output += liveGains_[source].Next() * path;
     }
     return tfdsp::FiniteNormalOrZero(output);
+  }
+
+  void SetLiveGains(const Parameters &parameters) noexcept {
+    for (std::size_t i = 0; i < SourceCount; ++i)
+      liveGains_[i].Target(parameters[i].gain *
+                               (parameters[i].invertPolarity ? -1.f : 1.f),
+                           sampleRate_);
   }
 
 private:
@@ -82,6 +91,7 @@ private:
   std::array<RadiationFilter, SourceCount> filters_{};
   Parameters parameters_{};
   std::array<float, SourceCount> gains_{};
+  std::array<LiveGain, SourceCount> liveGains_{};
   float sampleRate_{48000.f};
   float maximumDelaySeconds_{.1f};
 };

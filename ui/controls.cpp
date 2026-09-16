@@ -2,6 +2,7 @@
 #include "embedded/fonts.h"
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 namespace drumfoundry::ui {
 visage::Font Font(float size) {
@@ -47,6 +48,15 @@ void Slider::Set(double value) {
     value_ = value;
     redraw();
   }
+}
+void Slider::SetRange(double low, double high) {
+  if (!std::isfinite(low) || !std::isfinite(high) || low >= high)
+    throw std::invalid_argument("Invalid slider range");
+  low_ = low;
+  high_ = high;
+  initial_ = std::clamp(initial_, low_, high_);
+  Set(value_);
+  redraw();
 }
 void Slider::SetDefault(double value) {
   if (std::isfinite(value))

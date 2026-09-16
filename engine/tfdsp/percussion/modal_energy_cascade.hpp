@@ -85,6 +85,12 @@ public:
     return lastTransferredEnergy_;
   }
 
+  void SetRates(float rate, float concentration, float energy) noexcept {
+    rateOctavesPerSecond_ = std::clamp(rate, 0.f, 32.f);
+    energyAcceleration_ = std::clamp(concentration, 0.f, 1.f);
+    energySensitivity_ = std::clamp(energy, 0.f, 2.f);
+  }
+
 private:
   struct Packet {
     std::size_t begin{};

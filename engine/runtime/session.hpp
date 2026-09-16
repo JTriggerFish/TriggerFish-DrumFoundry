@@ -48,5 +48,7 @@ float Process(Session &session) noexcept;
 const ParameterDescriptor *Description(const Session &session,
                                        std::size_t index) noexcept;
 std::size_t ParameterCount(const Session &session) noexcept;
+const ParameterDescriptor *Description(Recipe, std::size_t index) noexcept;
+std::size_t ParameterCount(Recipe) noexcept;
 
 } // namespace drumfoundry::detail

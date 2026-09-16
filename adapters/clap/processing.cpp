@@ -106,11 +106,15 @@ clap_process_status Plugin::Process(const clap_process_t *p) noexcept {
   DrainEditor(p->out_events, true);
   uint32_t cursor = 0;
   const auto count = p->in_events ? p->in_events->size(p->in_events) : 0;
-  for (uint32_t i = 0; i < count; ++i) {
+  for (uint32_t i = 0; i < count;) {
     const auto *e = p->in_events->get(p->in_events, i);
     Render(bus.data32[0] + cursor, bus.data32[1] + cursor, e->time - cursor);
-    Event(e);
+    auto end = i + 1;
+    while (end < count && p->in_events->get(p->in_events, end)->time == e->time)
+      ++end;
+    EventBatch(p->in_events, i, end);
     cursor = e->time;
+    i = end;
   }
   Render(bus.data32[0] + cursor, bus.data32[1] + cursor,
          p->frames_count - cursor);

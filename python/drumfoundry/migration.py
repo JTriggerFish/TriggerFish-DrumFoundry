@@ -5,6 +5,7 @@ be checked in CI without distributing full oracle renders or private samples.
 """
 
 import argparse
+from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
@@ -38,8 +39,16 @@ def signature(audio, rate):
 
 def sound_identity(document):
     """Hash the DSP patch and strike defaults, not reference/view metadata."""
+    instrument = deepcopy(document["instrument"])
+    # The historical endpoint was fixed at 15 kHz. Its explicit neutral value
+    # is equivalent to absence; other values must still change the identity.
+    # This keeps the original audio oracles/hashes, rather than regenerating them.
+    for node in instrument["nodes"]:
+        params = node.get("parameters", {})
+        if params.get("body_decay_frequency_7") == 15000:
+            del params["body_decay_frequency_7"]
     sound = {
-        "instrument": document["instrument"],
+        "instrument": instrument,
         "event": document["controls"]["event"],
     }
     encoded = json.dumps(sound, sort_keys=True, separators=(",", ":"), allow_nan=False)

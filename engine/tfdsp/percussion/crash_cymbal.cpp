@@ -68,7 +68,8 @@ void CrashCymbal::PrepareComponents(
   sampleRate_ = sampleRate;
   parameters_ = parameters;
   contact_.Prepare(sampleRate);
-  outputEq_.Prepare(sampleRate, parameters.outputEq);
+  outputEq_.Prepare(sampleRate, parameters.outputEq,
+                    parameters.fit.outputEqEnabled);
   contactLevel_ = std::clamp(
       tfdsp::FiniteNormalOrZero(parameters.fit.directGain), 0.f, 2.f);
   bodyLevel_ = std::clamp(
@@ -77,6 +78,10 @@ void CrashCymbal::PrepareComponents(
   bodyExcitationGain_ = std::clamp(
       tfdsp::FiniteNormalOrZero(parameters.fit.bodyExcitationGain), 0.f, 4.f);
   modalConstraint_.Prepare(sampleRate, .001f, .003f, .08f);
+  liveContact_.Reset(contactLevel_);
+  liveBody_.Reset(bodyLevel_);
+  liveExcitation_.Reset(bodyExcitationGain_);
+  liveOutput_.Reset(parameters.fit.outputGain);
 }
 
 void CrashCymbal::Reset() noexcept {
@@ -97,6 +102,9 @@ void CrashCymbal::Trigger(const CrashCymbalHit &hit) noexcept {
 }
 
 CrashCymbalFrame CrashCymbal::ProcessFrame() noexcept {
+  contactLevel_ = liveContact_.Next();
+  bodyLevel_ = liveBody_.Next();
+  bodyExcitationGain_ = liveExcitation_.Next();
   hasProcessedSinceReset_ = true;
   const auto modalLoss = modalConstraint_.Process();
   const auto contact = contact_.Process();
@@ -112,14 +120,22 @@ CrashCymbalFrame CrashCymbal::ProcessFrame() noexcept {
            ? contactLevel_ * contact.directRadiation : 0.f) +
       (routing_.Enabled(MetallicPlateRoute::BodyToObservation)
            ? bodyLevel_ * body : 0.f);
-  const float output = parameters_.fit.outputEqEnabled
-      ? outputEq_.Process(mix) : mix;
-  return {
-      contact.directRadiation,
-      modalField_.LastCascadeTransferEnergy(),
-      body,
-      tfdsp::FiniteNormalOrZero(
-          parameters_.fit.outputGain * output)};
+  const float output = outputEq_.Process(mix);
+  return {contact.directRadiation, modalField_.LastCascadeTransferEnergy(),
+          body, tfdsp::FiniteNormalOrZero(liveOutput_.Next() * output)};
+}
+
+void CrashCymbal::SetLiveControls(
+    const CrashCymbalFitParameters &fit) noexcept {
+  parameters_.fit = fit;
+  outputEq_.SetTarget(CrashOutputEqParameters(fit), fit.outputEqEnabled);
+  liveContact_.Target(fit.directGain, sampleRate_);
+  liveBody_.Target(fit.fieldGain, sampleRate_);
+  liveExcitation_.Target(fit.bodyExcitationGain, sampleRate_);
+  liveOutput_.Target(fit.outputGain, sampleRate_);
+  modalField_.SetCascadeRates(fit.bloomRateOctavesPerSecond,
+                              fit.bloomEnergyAcceleration,
+                              fit.bloomEnergySensitivity);
 }
 
 float CrashCymbal::Process() noexcept {

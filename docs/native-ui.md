@@ -196,7 +196,7 @@ That worker owns its own voice. Reference decode/hash/STFT results are cached by
 file identity, channel and transform. Reference audition resampling is cached
 separately by the decoded source and device rate. Performance and design edits
 are briefly debounced: a roughly 130 ms pause during a drag can update the
-offline preview before release. The live voice is still replaced only on release;
+offline preview before release. Structural edits replace the voice on release;
 the previous spectrogram stays behind an advancing grey write edge. New audio
 and centred FFT frames arrive incrementally, rather than waiting for a complete
 render or showing a progress bar. The renderer is unthrottled, not paced by the
@@ -376,12 +376,46 @@ the DAW's project undo history.
 History survives closing/reopening the editor in the same plugin instance. It
 is not saved in presets or projects; loading host state or an externally selected
 factory preset clears it. Restoring edits preserves unrelated live performance
-values and the current spectrogram view, and uses the normal host preparation
-path rather than touching the audio thread's live DSP state.
+values and the current spectrogram view. Live-safe changes use the parameter
+queue; structural changes use the host preparation lifecycle.
 Queued performance edits retain their requested value until the audio thread
 acknowledges them, so consecutive gestures remain distinct undo steps. Preset
 undo restores the host selector alongside the edited document, not factory
 defaults; stale queued strike-control edits cannot overwrite that restored patch.
+
+## Live controls
+
+EQ handles/readouts, EQ bypass, output/source levels, metallic bloom controls and
+the T60 curve update while playing, including during a drag. Membrane resonance
+decay and tension controls also retain the sounding voice. Contact and thump/FM
+envelope edits shape the next hit without cutting off existing notes. EQ and
+gain changes have short click-reducing ramps, with no added audio latency.
+
+Routing, modal placement/allocation, packet texture and observation delay still
+prepare on release; tooltips distinguish these from live controls. Spectrogram
+previews are separate background work. One drag remains one undo step, and live
+undo/redo does not restart the audio device.
+
+These live-safe controls are also exposed to CLAP host automation with stable
+IDs, sample-timed playback and begin/end gestures for recording UI drags. Host
+automation updates visible readouts without rebuilding the panel. Structural
+controls and CLAP per-note modulation remain outside this automation surface;
+see [clap.md](clap.md).
+
+## Modal bandwidth
+
+Metallic modal centres and series generation span up to 20 kHz. The audio engine
+keeps oscillators below 0.48 times its sample rate (including packet side modes).
+Kick resonance limits remain unchanged. The modal graph, typed frequency,
+harmonic snapping and group dragging use each recipe's parameter range.
+
+The T60 editor also spans 20 kHz. Select its right square endpoint to move its
+frequency between 15 and 20 kHz, or drag it horizontally; its existing frequency
+slider shows the value. Decay stays flat beyond the endpoint. The explicit JSON
+parameter `body_decay_frequency_7` defaults to 15000 when absent, preserving old
+curves and their six optional interior knots without rescaling or migration.
+Move the endpoint right before adding a knot beyond it. Endpoints cannot be
+deleted; the low endpoint remains at 40 Hz.
 
 ## Dependency references
 

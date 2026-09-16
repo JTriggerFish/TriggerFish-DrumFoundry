@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     DeleteDecay(d, i);
   Require(DecayKnots(d).size() == 2);
   SetDecay(d, 0, 1, 1);
-  SetDecay(d, 7, 1, 4);
+  SetDecay(d, 7, 15000, 4);
   const double middle = InverseErb((Erb(40) + Erb(15000)) / 2);
   Require(std::abs(DecayAt(d, middle) - 2) < 1e-10);
   ShiftDecay(d, 1);
@@ -47,6 +47,14 @@ int main(int argc, char **argv) {
   Require(DecayKnots(d).size() == 3);
   DeleteDecay(d, slot);
   Require(DecayKnots(d).size() == 2);
+  Require(DecayAt(d, 20000) == DecayAt(d, 15000));
+  SetDecay(d, 7, 20000, 4);
+  Require(DecayKnots(d).back().frequency == 20000);
+  const auto upperSlot = InsertDecay(d, 17500, 2);
+  Require(std::abs(DecayAt(d, 17500) - 2) < 1e-10);
+  SetDecay(d, 7, 15000, 4);
+  Require(DecayKnots(d).back().frequency > 17500);
+  DeleteDecay(d, upperSlot);
   Series s;
   s.fundamental = 55;
   s.stretch = .5;
@@ -75,6 +83,8 @@ int main(int argc, char **argv) {
   ReplaceModes(d, {});
   Require(InsertMode(d, 100, -6) == 0);
   Require(Modes(d)[0].frequency == 100);
+  Require(InsertMode(d, 19500, -6) == 1);
+  Require(Modes(d)[1].frequency == 19500);
   Document validated;
   validated.Load(d.JsonValue());
   Require(validated.JsonValue() == d.JsonValue());

@@ -1,10 +1,23 @@
 #include "host.hpp"
 #include <iostream>
+#include <set>
 
 namespace clap_test {
 void TestState(Host &h) {
-  Require(h.params->count(h.plugin) == 10,
-          "small explicit host control surface");
+  Require(h.params->count(h.plugin) > 10,
+          "performance and live design controls exposed");
+  std::set<clap_id> ids;
+  for (uint32_t i = 0; i < h.params->count(h.plugin); ++i) {
+    clap_param_info_t info{};
+    Require(h.params->get_info(h.plugin, i, &info) &&
+                ids.insert(info.id).second,
+            "unique stable parameter metadata");
+    if (i < 10)
+      Require(info.id == 100 + i, "original host IDs preserved");
+    else
+      Require(info.flags & CLAP_PARAM_IS_AUTOMATABLE,
+              "live design parameter automated");
+  }
   for (uint32_t i = 0; i < 10; ++i) {
     clap_param_info_t info{};
     Require(h.params->get_info(h.plugin, i, &info), "parameter metadata");

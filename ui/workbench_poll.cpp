@@ -65,6 +65,7 @@ void Workbench::Poll() {
     analysis_.Poll();
     PollPreview();
     PollPerformance();
+    PollAutomation();
     if (bridge_.status)
       status_ = bridge_.status();
     redraw();

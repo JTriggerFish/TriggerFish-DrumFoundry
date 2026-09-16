@@ -1,4 +1,5 @@
 #include "analysis_view.hpp"
+#include "frequency_axis.hpp"
 #include "time_axis.hpp"
 #include <algorithm>
 #include <cmath>
@@ -8,19 +9,16 @@ void AnalysisView::Axes(visage::Canvas &c) {
   const double maximum =
       std::min(frequencyHigh, result_->model.sampleRate * .5);
   const auto grid = [&](float top, float h) {
-    for (double f :
-         {20., 50., 100., 200., 500., 1000., 2000., 5000., 10000.}) {
-      if (f > maximum || f < frequencyLow)
-        continue;
-      const float y =
-          top +
-          float(std::log(maximum / f) / std::log(maximum / frequencyLow)) * h;
+    const float textHeight = 16 * paletteValue(TextScale);
+    for (const auto &tick :
+         FrequencyAxisTicks(frequencyLow, maximum, top, h, textHeight)) {
+      const double f = tick.frequency;
       c.setColor(c.color(colours::Grid).withMultipliedAlpha(.4f));
-      c.fill(42, y, width() - 54, 1);
+      c.fill(42, tick.y, width() - 54, 1);
       char text[20];
-      std::snprintf(text, sizeof(text), f >= 1000 ? "%.0fk" : "%.0f",
+      std::snprintf(text, sizeof(text), f >= 1000 ? "%.3gk" : "%.0f",
                     f >= 1000 ? f / 1000 : f);
-      Label(c, text, 2, y - 8, 37, 16);
+      Label(c, text, 2, tick.labelY, 39, textHeight);
     }
   };
   if (Mode() == Comparison::Stacked) {
@@ -67,9 +65,8 @@ void AnalysisView::Readout(visage::Canvas &c) {
   const double ref =
       result_->referenceSpectrum.At(p.time + referenceOffset, p.frequency) +
       referenceGainDb;
-  const double model =
-      ModelAt(p.time + modelOffset)
-          .modelSpectrum.At(p.time + modelOffset, p.frequency);
+  const double model = ModelAt(p.time + modelOffset)
+                           .modelSpectrum.At(p.time + modelOffset, p.frequency);
   char text[160];
   std::snprintf(text, sizeof(text),
                 "%.3f s · %.1f Hz · Ref %.1f / Model %.1f dBFS · Δ %+.1f dB",
