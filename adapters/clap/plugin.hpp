@@ -1,5 +1,6 @@
 #pragma once
 #include "../shared/event_queue.hpp"
+#include "../shared/prepared_mailbox.hpp"
 #include "design_parameters.hpp"
 #ifdef DRUMFOUNDRY_UI
 #include "../shared/audio_tap.hpp"
@@ -8,6 +9,7 @@
 #endif
 #include "output/limiter.hpp"
 #include "runtime/voice.hpp"
+#include "runtime/modal_edit.hpp"
 #include <array>
 #include <atomic>
 #include <clap/clap.h>
@@ -162,6 +164,7 @@ private:
   std::array<double, ParameterCount> audioValues_{};
   std::atomic<double> previewStrength_{.8};
   std::unique_ptr<Voice> voice_;
+  host::PreparedMailbox<PreparedModalEdit> modalEdits_;
   output::Limiter limiter_;
   Json document_; // Main-thread-only saved/desired patch, never read in
                   // Process.

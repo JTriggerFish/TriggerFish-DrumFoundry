@@ -67,6 +67,19 @@ public:
 
   bool Enabled() const noexcept { return enabled_; }
 
+  // Prepared geometry keeps its new depth/rate; existing trajectories survive.
+  void RetainHistory(const SmoothModalDrift &old,
+                     const std::array<std::size_t, Count> &source) noexcept {
+    random_ = old.random_;
+    for (std::size_t i = 0; i < Count; ++i) {
+      const auto j = source[i];
+      if (j >= Count) continue;
+      phase_[i] = old.phase_[j];
+      from_[i] = old.from_[j];
+      to_[i] = old.to_[j];
+    }
+  }
+
   float NextAngle(std::size_t i) noexcept {
     phase_[i] += increment_;
     if (phase_[i] >= 1.f) {

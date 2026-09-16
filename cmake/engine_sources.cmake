@@ -19,6 +19,7 @@ set(DRUMFOUNDRY_ENGINE_SOURCES
   engine/runtime/voice.cpp
   engine/runtime/live_controls.cpp
   engine/runtime/automation.cpp
+  engine/runtime/modal_edit.cpp
   engine/patch/document.cpp
   engine/patch/fit_envelope.cpp
   engine/patch/output_eq_upgrade.cpp

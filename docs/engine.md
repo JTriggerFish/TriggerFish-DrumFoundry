@@ -22,7 +22,7 @@ the controls explicitly present in the patch. EQ can be disabled in the patch.
 
 Preparation allocates and must run off the audio thread. A failed JSON load
 leaves the existing voice intact. Loading a valid replacement resets its state;
-this stage does not yet promise smooth live structural editing. `Reset`, typed
+replacement is distinct from the state-preserving prepared modal edits below. `Reset`, typed
 `Trigger` and `Process` preserve the original energy/restrike semantics. One
 voice must not be called concurrently. C ABI strings are library-owned and copied
 immediately by the Python wrapper; NumPy owns each output buffer.
@@ -56,10 +56,7 @@ unlimited. The native UI exposes bypass, latency and gain reduction.
   envelope, calibration, rejection and cancellation tests. Expanded presets do
   not require these design-time tools to render; do not reimplement them
   independently in Visage/Python.
-- Prepare safe audio-thread publication of structural changes, retirement of old
-  state, and further state-preserving resonator/texture edits. Scalar live edits
-  already use the bounded publication path below.
-- Extend live automation to state-preserving modal/texture edits, and finish
+- Extend host automation to the prepared modal/texture editing path, and finish
   remaining editor integration. The shared Visage editor, reference analysis, fit storage,
   routing and graphical device management are described in [native-ui.md](native-ui.md).
   CLAP integration is documented in [clap.md](clap.md), and the audio/MIDI host
@@ -96,7 +93,10 @@ but hidden. UI drags emit one begin/end host gesture, with values throughout.
 Host playback updates visible controls without rebuilding them, and unrelated
 automation is excluded from UI undo history. See [clap.md](clap.md).
 
-Changes to routing, modal placement/allocation, packet texture or observation
-delay still take the preparation lifecycle on commit. They are not blindly
-applied to existing oscillator indices. Offline spectrogram previews remain an
-independent, debounced worker and never gate live control delivery.
+Modal placement/allocation and packet texture use off-thread coefficient design
+and a three-slot latest-update mailbox. The audio callback remaps the existing
+state into that prepared layout without resetting the voice. See
+[live modal editing](live-modal-editing.md) for identity, energy and transition
+rules. Routing and observation delay still take the replacement lifecycle.
+Offline spectrogram previews remain an independent, debounced worker and never
+gate live control delivery.

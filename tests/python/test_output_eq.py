@@ -14,6 +14,7 @@ KEYS = {
     "output_high_cut",
     "output_colour_frequency",
     "output_colour_gain",
+    "output_colour_q",
 }
 OLD_NAMES = {
     "output_eq_enabled": "equalizer_mode",
@@ -30,12 +31,45 @@ OLD_NAMES = {
 def test_single_eq_owner(recipe):
     with Renderer(default_patch(recipe)) as voice:
         eq = [p for p in voice.descriptors if p["key"] in KEYS]
-        assert len(eq) == 5
+        assert len(eq) == 6
         assert len({p["owner"] for p in eq}) == 1
         assert not any(
             p["key"].startswith("band_") or p["key"] == "equalizer_mode"
             for p in voice.descriptors
         )
+
+
+@pytest.mark.parametrize(
+    "recipe", ["metal.cymbal.v1", "drum.kick.v1", "drum.membrane.v1", "drum.snare.v1"]
+)
+def test_peak_q_defaults_roundtrip_and_changes_audio(recipe):
+    patch = default_patch(recipe)
+    params = next(
+        n["parameters"]
+        for n in patch["nodes"]
+        if "output_eq_enabled" in n["parameters"]
+    )
+    params.update(
+        output_eq_enabled=1, output_colour_frequency=1000, output_colour_gain=12
+    )
+    params.pop("output_colour_q")  # Existing presets used fixed Q=0.7.
+    with Renderer(patch) as old:
+        audio = old.render(0.2)
+    params["output_colour_q"] = 0.7
+    with Renderer(patch) as explicit:
+        np.testing.assert_array_equal(explicit.render(0.2), audio)
+    params["output_colour_q"] = 8
+    with Renderer(patch) as narrow:
+        assert not np.array_equal(narrow.render(0.2), audio)
+        owner = next(
+            n["parameters"]
+            for n in narrow.document["nodes"]
+            if "output_eq_enabled" in n["parameters"]
+        )
+        assert owner["output_colour_q"] == 8
+    params["output_colour_q"] = 21
+    with pytest.raises(ValueError):
+        Renderer(patch)
 
 
 @pytest.mark.parametrize(

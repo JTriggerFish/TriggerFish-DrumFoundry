@@ -41,6 +41,10 @@ public:
   void SetMute(float amount) noexcept;
   // Control-only updates: retain modal/contact state and transport history.
   void SetLiveControls(const CrashCymbalFitParameters &fit) noexcept;
+  // Destination field is prepared off-thread, then adopts the sounding state.
+  bool CanAdoptModalEdit() const noexcept { return modalField_.CanAdoptModalEdit(); }
+  bool AdoptModalEdit(const CrashCymbalParameters &parameters,
+                      CrashModalField &field) noexcept;
   void SetLiveDecayCurve(const CrashCymbalFitParameters &fit) noexcept {
     modalField_.SetOrderedDecayRadii(
         CrashDecayRadii(sampleRate_, fit, modalField_.Frequencies()));
@@ -68,6 +72,7 @@ private:
   float bodyExcitationGain_{1.f};
   MetallicPlateRouting routing_{};
   float sampleRate_{48000.f};
+  float lastLocation_{1.f}, lastStrength_{.8f};
   bool hasProcessedSinceReset_{};
 };
 

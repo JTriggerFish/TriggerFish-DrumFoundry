@@ -93,6 +93,8 @@ public:
     sines_ = prepared.sines;
     inputGains_ = prepared.inputGains;
     outputGains_ = prepared.outputGains;
+    targetOutputGains_ = outputGains_;
+    gainRampRemaining_ = 0;
     center_ = prepared.center;
     edge_ = prepared.edge;
     tensionScale_ = 1.f;
@@ -109,6 +111,22 @@ public:
     radii_ = radii; // Damping only: does not change quadrature state or pitch.
   }
 
+  // Fixed mode slots already are stable identities. Retain quadrature and
+  // tension; only geometry/drive/observation change at the block boundary.
+  void SetPreparedParameters(const PreparedParameters &p) noexcept {
+    frequencies_ = p.frequencies;
+    radii_ = p.radii;
+    inputGains_ = p.inputGains;
+    targetOutputGains_ = p.outputGains;
+    center_ = p.center;
+    edge_ = p.edge;
+    const float tension = tensionScale_;
+    tensionScale_ = -1.f;
+    updateCountdown_ = 0;
+    UpdateCoefficients(tension);
+    gainRampRemaining_ = std::max(1u, unsigned(.005f * sampleRate_));
+  }
+
   Drive Project(const float force, const float location) const noexcept {
     Drive result{};
     const float safeForce = tfdsp::FiniteNormalOrZero(force);
@@ -122,6 +140,11 @@ public:
 
   float Process(const Drive &drive, const float tensionScale) noexcept {
     UpdateCoefficients(tensionScale);
+    if (gainRampRemaining_) {
+      const float inverse = 1.f / float(gainRampRemaining_--);
+      for (std::size_t i = 0; i < ModeCount; ++i)
+        outputGains_[i] += inverse * (targetOutputGains_[i] - outputGains_[i]);
+    }
     std::array<float, ModeCount> forces{};
     for (std::size_t mode = 0; mode < ModeCount; ++mode) {
       const float priorReal = real_[mode];
@@ -186,6 +209,8 @@ private:
   std::array<float, ModeCount> sines_{};
   std::array<float, ModeCount> inputGains_{};
   std::array<float, ModeCount> outputGains_{};
+  std::array<float, ModeCount> targetOutputGains_{};
+  unsigned gainRampRemaining_{};
   std::array<float, ModeCount> center_{};
   std::array<float, ModeCount> edge_{};
   float sampleRate_{48000.f};

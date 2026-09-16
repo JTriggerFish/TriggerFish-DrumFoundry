@@ -6,7 +6,8 @@ EqPlot::EqPlot(editing::Document &d, const LiveSpectrum *s)
     : document_(d), spectrum_(s) {
   help =
       "Final EQ: drag the outer handles horizontally for high/low-pass cuts; "
-      "drag the colour handle for frequency and gain. Double-click "
+      "drag the colour handle for frequency and gain; scroll over it for Q "
+      "(Shift for fine adjustment). Double-click "
       "a handle to reset. Click a readout to type a precise value. "
       "Background: "
       "actual live output, fixed 0 to -96 dBFS/bin from top to bottom; curve "
@@ -40,14 +41,14 @@ float EqPlot::X(double f) const {
              float(std::log(std::clamp(f, 5., 22000.) / 5) / std::log(4400.));
 }
 float EqPlot::Y(double db) const {
-  return 32 + std::max(1.f, height() - 110) *
+  return 32 + std::max(1.f, height() - 137) *
                   float((24 - std::clamp(db, -36., 24.)) / 60);
 }
 double EqPlot::Frequency(float x) const {
   return 5 * std::pow(4400., (x - 30) / std::max(1.f, width() - 38));
 }
 double EqPlot::Gain(float y) const {
-  return 24 - 60 * (y - 32) / std::max(1.f, height() - 110);
+  return 24 - 60 * (y - 32) / std::max(1.f, height() - 137);
 }
 void EqPlot::draw(visage::Canvas &c) {
   const visage::theme::ColorId EqColours[]{colours::EqLow, colours::EqColour,
@@ -60,7 +61,7 @@ void EqPlot::draw(visage::Canvas &c) {
   DrawBackground(c);
   SyncReadouts();
   if (spectrum_)
-    spectrum_->DrawTrace(c, 30, 32, width() - 38, height() - 110,
+    spectrum_->DrawTrace(c, 30, 32, width() - 38, height() - 137,
                          colours::Spectrum, true, .4f, 5, 22000);
   DrawGrid(c);
   std::array<visage::Path, 4> paths;

@@ -54,6 +54,27 @@ public:
 
   bool Enabled() const noexcept { return depth_ > 0.f; }
 
+  // Carry independent and packet-shared trajectories across a layout edit.
+  // Rebasing previous displacement avoids a phase kick when depth changes.
+  void RetainHistory(const BoundedModalMotion &old,
+                     const std::array<std::size_t, Count> &source) noexcept {
+    random_ = old.random_;
+    const auto copy = [&](std::size_t to, std::size_t from) {
+      phase_[to] = old.phase_[from];
+      from_[to] = old.from_[from];
+      to_[to] = old.to_[from];
+      value_[to] = old.value_[from];
+      step_[to] = old.increment_ > 0.f
+          ? old.step_[from] * increment_ / old.increment_ : increment_;
+    };
+    for (std::size_t i = 0; i < active_; ++i) {
+      if (source[i] >= old.active_) continue;
+      copy(i, source[i]);
+      copy(active_ + packetIndex_[i], old.active_ + old.packetIndex_[source[i]]);
+    }
+    for (std::size_t i = 0; i < active_; ++i) previous_[i] = Displacement(i);
+  }
+
   void Reset() noexcept {
     random_.Seed(seed_);
     for (std::size_t i = 0; i < active_+packetCount_; ++i) {

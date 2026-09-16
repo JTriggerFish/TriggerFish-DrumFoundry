@@ -52,8 +52,7 @@ void MetaPanel::Preview() {
              << value << "  ";
     }
     if (!edit.limited.empty())
-      text << " | " << edit.limited.size()
-           << " controls reached their limits";
+      text << " | " << edit.limited.size() << " controls reached their limits";
     status_ = text.str();
     if (changed)
       changed();
@@ -74,15 +73,13 @@ void MetaPanel::draw(visage::Canvas &c) {
   Label(c, size_ ? "Size meta" : "Bloom timing", 20, 12, width() - 40, 28,
         colours::Heading);
   Label(c,
-        size_
-            ? "A starting-point tool; changes modes, excitation, texture and "
-              "damping."
-            : "Moves diffusion rate and the initial excitation distribution "
-              "together.",
+        size_ ? "A starting-point tool; changes modes, excitation, texture and "
+                "damping."
+              : "Moves diffusion rate and the initial excitation distribution "
+                "together.",
         20, 48, width() - 40, 22);
   Label(c,
-        "Ordinary controls update below. Release to apply; Cancel restores "
-        "them.",
+        "Hear changes while dragging. Cancel restores the starting controls.",
         20, 70, width() - 40, 22);
   Label(c, status_, 20, 150, width() - 40, 65);
 }

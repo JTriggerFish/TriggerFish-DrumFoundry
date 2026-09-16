@@ -46,6 +46,7 @@ const std::array<ParameterDescriptor,
         {"output_colour_frequency", "Colour frequency", "Hz", 40.f, 20000.f,
          1040.f, Scale::Logarithmic},
         {"output_colour_gain", "Colour gain", "dB", -24.f, 24.f, 0.f},
+        {"output_colour_q", "Peak Q", "", .1f, 20.f, .7f, Scale::Logarithmic},
     }};
 } // namespace
 
@@ -98,7 +99,7 @@ ApplyKickParameters(const KickParameterValues &values) noexcept {
                 : tfdsp::percussion::ObservationEqualizerMode::Bypass;
   eq.radiation = tfdsp::percussion::SimpleOutputEqParameters(
       get(P::LowCutHz), get(P::ColourFrequency), get(P::ColourGain),
-      get(P::HighCutHz));
+      get(P::HighCutHz), get(P::ColourQ));
   return result;
 }
 } // namespace drumfoundry

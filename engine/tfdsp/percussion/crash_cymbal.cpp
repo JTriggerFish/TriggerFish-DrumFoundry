@@ -138,6 +138,19 @@ void CrashCymbal::SetLiveControls(
                               fit.bloomEnergySensitivity);
 }
 
+bool CrashCymbal::AdoptModalEdit(const CrashCymbalParameters &parameters,
+                                CrashModalField &field) noexcept {
+  if (!field.RetainState(modalField_))
+    return false;
+  modalField_ = field;
+  // Contact, observation filters, gain smoothers and mute history stay intact.
+  const auto liveFit = parameters_.fit;
+  parameters_ = parameters;
+  parameters_.fit = liveFit;
+  SetExcitationProjection(lastLocation_, lastStrength_);
+  return true;
+}
+
 float CrashCymbal::Process() noexcept {
   return ProcessFrame().output;
 }
@@ -287,6 +300,8 @@ ContactExciterParameters CrashCymbal::ContactParameters(
 void CrashCymbal::SetExcitationProjection(const float value,
                                           const float strength) noexcept {
   const float location = Unit(value);
+  lastLocation_ = location;
+  lastStrength_ = strength;
   const float velocityBrightness =
       parameters_.fit.velocityBrightnessDbPerOctave;
   fieldProjection_ = InterpolateProjection(

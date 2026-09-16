@@ -24,7 +24,7 @@ visage::Point Point(const drumfoundry::ui::EqPlot &plot, double hz,
                     double db) {
   return {
       float(30 + (plot.width() - 38) * std::log(hz / 5) / std::log(4400.)),
-      float(32 + (plot.height() - 110) * (24 - db) / 60)};
+      float(32 + (plot.height() - 137) * (24 - db) / 60)};
 }
 } // namespace
 
@@ -77,6 +77,22 @@ void EqPanelTests(drumfoundry::editing::Document d) {
     Check(plot->SubmitValue(0, "60"));
     Check(plot->SubmitValue(1, "1700"));
     Check(plot->SubmitValue(3, "9000"));
+    Check(plot->SubmitValue(4, "0.1")); // Decimal DSP endpoint is legal.
+    Check(plot->SubmitValue(4, "20"));
+    Check(plot->SubmitValue(4, "3.5"));
+    Check(d.Value("output_colour_q") == 3.5);
+    for (const auto *bad : {"0", "21", "nan", "3.5Q"})
+      Check(!plot->SubmitValue(4, bad));
+    visage::MouseEvent wheel;
+    wheel.position = Point(*plot, 1700, 4);
+    wheel.precise_wheel_delta_y = 1;
+    Check(plot->mouseWheel(wheel));
+    Check(d.Value("output_colour_q") > 3.5);
+    wheel.precise_wheel_delta_y = -1;
+    Check(plot->mouseWheel(wheel));
+    Check(std::abs(d.Value("output_colour_q") - 3.5) < 1e-6);
+    wheel.position = Point(*plot, 60, 0);
+    Check(!plot->mouseWheel(wheel)); // Other wheel gestures keep scrolling.
     auto *readout =
         Find<HelpButton>(*plot, ParameterHelp("output_colour_gain"));
     Check(readout);

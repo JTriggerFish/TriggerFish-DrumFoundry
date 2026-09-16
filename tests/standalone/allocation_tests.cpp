@@ -81,6 +81,17 @@ int main() {
         node["parameters"]["output_colour_gain"] = 7.;
     if (!livePlugin.EditLiveDocument(liveDocument))
       return 1;
+    {
+      const char *key = preset == 0   ? "resonance_frequency_0"
+                        : preset == 1 ? "fundamental_hz"
+                                      : "body_tune";
+      for (auto &node : liveDocument["instrument"]["nodes"])
+        if (node["parameters"].contains(key))
+          node["parameters"][key] = preset >= 2 ? 1.25 : 147.;
+      if (!livePlugin.EditLiveDocument(liveDocument) ||
+          livePlugin.RestartPending())
+        return 1;
+    }
     std::vector<std::pair<clap_id, double>> automated;
     for (const auto &p : drumfoundry::clap_adapter::DesignParameters())
       if (p.recipe == livePlugin.DesignRecipe()) {
@@ -102,6 +113,20 @@ int main() {
       host.Process(output.data(), 128);
     }
     watching = false;
+    if (preset >= 2) {
+      // Adopt and process removed states from an already sounding body under
+      // the allocation/free watcher, not just a geometry edit in silence.
+      liveDocument = livePlugin.EditableDocument();
+      for (auto &node : liveDocument["instrument"]["nodes"])
+        if (node["parameters"].contains("field_satellite_density"))
+          node["parameters"]["field_satellite_density"] = 0.;
+      if (!livePlugin.EditLiveDocument(liveDocument))
+        return 1;
+      watching = true;
+      for (unsigned i = 0; i < 4; ++i)
+        host.Process(output.data(), 128);
+      watching = false;
+    }
     host.Stop();
   }
   if (allocations)

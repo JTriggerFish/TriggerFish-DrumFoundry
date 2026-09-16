@@ -27,6 +27,20 @@ def test_sound_identity_ignores_reference_but_not_strike_or_patch():
     assert sound_identity(document) != event_identity
 
 
+def test_explicit_legacy_q_retains_oracle_identity():
+    document = json.loads((ROOT / "presets/factory/gong.fit.json").read_text())
+    eq = next(
+        n["parameters"]
+        for n in document["instrument"]["nodes"]
+        if "output_colour_q" in n["parameters"]
+    )
+    explicit = sound_identity(document)
+    assert eq.pop("output_colour_q") == 0.7
+    assert sound_identity(document) == explicit
+    eq["output_colour_q"] = 0.8
+    assert sound_identity(document) != explicit
+
+
 def test_explicit_legacy_endpoint_retains_oracle_identity():
     document = json.loads((ROOT / "presets/factory/hihat.fit.json").read_text())
     body = next(

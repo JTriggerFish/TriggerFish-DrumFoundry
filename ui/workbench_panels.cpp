@@ -62,6 +62,10 @@ void Workbench::SetupAnalysis() {
       analysis_.Play(true);
   };
   modal_.committed = [this] { ApplyDocument(); };
+  // Apply the restored baseline to the host, closing the live gesture. The
+  // history recorder discards an unchanged before/after pair.
+  modal_.cancelled = [this] { ApplyDocument(); };
+  modal_.changed = [this] { PreviewLiveDocument(); };
   modal_.error = [this](const auto &text) { Error(text); };
   modal_.layoutChanged = [this] { LayoutRight(); };
 }
@@ -82,6 +86,7 @@ void Workbench::SetupMetas() {
     excitation_.Load(document_, false);
     resonance_.Load(document_, true);
     modal_.Refresh();
+    PreviewLiveDocument();
     ControlErrors(*this, [this](const auto &text) { Error(text); });
     help_.Bind(*this);
   };

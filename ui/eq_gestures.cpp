@@ -23,9 +23,12 @@ int EqPlot::Hit(visage::Point point) const {
 void EqPlot::ResetHandle(int i) {
   std::vector<std::pair<std::string, double>> values{
       {keys[i], document_.Description(keys[i]).initial}};
-  if (i == 1)
+  if (i == 1) {
     values.push_back({"output_colour_gain",
                       document_.Description("output_colour_gain").initial});
+    values.push_back({"output_colour_q",
+                      document_.Description("output_colour_q").initial});
+  }
   document_.SetMany(values);
   if (changed)
     changed();
@@ -77,6 +80,29 @@ void EqPlot::mouseUp(const visage::MouseEvent &) {
   redraw();
   if (commit && committed)
     committed();
+}
+bool EqPlot::mouseWheel(const visage::MouseEvent &e) {
+  if (Hit(e.position) != 1 || !std::isfinite(e.precise_wheel_delta_y) ||
+      e.precise_wheel_delta_y == 0)
+    return false;
+  try {
+    const auto &p = document_.Description("output_colour_q");
+    const double step = (e.isShiftDown() ? .02 : .12) *
+                        std::clamp(double(e.precise_wheel_delta_y), -20., 20.);
+    const double next = std::clamp(document_.Value(p.key) * std::exp(step),
+                                   p.minimum, p.maximum);
+    document_.Set(p.key, next);
+    SyncReadouts();
+    redraw();
+    if (changed)
+      changed();
+    if (committed)
+      committed();
+  } catch (const std::exception &ex) {
+    if (error)
+      error(ex.what());
+  }
+  return true;
 }
 void EqPlot::mouseMove(const visage::MouseEvent &e) {
   const int next = Hit(e.position);

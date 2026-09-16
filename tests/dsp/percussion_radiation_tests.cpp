@@ -32,12 +32,14 @@ double ToneGain(Filter &filter, const float frequencyHz, const float sampleRate)
 
 void TestBiquadResponses() {
   for (const float sampleRate : {44100.f, 48000.f, 96000.f, 192000.f}) {
-    tfdsp::percussion::Biquad peak;
-    peak.SetCoefficients(tfdsp::percussion::biquad_design::Peaking(
-        5000.f, 1.2f, 9.f, sampleRate));
-    CheckNear(ToneGain(peak, 5000.f, sampleRate),
-              std::pow(10.0, 9.0 / 20.0), .006,
-              "peaking biquad reaches its requested centre gain");
+    for (float q : {.1f, .7f, 4.f, 20.f}) {
+      tfdsp::percussion::Biquad peak;
+      peak.SetCoefficients(tfdsp::percussion::biquad_design::Peaking(
+          5000.f, q, 9.f, sampleRate));
+      CheckNear(ToneGain(peak, 5000.f, sampleRate),
+                std::pow(10.0, 9.0 / 20.0), .006,
+                "peaking biquad reaches its requested centre gain");
+    }
 
     tfdsp::percussion::Biquad lowpass;
     lowpass.SetCoefficients(tfdsp::percussion::biquad_design::Lowpass(
@@ -104,6 +106,7 @@ void TestLiveEq() {
         p.highCutHz = up ? 22000 : 500;
         p.colourFrequencyHz = up ? 20000 : 40;
         p.colourGainDb = up ? 24 : -24;
+        p.colourQ = up ? 20.f : .1f;
         live.SetTarget(p, (i / 127) % 3 != 0);
       }
       const float input = .05f * percussion_test::Sine(i, 83.f, rate) +

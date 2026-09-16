@@ -47,7 +47,7 @@ void WorkbenchLiveTests() {
   e.position = {30 + (eq->width() - 38) *
                          float(std::log(before.Value("output_low_cut") / 5) /
                                std::log(4400.)),
-                32 + (eq->height() - 110) * .4f};
+                32 + (eq->height() - 137) * .4f};
   Check(before.Value("output_low_cut") == 5, "Expected boundary EQ default");
   const auto origin = e.position;
   eq->mouseDown(e);
@@ -110,4 +110,55 @@ void WorkbenchLiveTests() {
   automated.Load(plugin->EditableDocument());
   Check(automated.Value("thump_pitch_hz") == 77,
         "Undo rewound unrelated DAW automation");
+
+  // ModalPanel must forward continuous plot edits, not only mouse-up commits.
+  editor.reset();
+  plugin->SelectFactory(5);
+  editor = std::make_unique<ui::Workbench>(b);
+  editor->setBounds(0, 0, 1200, 900);
+  auto *modal = Find<ui::ModalPlot>(*editor);
+  Check(modal, "Missing live modal editor");
+  editing::Document gong;
+  gong.Load(plugin->EditableDocument());
+  const auto modes = editing::Modes(gong);
+  const auto m = modes.at(0);
+  e.position = {42 + float(std::log(m.frequency / 20) / std::log(1000.)) *
+                         (modal->width() - 60),
+                14 + float((6 - m.level) / 78) * (modal->height() - 44)};
+  const auto modalOrigin = e.position;
+  b.history->Clear();
+  for (auto tool : {ui::ModalPlot::Tool::Edit, ui::ModalPlot::Tool::Shape,
+                    ui::ModalPlot::Tool::Paint}) {
+    modal->tool = tool;
+    e.position = modalOrigin;
+    modal->mouseDown(e);
+    e.position.x += 10;
+    e.position.y += 6;
+    modal->mouseDrag(e);
+    Check(plugin->EditableDocument() != gong.JsonValue(),
+          "Cancellation test must first publish a live edit");
+    plugin->DrainEditor(nullptr, false);
+    modal->keyPress({visage::KeyCode::Escape, 0, true});
+    modal->mouseUp(e);
+    Check(plugin->EditableDocument() == gong.JsonValue(),
+          "Escape restored picture but not the live host document");
+    Check(!b.history->CanUndo(), "Cancelled modal edit left an undo entry");
+    editor->Undo(); // Must not finish a stale gesture and resurrect the edit.
+    Check(plugin->EditableDocument() == gong.JsonValue(),
+          "Cancelled gesture remained open");
+  }
+  modal->tool = ui::ModalPlot::Tool::Edit;
+  e.position = modalOrigin;
+  modal->mouseDown(e);
+  e.position.x += 10;
+  modal->mouseDrag(e);
+  Check(plugin->EditableDocument() != gong.JsonValue(),
+        "Modal drag did not publish before release");
+  modal->mouseUp(e);
+  const auto moved = plugin->EditableDocument();
+  editor->Undo();
+  Check(plugin->EditableDocument() == gong.JsonValue(),
+        "Modal drag undo failed");
+  editor->Redo();
+  Check(plugin->EditableDocument() == moved, "Modal drag redo failed");
 }

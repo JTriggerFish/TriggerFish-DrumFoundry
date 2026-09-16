@@ -130,6 +130,9 @@ std::array<CrashMacroDescriptor, CrashMacroCount> BuildDescriptors() {
   set(CrashMacro::OutputHighCut,
       Logarithmic("output_high_cut", "Low-pass", "Hz", 500.f, 22000.f,
                   fit.outputHighCutHz));
+  set(CrashMacro::OutputColourQ,
+      Logarithmic("output_colour_q", "Peak Q", "", .1f, 20.f,
+                  fit.outputColourQ));
 
   set(CrashMacro::BodyDecayMaximumFrequency,
       Logarithmic("body_decay_frequency_7", "Upper decay frequency", "Hz",
@@ -348,6 +351,7 @@ CrashCymbalFitParameters ApplyCrashMacros(
   fit.outputLowCutHz = Value(values, CrashMacro::OutputLowCut);
   fit.outputColourFrequencyHz = Value(values, CrashMacro::OutputColourFrequency);
   fit.outputColourGainDb = Value(values, CrashMacro::OutputColourGain);
+  fit.outputColourQ = Value(values, CrashMacro::OutputColourQ);
   fit.outputHighCutHz = Value(values, CrashMacro::OutputHighCut);
   return fit;
 }

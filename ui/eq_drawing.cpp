@@ -36,12 +36,12 @@ void EqPlot::DrawGrid(visage::Canvas &c) {
   }
   for (double f : {100., 1000., 10000.}) {
     c.setColor(c.color(colours::Grid).withMultipliedAlpha(.55f));
-    c.fill(X(f), 32, 1, height() - 110);
+    c.fill(X(f), 32, 1, height() - 137);
     Label(c,
           f == 100    ? "100"
           : f == 1000 ? "1k"
                       : "10k",
-          X(f) - 10, height() - 77, 32, 18, colours::Muted);
+          X(f) - 10, height() - 104, 32, 18, colours::Muted);
   }
 }
 void EqPlot::DrawHandles(visage::Canvas &c) {

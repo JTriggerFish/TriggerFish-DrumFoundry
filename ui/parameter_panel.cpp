@@ -39,10 +39,11 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     }
     if (meta &&
         (section == "Bloom / energy travel" ||
-         (section == "Output" && document.Recipe() == "metal.cymbal.v1"))) {
-      const bool size = section == "Output";
+         (section == "Resonance" && document.Recipe() == "metal.cymbal.v1"))) {
+      const bool size = section == "Resonance";
       auto tool = std::make_unique<visage::UiButton>(size ? "Size meta…"
                                                           : "Bloom timing…");
+      tool->setName(size ? "size-meta" : "bloom-timing");
       tool->setFont(Font());
       tool->onToggle() = [this, size](auto *, bool) {
         if (meta)
@@ -145,6 +146,9 @@ void ParameterPanel::AddParameter(editing::Document &document,
                    (IsLiveParameter(document.Recipe(), p.key)
                         ? " Updates during playback; contact/envelope edits "
                           "shape the next strike."
+                        : IsPreparedLiveParameter(document.Recipe(), p.key)
+                            ? " Updates ringing modes while dragging; retains "
+                              "their phase and energy. Prepared outside audio."
                         : " Release to prepare this structural edit; paused "
                           "drags update the preview.");
     slider->position = [p](double v) { return editing::Position(p, v); };
@@ -178,7 +182,7 @@ void ParameterPanel::AddOutputPreview(editing::Document &document) {
     };
     preview_ = eq.get();
     addScrolledChild(preview_);
-    rows_.emplace_back(std::move(eq), 274);
+    rows_.emplace_back(std::move(eq), 301);
   } else {
     preview_ = outputSpectrum;
     addScrolledChild(preview_);

@@ -62,7 +62,9 @@ void PendingDesignTests() {
   auto next = p->EditableDocument();
   Set(next, "body_decay_frequency_1", 19000);
   Set(next, "body_decay_frequency_7", 20000);
-  Set(next, "resolved_frequency_0", 301); // Force structural preparation.
+  // A changed gesture still takes the replacement lifecycle. Modal frequency
+  // edits now preserve the sounding state and no longer exercise that path.
+  next["controls"]["event"]["hardness"] = .123;
   p->EditDocument(next);
   const auto wanted = p->EditableDocument();
   const auto knot = Id("body_decay_frequency_1");

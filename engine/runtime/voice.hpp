@@ -3,6 +3,7 @@
 #include <memory>
 
 namespace drumfoundry {
+struct PreparedModalEdit;
 // One owned voice, used identically by offline renderers and native host
 // adapters. Configure is transactional and non-realtime. Trigger/Process do not
 // allocate. A caller must serialize access to one voice; separate voices are
@@ -18,6 +19,10 @@ public:
   // render/strike; neither operation parses JSON or allocates.
   bool StageParameter(std::size_t index, float value) noexcept;
   void FlushParameters() noexcept;
+  bool CanApplyModalEdit() const noexcept;
+  // False means a removal fade is still active or the target is incompatible.
+  // Keep/coalesce the prepared target and retry at the next callback.
+  bool ApplyModalEdit(PreparedModalEdit &) noexcept;
   detail::Recipe Recipe() const noexcept { return session_->recipe; }
   void Process(float *output, std::size_t frames) noexcept;
   const Json &Document() const noexcept { return document_; }

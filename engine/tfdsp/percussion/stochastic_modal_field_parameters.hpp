@@ -1,6 +1,7 @@
 #pragma once
 
 #include "modal_energy_cascade.hpp"
+#include "modal_identity_map.hpp"
 #include "bounded_modal_motion.hpp"
 #include "tfdsp/finite_audio.hpp"
 
@@ -25,6 +26,9 @@ struct StochasticModalModeParameters {
   // Routing coordinate of the painted packet, independent of its sidebands.
   // Zero means use this mode's frequency (generic, ungrouped resonators).
   float transportFrequencyHz{};
+  // Stable editor handle/member identity; zero falls back to the source slot.
+  std::uint32_t identity{};
+  std::uint32_t packetIdentity{};
 };
 
 struct StochasticModalFieldControls {
@@ -52,6 +56,8 @@ template <std::size_t ModeCount> struct PreparedStochasticModalField {
   std::array<float, ModeCount> frequencyHz{};
   std::array<float, ModeCount> transportFrequencyHz{};
   std::array<std::uint32_t, ModeCount> sourceIndex{};
+  std::array<std::uint32_t, ModeCount> identity{};
+  std::array<std::uint32_t, ModeCount> packetIdentity{};
   std::array<std::uint16_t, ModeCount> packet{};
   std::array<std::uint8_t, ModeCount> band{};
   float sampleRate{48000.f};
@@ -128,6 +134,7 @@ PreparedStochasticModalField<ModeCount> PrepareStochasticModalField(
   result.driftKnotsPerSecond = controls.driftKnotsPerSecond;
   result.motion = controls.motion;
   constexpr float TwoPi = 6.28318530717958647692f;
+  ModalIdentityMap<ModeCount> identities;
   for (std::size_t source = 0; source < ModeCount; ++source) {
     const float inputGain = detail::ModalInputGain(parameters[source].inputGain);
     const float outputGain =
@@ -146,6 +153,13 @@ PreparedStochasticModalField<ModeCount> PrepareStochasticModalField(
     }
     const std::size_t mode = result.activeModeCount++;
     result.sourceIndex[mode] = static_cast<std::uint32_t>(source);
+    result.identity[mode] = parameters[source].identity
+        ? parameters[source].identity : static_cast<std::uint32_t>(source + 1);
+    if (identities.Find(result.identity[mode]) != ModeCount)
+      throw std::invalid_argument("modal-field identities must be unique");
+    identities.Insert(result.identity[mode], mode);
+    result.packetIdentity[mode] = parameters[source].packetIdentity
+        ? parameters[source].packetIdentity : std::uint32_t(packet) + 1;
     const float frequency = std::clamp(
         tfdsp::FiniteNormalOrZero(parameters[source].frequencyHz), 1.f,
         .49f * sampleRate);

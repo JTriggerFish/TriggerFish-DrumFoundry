@@ -99,6 +99,7 @@ struct CrashCymbalFitParameters {
   float outputLowCutHz{40.f};
   float outputColourFrequencyHz{7200.f};
   float outputColourGainDb{.5f};
+  float outputColourQ{.7f};
   float outputHighCutHz{19000.f};
   float velocityBrightnessDbPerOctave{4.f};
 };

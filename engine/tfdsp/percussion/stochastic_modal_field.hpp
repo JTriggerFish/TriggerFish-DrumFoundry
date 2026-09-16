@@ -2,6 +2,8 @@
 
 #include "deterministic_random.hpp"
 #include "modal_constraint.hpp"
+#include "modal_identity_map.hpp"
+#include "retiring_modal_output.hpp"
 #include "smooth_modal_drift.hpp"
 #include "stochastic_modal_field_parameters.hpp"
 #include "tfdsp/finite_audio.hpp"
@@ -72,6 +74,8 @@ public:
     exchangeSine_ = prepared.exchangeSine;
     exchangeAmount_ = prepared.exchangeAmount;
     sourceIndex_ = prepared.sourceIndex;
+    identity_ = prepared.identity;
+    packetIdentity_ = prepared.packetIdentity;
     packet_ = prepared.packet;
     frequencyHz_ = prepared.frequencyHz;
     band_ = prepared.band;
@@ -94,12 +98,24 @@ public:
     cascade_.Prepare(sampleRate_, prepared.transportFrequencyHz, inputGain_, packet_,
                      activeModeCount_, cascadeParameters_);
     damping_ = {};
+    targetOutputGain_ = outputGain_;
+    gainRampRemaining_ = 0;
     Reset();
   }
+
+  // Called on an already prepared destination. Only bounded state remapping,
+  // no coefficient design, allocations or rendering of a second voice.
+  // False leaves the destination unchanged: wait for the previous removal
+  // fade to finish, then adopt the latest prepared target (do not queue all).
+  bool RetainState(const StochasticModalField &old) noexcept;
+  bool CanAdoptModalEdit() const noexcept { return !retiring_.Active(); }
 
   void Reset() noexcept {
     real_.fill(0.f);
     imaginary_.fill(0.f);
+    retiring_.Reset();
+    outputGain_ = targetOutputGain_;
+    gainRampRemaining_ = 0;
     random_.Seed(seed_);
     oddExchange_ = false;
     cascade_.Reset();
@@ -134,6 +150,7 @@ public:
     primaryInput = tfdsp::FiniteNormalOrZero(primaryInput);
     secondaryInput = tfdsp::FiniteNormalOrZero(secondaryInput);
     UpdateDamping(damping);
+    AdvanceLiveGains();
     if (motion_.Enabled()) {
       motion_.BeginSample();
       motion_.PrepareRotations();
@@ -144,7 +161,8 @@ public:
       else Propagate<false, false>(primaryInput, secondaryInput);
     }
     cascade_.Process(real_, imaginary_);
-    return ExchangeNeighboursAndSum();
+    return tfdsp::FiniteNormalOrZero(
+        ExchangeNeighboursAndSum() + retiring_.Process(damping_));
   }
 
   std::size_t ActiveModeCount() const noexcept { return activeModeCount_; }
@@ -192,6 +210,12 @@ public:
   }
 
 private:
+  void AdvanceLiveGains() noexcept {
+    if (!gainRampRemaining_) return;
+    const float inverse = 1.f / static_cast<float>(gainRampRemaining_--);
+    for (std::size_t i = 0; i < activeModeCount_; ++i)
+      outputGain_[i] += inverse * (targetOutputGain_[i] - outputGain_[i]);
+  }
   StochasticModalFieldControls CurrentControls() const noexcept {
     return {maximumExchangeAngle_, seed_, cascadeParameters_,
             driftDepthHz_, driftKnotsPerSecond_, motionControls_};
@@ -359,6 +383,9 @@ private:
   std::array<float, ModeCount> primaryDriveGain_{};
   std::array<float, ModeCount> secondaryDriveGain_{};
   std::array<float, ModeCount> outputGain_{};
+  std::array<float, ModeCount> targetOutputGain_{};
+  unsigned gainRampRemaining_{};
+  RetiringModalOutput<ModeCount> retiring_;
   std::array<float, ModeCount> inputPhaseCosine_{};
   std::array<float, ModeCount> inputPhaseSine_{};
   std::array<std::uint8_t, ModeCount> band_{};
@@ -368,6 +395,7 @@ private:
   std::array<float, ModeCount> exchangeSine_{};
   std::array<float, ModeCount> frequencyHz_{};
   std::array<std::uint32_t, ModeCount> sourceIndex_{};
+  std::array<std::uint32_t, ModeCount> identity_{}, packetIdentity_{};
   Projection excitationProjection_{};
   Projection secondaryExcitationProjection_{};
   ModalEnergyCascade<ModeCount> cascade_{};
@@ -390,3 +418,5 @@ private:
 };
 
 } // namespace tfdsp::percussion
+
+#include "stochastic_modal_field_live.hpp"

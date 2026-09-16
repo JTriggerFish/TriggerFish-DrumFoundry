@@ -1,3 +1,4 @@
+#include "../../adapters/shared/prepared_mailbox.hpp"
 #include "event_queue.hpp"
 #include <iostream>
 #include <stdexcept>
@@ -43,6 +44,29 @@ int main() {
     }
     writer.join();
     Require(ordered, "concurrent wraparound publication");
+    drumfoundry::host::PreparedMailbox<unsigned> prepared;
+    std::atomic<bool> finished{};
+    std::thread preparer([&] {
+      for (unsigned i = 1; i <= count; ++i)
+        prepared.Publish(std::make_unique<unsigned>(i));
+      finished.store(true);
+    });
+    unsigned last = 0;
+    bool monotonic = true;
+    const auto consume = [&](unsigned &value) {
+      monotonic &= value > last;
+      last = value;
+    };
+    while (!finished.load())
+      prepared.Consume(consume);
+    prepared.Consume(consume);
+    preparer.join();
+    Require(monotonic && last == count,
+            "latest prepared state survives concurrent publication");
+    prepared.Publish(std::make_unique<unsigned>(count + 1));
+    prepared.Cancel();
+    prepared.Consume(consume);
+    Require(last == count, "cancelled prepared state cannot reach audio");
     std::cout << "Bounded event queue checks passed\n";
     return 0;
   } catch (const std::exception &e) {

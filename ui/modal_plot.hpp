@@ -23,6 +23,9 @@ public:
   double brush{1}, base{55};
   bool guide{}, snap{};
   std::function<void()> changed, committed;
+  // Audio edits only; selection/Refresh use changed without publishing DSP.
+  std::function<void()> edited;
+  std::function<void()> cancelled;
   std::function<void(const std::string &)> error;
 
 private:

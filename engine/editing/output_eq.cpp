@@ -14,7 +14,8 @@ OutputEqSettings(const Document &d) {
   return tfdsp::percussion::SimpleOutputEqParameters(
       float(d.Value("output_low_cut")),
       float(d.Value("output_colour_frequency")),
-      float(d.Value("output_colour_gain")), float(d.Value("output_high_cut")));
+      float(d.Value("output_colour_gain")), float(d.Value("output_high_cut")),
+      float(d.Value("output_colour_q")));
 }
 OutputEqResponse::OutputEqResponse(
     const tfdsp::percussion::RadiationFilterParameters &p, double rate)

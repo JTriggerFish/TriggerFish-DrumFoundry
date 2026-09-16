@@ -63,6 +63,7 @@ enum class CrashMacro : std::size_t {
   FieldMotionRate,
   FieldMotionSharing,
   BodyDecayMaximumFrequency,
+  OutputColourQ,
   Count
 };
 

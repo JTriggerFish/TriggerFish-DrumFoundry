@@ -121,6 +121,69 @@ void TailAndRetrigger(unsigned preset) {
   Check(a->plugin.EditableDocument() == saved,
         "Failed edit changed desired state");
 }
+
+void PreparedTailEdits(unsigned preset) {
+  auto h = std::make_unique<Harness>(preset);
+  h->plugin.QueueStrike(.8f, .5f);
+  for (unsigned i = 0; i < 20; ++i)
+    h->Block();
+  const char *key = preset >= 2   ? "body_tune"
+                    : preset == 0 ? "resonance_frequency_0"
+                                  : "fundamental_hz";
+  // Multiple edits before one audio callback must coalesce to the final
+  // geometry, without affecting queued scalar EQ edits or resetting the tail.
+  for (unsigned i = 0; i < 12; ++i)
+    Check(h->Set(key, preset >= 2 ? 1. + .01 * i : 120. + i),
+          "Prepared edit rejected");
+  Check(h->Set("output_colour_gain", 4), "Scalar edit after geometry rejected");
+  Check(h->Block() > 1e-16, "Prepared edit erased a sounding tail");
+  Check(!h->restarts, "Prepared edit restarted audio");
+  // Commit must not apply the same state transformation twice.
+  const auto document = h->plugin.EditableDocument();
+  h->plugin.EditDocument(document);
+  Check(!h->restarts, "Prepared commit restarted audio");
+  h->Block();
+  Check(h->plugin.EditableDocument() == document,
+        "Prepared edit lost saved values");
+  // Cancellation before a different preset/rate is activated.
+  Check(h->Set(key, preset >= 2 ? 1.4 : 180.), "Second prepared edit rejected");
+  h->plugin.SelectFactory(0);
+  h->plugin.Deactivate();
+  Check(h->plugin.Activate(44100, 1, 128), "Prepared-edit restart failed");
+  h->plugin.processing = true;
+  Check(h->Block() == 0, "Stale modal edit crossed preset/rate lifecycle");
+}
+
+void DeferredAllocationEdits() {
+  auto a = std::make_unique<Harness>(5);
+  auto b = std::make_unique<Harness>(5);
+  for (auto *h : {a.get(), b.get()}) {
+    Check(h->Set("field_satellite_density", 1), "Initial density rejected");
+    h->Block();
+    h->plugin.QueueStrike(.8f, .5f);
+    for (unsigned i = 0; i < 20; ++i)
+      h->Block();
+    Check(h->Set("field_satellite_density", 0), "Removal rejected");
+    h->Block(); // First 128 of the 240-sample removal fade.
+  }
+  for (double density : {.2, .8, .6})
+    Check(a->Set("field_satellite_density", density), "Queued density rejected");
+  a->Block();
+  b->Block(); // Complete the fade. A's newest target must still be pending.
+  Check(b->Set("field_satellite_density", .6), "Final density rejected");
+  for (unsigned i = 0; i < 16; ++i) {
+    if (i == 4) {
+      a->plugin.QueueStrike(.7f, .5f);
+      b->plugin.QueueStrike(.7f, .5f);
+    }
+    a->Block();
+    b->Block();
+    for (unsigned j = 0; j < 128; ++j)
+      Check(std::abs(a->left[j] - b->left[j]) < 1e-6,
+            "Deferred/coalesced edit lost its final geometry");
+  }
+  Check(!a->restarts && !b->restarts, "Retirement restarted the voice");
+}
 } // namespace
 
 void LiveControlsTests() {
@@ -128,12 +191,15 @@ void LiveControlsTests() {
   LiveParameterParity();
   for (unsigned preset = 0; preset < 6; ++preset)
     TailAndRetrigger(preset);
+  for (unsigned preset : {0u, 1u, 5u})
+    PreparedTailEdits(preset);
+  DeferredAllocationEdits();
   auto h = std::make_unique<Harness>(5);
   Check(h->Set("body_decay_seconds_0", 2), "Decay curve must be live");
   Check(h->Set("output_colour_gain", 3), "EQ following decay must be live");
   Check(h->Set("bloom_rate", 4), "Bloom must be live");
-  Check(!h->Set("field_satellite_density", .123),
-        "Allocation edit incorrectly classified live");
+  Check(h->Set("field_satellite_density", .123),
+        "Allocation edit must use prepared live publication");
   h->plugin.QueueStrike(.8f, .5f);
   double energy = 0;
   for (int i = 0; i < 64; ++i)

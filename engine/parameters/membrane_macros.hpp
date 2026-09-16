@@ -37,6 +37,7 @@ enum class MembraneParameter : std::size_t {
   FmPitchDecaySeconds,
   ContactNoiseLevel,
   ContactNoiseDecaySeconds,
+  ColourQ,
   Count
 };
 

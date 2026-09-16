@@ -46,6 +46,7 @@ const std::array<ParameterDescriptor, MembraneParameterCount> Descriptors{{
     {"contact_noise_level", "Contact noise", "x", 0.f, 4.f, .45f},
     {"contact_noise_decay_seconds", "Noise fade time", "s", .001f, 1.f, .012f,
      Scale::Logarithmic},
+    {"output_colour_q", "Peak Q", "", .1f, 20.f, .7f, Scale::Logarithmic},
 }};
 
 std::size_t Index(const MembraneParameter parameter) noexcept {
@@ -105,7 +106,7 @@ ApplyMembraneParameters(const MembraneParameterValues &values) noexcept {
   auto result = tfdsp::percussion::DefaultMembraneDrumParameters(controls);
   result.equalizer.radiation = tfdsp::percussion::SimpleOutputEqParameters(
       controls.lowCutHz, controls.colourFrequencyHz, controls.colourGainDb,
-      controls.highCutHz);
+      controls.highCutHz, values[Index(P::ColourQ)]);
   return result;
 }
 

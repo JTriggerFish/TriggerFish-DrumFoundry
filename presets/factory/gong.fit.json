@@ -224,6 +224,7 @@
           "output_low_cut": 25,
           "output_colour_frequency": 8500,
           "output_colour_gain": 2,
+          "output_colour_q": 0.7,
           "output_high_cut": 11656.894819054009
         },
         "editor": {

@@ -147,9 +147,18 @@ bool Plugin::EditLiveDocument(Json next) {
 #ifdef DRUMFOUNDRY_UI
   ui::ValidateAnalysisDocument(next);
 #endif
-  if (!ValidateLiveEdit(before, next))
-    return false;
+  std::unique_ptr<PreparedModalEdit> prepared;
+  if (!ValidateLiveEdit(before, next)) {
+    if (!ValidateLiveEdit(before, next, true))
+      return false;
+    prepared = PrepareModalEdit(float(sampleRate_), next);
+  }
   QueueDesignEdits(before, next);
+  if (prepared) {
+    modalEdits_.Publish(std::move(prepared));
+    if (host_->request_process)
+      host_->request_process(host_);
+  }
   document_ = std::move(next);
   ++documentRevision_;
   Dirty(host_);

@@ -22,6 +22,7 @@ double Plugin::EditorValue(clap_id id) const noexcept {
              : Value(id);
 }
 void Plugin::CancelEditorEdits(bool includeMonitor) {
+  modalEdits_.Cancel();
   for (std::size_t index = 0; index < AllParameterSlots; ++index) {
     if (!includeMonitor &&
         (index == Master - Preset || index == Protection - Preset))
@@ -71,6 +72,13 @@ bool Plugin::QueuePanic() noexcept {
 }
 void Plugin::DrainEditor(const clap_output_events_t *out, bool notes) noexcept {
   DesignWrite publication(*this);
+  // Keep the latest prepared target pending while removed oscillators fade.
+  // Scalar automation and notes still run every block, independently.
+  if (!voice_ || voice_->CanApplyModalEdit())
+    modalEdits_.Consume([this](PreparedModalEdit &edit) {
+      if (voice_)
+        voice_->ApplyModalEdit(edit);
+    });
   host::Event event;
   // Bounded even if the UI producer is active throughout this callback.
   for (unsigned n = 0; n < 2047 && editorParams_->Pop(event); ++n) {

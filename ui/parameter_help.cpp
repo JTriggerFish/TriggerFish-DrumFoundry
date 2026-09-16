@@ -138,6 +138,10 @@ std::string ParameterHelp(const std::string &key) {
   if (key.find("colour_gain") != std::string::npos)
     return "Boosts or softens the region around Colour frequency. Zero leaves "
            "it unchanged.";
+  if (key == "output_colour_q")
+    return "Width of the colour boost or cut. Low Q shapes a broad region; "
+           "high Q focuses on a narrow ring. 0.7 is the original broad setting. "
+           "Scroll over the colour handle to change Q; Shift makes finer edits.";
   return {};
 }
 } // namespace drumfoundry::ui

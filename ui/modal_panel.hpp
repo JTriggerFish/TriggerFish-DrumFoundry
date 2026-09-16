@@ -13,6 +13,8 @@ public:
   void resized() override;
   void draw(visage::Canvas &) override;
   std::function<void()> committed;
+  std::function<void()> changed;
+  std::function<void()> cancelled;
   std::function<void(const std::string &)> error;
 
 private:

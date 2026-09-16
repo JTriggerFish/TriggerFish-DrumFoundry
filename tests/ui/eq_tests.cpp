@@ -27,6 +27,14 @@ void CheckResponse(const drumfoundry::editing::Document &d) {
     }
   }
 }
+bool HasSizeMeta(visage::Frame &frame) {
+  if (frame.name() == "size-meta")
+    return true;
+  for (auto *child : frame.children())
+    if (HasSizeMeta(*child))
+      return true;
+  return false;
+}
 } // namespace
 void EqTests(drumfoundry::editing::Document d) {
   extern void EqPanelTests(drumfoundry::editing::Document);
@@ -42,6 +50,7 @@ void EqTests(drumfoundry::editing::Document d) {
       Check(editing::RightColumn(p));
   }
   ui::ParameterPanel panel;
+  panel.meta = [](bool) {};
   panel.setBounds(0, 0, 280, 800);
   panel.Load(d, false);
   unsigned plots = 0;
@@ -53,15 +62,23 @@ void EqTests(drumfoundry::editing::Document d) {
   };
   count(count, panel);
   Check(plots == 1);
+  Check(!HasSizeMeta(panel));
+  ui::ParameterPanel resonance;
+  resonance.meta = [](bool) {};
+  resonance.Load(d, true);
+  Check(HasSizeMeta(resonance) == (d.Recipe() == "metal.cymbal.v1"));
   d.SetMany({{"output_eq_enabled", 1},
              {"output_low_cut", 60},
              {"output_colour_frequency", 1000},
              {"output_colour_gain", 6},
              {"output_high_cut", 10000}});
-  CheckResponse(d);
+  for (double q : {.1, .7, 4., 20.}) {
+    d.Set("output_colour_q", q);
+    CheckResponse(d);
+  }
   const auto before = d.JsonValue();
   ui::EqPlot plot(d, nullptr);
-  plot.setBounds(0, 0, 300, 270);
+  plot.setBounds(0, 0, 300, 297);
   Check(d.JsonValue() == before);
   unsigned changes = 0, commits = 0;
   plot.changed = [&] { ++changes; };
@@ -96,4 +113,6 @@ void EqTests(drumfoundry::editing::Document d) {
         d.Description("output_colour_frequency").initial);
   Check(d.Value("output_colour_gain") ==
         d.Description("output_colour_gain").initial);
+  Check(d.Value("output_colour_q") ==
+        d.Description("output_colour_q").initial);
 }

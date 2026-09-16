@@ -47,6 +47,10 @@ def sound_identity(document):
         params = node.get("parameters", {})
         if params.get("body_decay_frequency_7") == 15000:
             del params["body_decay_frequency_7"]
+        # The final bell previously had fixed Q=0.7. Exposing that exact value
+        # changes serialization, not sound; retain the original audio oracle.
+        if params.get("output_colour_q") == 0.7:
+            del params["output_colour_q"]
     sound = {
         "instrument": instrument,
         "event": document["controls"]["event"],

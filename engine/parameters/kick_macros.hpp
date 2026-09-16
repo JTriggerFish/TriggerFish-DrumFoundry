@@ -33,6 +33,7 @@ enum class KickParameter : std::size_t {
   HighCutHz,
   ColourFrequency,
   ColourGain,
+  ColourQ,
   Count
 };
 inline constexpr std::size_t KickParameterCount =

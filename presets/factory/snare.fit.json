@@ -159,7 +159,8 @@
           "output_low_cut": 38,
           "output_high_cut": 8639.29383993364,
           "output_colour_frequency": 210,
-          "output_colour_gain": 0
+          "output_colour_gain": 0,
+          "output_colour_q": 0.7
         },
         "editor": {
           "x": 994,

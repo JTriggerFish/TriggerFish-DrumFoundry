@@ -13,6 +13,8 @@ set(DRUMFOUNDRY_DSP_TESTS
   percussion_modal_drift_tests
   percussion_modal_motion_tests
   percussion_modal_tests
+  percussion_modal_live_tests
+  percussion_modal_retirement_tests
   percussion_observation_tests
   percussion_packet_coordinates_tests
   percussion_radiation_tests

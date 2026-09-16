@@ -85,6 +85,11 @@ public:
     return lastTransferredEnergy_;
   }
 
+  void RetainHistory(const ModalEnergyCascade &old) noexcept {
+    random_ = old.random_;
+    lastTransferredEnergy_ = old.lastTransferredEnergy_;
+  }
+
   void SetRates(float rate, float concentration, float energy) noexcept {
     rateOctavesPerSecond_ = std::clamp(rate, 0.f, 32.f);
     energyAcceleration_ = std::clamp(concentration, 0.f, 1.f);

@@ -38,7 +38,13 @@ The default Classic palette restores the original workbench colours; LazyVim
 remains a built-in choice. [JSON colour schemes](colour-schemes.md)
 can replace it through Settings without changing presets or synthesis.
 All instruments share a single graphical final output EQ: bypass, high-pass,
-one broad colour band and low-pass, with the live output spectrum behind it.
+one variable-width colour bell and low-pass, with the live output spectrum behind it.
+Peak Q is always visible as an editable readout (0.1–20; higher is narrower).
+Scroll over the bell handle to change width, or Shift-scroll for fine adjustment.
+Double-clicking the bell resets frequency, gain and Q. Existing presets keep
+their previous broad response through the Q=0.7 default. Q uses the same live,
+5 ms coefficient smoothing and CLAP automation path as frequency and gain;
+the response plot uses the actual DSP coefficients, with no extra EQ latency.
 The graph uses a dark inset and subdued spectrum, with outlined coloured handles
 and a bright response curve. Hover/drag shows the handle's value. Handles and
 click-to-edit numeric readouts remain editable when bypassed; editing never enables the EQ
@@ -167,8 +173,9 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   Export writes a portable copy. File selection uses an in-window Visage picker.
   Writes validate first and exclusively create a new file, never overwriting a
   previous fit. Native tests check round-trip persistence and overwrite rejection.
-- Bloom timing and Size meta are native in-window tools, opened from their
-  parameter sections. Sliders preview ordinary controls; release applies the
+- Bloom timing and Size meta are native in-window tools, opened from the
+  Bloom and Resonance sections respectively (Size is not an output EQ tool).
+  Sliders preview ordinary controls; release applies the
   patch, and Cancel restores the captured baseline. Bloom timing retains the
   web formula (rate × 2^-p, excitation tilt − 6p, centre × 2^(-p/4)). Size meta
   retains the old explicit design endpoints, not the current calibrated fits;
@@ -391,15 +398,19 @@ decay and tension controls also retain the sounding voice. Contact and thump/FM
 envelope edits shape the next hit without cutting off existing notes. EQ and
 gain changes have short click-reducing ramps, with no added audio latency.
 
-Routing, modal placement/allocation, packet texture and observation delay still
-prepare on release; tooltips distinguish these from live controls. Spectrogram
+Modal movement, prominence, widths, allocation, packet texture, drift and shimmer
+now update while dragging without restarting the ringing voice. Kick resonances
+and membrane pitch/character use the same prepared-publication path. Parameter
+design runs outside the callback; one sounding bank retains its state. New
+handles begin silent until excited; deleting a handle removes its stored energy.
+Routing and observation delay still prepare on release. Spectrogram
 previews are separate background work. One drag remains one undo step, and live
 undo/redo does not restart the audio device.
 
-These live-safe controls are also exposed to CLAP host automation with stable
+The lightweight live-safe controls are also exposed to CLAP host automation with stable
 IDs, sample-timed playback and begin/end gestures for recording UI drags. Host
 automation updates visible readouts without rebuilding the panel. Structural
-controls and CLAP per-note modulation remain outside this automation surface;
+controls, prepared modal edits and CLAP per-note modulation remain outside this automation surface;
 see [clap.md](clap.md).
 
 ## Modal bandwidth

@@ -25,6 +25,8 @@ void ModalPlot::Store() {
   redraw();
   if (changed)
     changed();
+  if (edited)
+    edited();
 }
 void ModalPlot::mouseDown(const visage::MouseEvent &e) {
   if (!document_ || modes_.empty() || !e.isLeftButton() || e.position.x < 42 ||
@@ -116,7 +118,8 @@ bool ModalPlot::mouseWheel(const visage::MouseEvent &e) {
 }
 bool ModalPlot::keyPress(const visage::KeyEvent &e) {
   if (e.keyCode() == visage::KeyCode::Escape) {
-    if (dragging_ && edited_) {
+    const bool restore = dragging_ && edited_;
+    if (restore) {
       ReplaceModes(*document_, dragModes_);
       modes_ = dragModes_;
     }
@@ -126,6 +129,9 @@ bool ModalPlot::keyPress(const visage::KeyEvent &e) {
     redraw();
     if (changed)
       changed();
+    // The parent must restore the live engine and close its gesture too.
+    if (restore && cancelled)
+      cancelled();
     return true;
   }
   if (e.keyCode() != visage::KeyCode::Delete &&

@@ -88,6 +88,7 @@ struct ModalAnchor {
   float diffuseEnergy{};
   float exchangeAmount{};
   float allocationWeight{1.f};
+  std::uint32_t slot{};
 };
 
 float ExcitationTiltGain(const float frequencyHz, const float centreHz,
@@ -112,7 +113,7 @@ std::size_t BuildActiveAnchors(
     anchors[count++] = {
         Positive(fit.sparseFrequencyHz[index], 1000.f), fit.sparseAmplitude[index],
         fit.fieldTurbulenceScale[index], 0.f, 0.f, 0.f,
-        fit.fieldAllocationWeight[index]};
+        fit.fieldAllocationWeight[index], static_cast<std::uint32_t>(index)};
   }
   std::sort(anchors.begin(), anchors.begin() + count,
             [](const auto &left, const auto &right) {
@@ -216,6 +217,7 @@ CrashModalField::Parameters ModalField(
     // incoherent power because its excitation weights have unit squared sum.
     // Do not divide again by handle count or renormalize a sounding tail.
     const float anchorOutputGain = anchorOutputGains[anchor];
+    std::uint32_t member = 0;
     const auto makeMode = [&](const float frequency, const float weight,
                               const float phase, const float bandwidthScale) {
       const float safeFrequency = std::clamp(frequency, CrashModalMinimumFrequencyHz,
@@ -234,7 +236,7 @@ CrashModalField::Parameters ModalField(
           bandwidthErb * ErbBandwidth(safeFrequency) * bandwidthScale * blurColour,
           static_cast<std::uint16_t>(anchor),
           anchors[anchor].exchangeAmount,
-          centre};
+          centre, 1u + 1024u * anchors[anchor].slot + member++, anchors[anchor].slot + 1};
     };
 
     const std::size_t packetBegin = modeIndex;
@@ -252,6 +254,7 @@ CrashModalField::Parameters ModalField(
     } else {
       makeMode(centre, coreWeight, 0.f, .35f);
     }
+    member = 2; // Satellite identities do not depend on a paired centre.
     for (std::size_t pair = 0; pair < pairCount; ++pair) {
       const float jitter = .92f + .08f * random.Uniform();
       const bool doublets = fit.fieldDistribution == ModalPacketDistribution::Doublets;
@@ -304,7 +307,8 @@ void SetLocationProjections(const Parameters &modes,
 RadiationFilterParameters CrashOutputEqParameters(
     const CrashCymbalFitParameters &fit) noexcept {
   return SimpleOutputEqParameters(fit.outputLowCutHz, fit.outputColourFrequencyHz,
-                                  fit.outputColourGainDb, fit.outputHighCutHz);
+                                  fit.outputColourGainDb, fit.outputHighCutHz,
+                                  fit.outputColourQ);
 }
 
 CrashCymbalParameters DefaultCrashCymbalParameters(

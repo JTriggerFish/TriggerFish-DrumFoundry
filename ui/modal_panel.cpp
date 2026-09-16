@@ -17,6 +17,14 @@ ModalPanel::ModalPanel() {
            &allocation_})
     addChild(frame);
   plot_.changed = [this] { Sync(); };
+  plot_.edited = [this] {
+    if (changed)
+      changed();
+  };
+  plot_.cancelled = [this] {
+    if (cancelled)
+      cancelled();
+  };
   plot_.committed = [this] {
     if (committed)
       committed();
@@ -141,6 +149,8 @@ void ModalPanel::EditSelection() {
             {frequency_.Value(), level_.Value(), noisiness_.Value(),
              allocation_.Value()});
     plot_.Refresh();
+    if (changed)
+      changed();
   } catch (const std::exception &e) {
     if (error)
       error(e.what());

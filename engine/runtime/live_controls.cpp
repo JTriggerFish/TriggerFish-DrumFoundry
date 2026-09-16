@@ -37,7 +37,18 @@ bool ValidLiveDecay(const CrashMacroValues &values) noexcept {
       });
 }
 
-bool ValidateLiveEdit(const Json &before, const Json &next) {
+bool IsPreparedLiveParameter(std::string_view recipe, std::string_view key) {
+  if (recipe == "metal.cymbal.v1")
+    return (Starts(key, "resolved_") || Starts(key, "field_") ||
+            key == "body_tune" || key == "body_brightness" ||
+            key == "body_excitation_centre");
+  return Starts(key, "resonance_frequency_") ||
+         Starts(key, "resonance_level_") || key == "fundamental_hz" ||
+         key == "inharmonicity" || key == "body_brightness";
+}
+
+bool ValidateLiveEdit(const Json &before, const Json &next,
+                      bool allowPrepared) {
   auto previous = before;
   auto &oldPatch = Instrument(previous);
   const auto &patch =
@@ -58,7 +69,8 @@ bool ValidateLiveEdit(const Json &before, const Json &next) {
         return false;
       if (value == old.at(key))
         continue;
-      if (!IsLiveParameter(recipe, key))
+      if (!IsLiveParameter(recipe, key) &&
+          !(allowPrepared && IsPreparedLiveParameter(recipe, key)))
         return false;
       const auto kind = ParseRecipe(recipe);
       const ParameterDescriptor *description = nullptr;

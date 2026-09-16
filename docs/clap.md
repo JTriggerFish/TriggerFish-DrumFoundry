@@ -110,8 +110,11 @@ old-voice automation is not copied into the new preset. UI design edits resume
 after activation. Coupled UI edit priorities are captured from the starting
 document before sorting, never read from moving automation during the sort.
 
-Routing, mode geometry/allocation and packet texture still require preparation
-on release and are **not** automatable yet. Factory selection and limiter enable
+Mode geometry/allocation and packet texture now update during editor drags via
+off-thread preparation and state-preserving block-boundary adoption. They are
+**not** host-automatable yet: that needs a coalesced preparation worker, not heavy
+work in the sample-timed scalar setter. Routing still uses replacement on release.
+See [live modal editing](live-modal-editing.md). Factory selection and limiter enable
 are exposed but not marked automatable; gain reduction and latency are read-only.
 CLAP modulation and per-note modulation remain future work. Real-host recording
 and playback smoke testing remains necessary in addition to the automated test host.

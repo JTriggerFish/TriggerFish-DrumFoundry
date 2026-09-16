@@ -66,6 +66,7 @@ bool Plugin::Activate(double rate, uint32_t minimum, uint32_t maximum) {
   if (active || minimum < 1 || maximum < minimum || maximum > 1048576)
     return false;
   const auto desired = CaptureDesired();
+  modalEdits_.Cancel(); // Activation builds the latest complete saved design.
   const auto &controls = desired.controls;
   auto next =
       std::make_unique<Voice>(static_cast<float>(rate), desired.document);

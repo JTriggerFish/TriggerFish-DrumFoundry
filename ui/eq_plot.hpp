@@ -15,6 +15,7 @@ public:
   void mouseUp(const visage::MouseEvent &) override;
   void mouseMove(const visage::MouseEvent &) override;
   void mouseExit(const visage::MouseEvent &) override;
+  bool mouseWheel(const visage::MouseEvent &) override;
   std::function<void()> changed, committed;
   std::function<unsigned()> previewRate;
   std::function<void(const std::string &)> error;
@@ -32,10 +33,10 @@ private:
   void EditValue(unsigned);
   void SyncReadouts();
   HelpButton enabled_;
-  std::array<HelpButton, 4> values_;
+  std::array<HelpButton, 5> values_;
   visage::TextEditor entry_;
   unsigned editing_{};
-  std::array<double, 5> displayed_{};
+  std::array<double, 6> displayed_{};
   bool readoutsReady_{};
   editing::Document &document_;
   const LiveSpectrum *spectrum_;

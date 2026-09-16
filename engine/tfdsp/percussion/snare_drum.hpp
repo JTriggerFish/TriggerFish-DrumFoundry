@@ -64,6 +64,9 @@ public:
   float MembraneEnergy() const noexcept { return membrane_.ModalEnergy(); }
   float WireEnergy() const noexcept { return wires_.StoredEnergy(); }
   void SetLiveControls(const SnareDrumParameters &parameters) noexcept;
+  void AdoptModalEdit(const MembraneResonator<MembraneModeCount>::PreparedParameters &p) noexcept {
+    membrane_.AdoptModalEdit(p);
+  }
   void
   SetLiveDecay(const std::array<float, MembraneModeCount> &radii) noexcept {
     membrane_.SetLiveDecay(radii);
