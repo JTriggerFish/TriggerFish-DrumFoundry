@@ -2,6 +2,9 @@
 
 #include "deterministic_random.hpp"
 #include "modal_constraint.hpp"
+#include "modal_friction_loss.hpp"
+#include "modal_rim_contact.hpp"
+#include "live_gain.hpp"
 #include "modal_identity_map.hpp"
 #include "retiring_modal_output.hpp"
 #include "smooth_modal_drift.hpp"
@@ -19,7 +22,7 @@ namespace tfdsp::percussion {
 
 // One bank spans coherent ridges, overlapping modal packets and stochastic
 // wash. Random phase kicks and local Givens rotations preserve modal energy;
-// only the declared pole radii and external constraints remove it.
+// only declared pole radii, optional friction loss and constraints remove it.
 template <std::size_t ModeCount> class StochasticModalField {
 public:
   static_assert(ModeCount > 0, "a modal field needs at least one mode");
@@ -38,9 +41,13 @@ public:
     const auto primaryProjection = excitationProjection_;
     const auto secondaryProjection = secondaryExcitationProjection_;
     const bool normalizePrimary = primaryProjectionEnergyNormalized_;
+    const float tailDamping = tailDamping_;
+    const auto rimContact = rimContact_.Parameters();
     LoadPrepared(PrepareStochasticModalField(
         sampleRate_, parameters, CurrentControls(),
         lowCrossoverHz_, highCrossoverHz_));
+    SetTailDamping(tailDamping, true);
+    SetRimContact(rimContact, true);
     if (normalizePrimary) {
       SetEnergyNormalizedProjection(
           primaryProjection, excitationProjection_, primaryDriveGain_);
@@ -78,6 +85,9 @@ public:
     packetIdentity_ = prepared.packetIdentity;
     packet_ = prepared.packet;
     frequencyHz_ = prepared.frequencyHz;
+    rimContact_.Prepare(sampleRate_, frequencyHz_, inputGain_, packetIdentity_,
+                        activeModeCount_);
+    rimContact_.SetParameters({}, true);
     band_ = prepared.band;
     driftDepthHz_ = prepared.driftDepthHz;
     driftKnotsPerSecond_ = prepared.driftKnotsPerSecond;
@@ -100,6 +110,8 @@ public:
     damping_ = {};
     targetOutputGain_ = outputGain_;
     gainRampRemaining_ = 0;
+    tailDamping_ = 0.f;
+    liveTailDamping_.Reset(0.f);
     Reset();
   }
 
@@ -121,6 +133,8 @@ public:
     cascade_.Reset();
     drift_.Reset();
     motion_.Reset();
+    liveTailDamping_.Reset(tailDamping_);
+    rimContact_.Reset();
   }
 
   void SetExcitationProjection(const Projection &projection) noexcept {
@@ -160,13 +174,25 @@ public:
       if (drift_.Enabled()) Propagate<true, false>(primaryInput, secondaryInput);
       else Propagate<false, false>(primaryInput, secondaryInput);
     }
+    ApplyModalFrictionLoss(real_, imaginary_, inputGain_, activeModeCount_,
+                           liveTailDamping_.Next() / sampleRate_);
     cascade_.Process(real_, imaginary_);
+    rimContact_.Process(real_, imaginary_);
     return tfdsp::FiniteNormalOrZero(
         ExchangeNeighboursAndSum() + retiring_.Process(damping_));
   }
 
   std::size_t ActiveModeCount() const noexcept { return activeModeCount_; }
   const Projection &Frequencies() const noexcept { return frequencyHz_; }
+  void SetRimContact(ModalRimContactParameters p, bool immediate = false) noexcept {
+    rimContact_.SetParameters(p, immediate);
+  }
+  // Normalized modal amplitude removed per second, zero preserves old sound.
+  void SetTailDamping(float amount, bool immediate = false) noexcept {
+    tailDamping_ = Unit(amount);
+    if (immediate) liveTailDamping_.Reset(tailDamping_);
+    else liveTailDamping_.Target(tailDamping_, sampleRate_);
+  }
   void SetOrderedDecayRadii(const Projection &radii) noexcept {
     const std::array<float, 3> gain{damping_.low, damping_.middle,
                                     damping_.high};
@@ -184,7 +210,7 @@ public:
   }
 
   double StoredEnergy() const noexcept {
-    double result = 0.0;
+    double result = 2 * rimContact_.StoredEnergy();
     for (std::size_t mode = 0; mode < activeModeCount_; ++mode)
       result += static_cast<double>(real_[mode]) * real_[mode] +
           static_cast<double>(imaginary_[mode]) * imaginary_[mode];
@@ -407,6 +433,9 @@ private:
   float driftDepthHz_{};
   float driftKnotsPerSecond_{8.f};
   ModalDampingGains damping_{};
+  LiveGain liveTailDamping_{};
+  ModalRimContact<ModeCount> rimContact_{};
+  float tailDamping_{};
   float sampleRate_{48000.f};
   float lowCrossoverHz_{700.f};
   float highCrossoverHz_{6500.f};

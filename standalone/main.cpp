@@ -12,7 +12,7 @@
 namespace {
 struct Options {
   drumfoundry::standalone::AudioSettings audio;
-  std::string midi{"all"}, preset{"kick"};
+  std::string midi{"all"}, preset{"hihat"};
   bool list{}, midiList{}, midiCheck{}, smoke{}, audition{}, gui{}, uiSmoke{},
       pluginGuiSmoke{};
   unsigned seconds{};

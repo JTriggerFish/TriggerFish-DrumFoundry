@@ -51,6 +51,28 @@ def sound_identity(document):
         # changes serialization, not sound; retain the original audio oracle.
         if params.get("output_colour_q") == 0.7:
             del params["output_colour_q"]
+        # Optional loss and direct strike accent are exact bypasses at zero.
+        # Keep the original PCM/signature oracle rather than regenerating it.
+        if params.get("body_decay_friction") == 0:
+            del params["body_decay_friction"]
+        if params.get("hat_contact_enabled", 0) == 0:
+            for key in (
+                "hat_contact_enabled",
+                "hat_openness",
+                "hat_clearance",
+                "hat_contact_loss",
+                "hat_pedal_strength",
+                "hat_rattle_motion",
+                "hat_settling",
+            ):
+                params.pop(key, None)
+        if params.get("contact_noise_level", 0) == 0:
+            for key in (
+                "contact_noise_level",
+                "contact_noise_decay",
+                "contact_noise_colour",
+            ):
+                params.pop(key, None)
     sound = {
         "instrument": instrument,
         "event": document["controls"]["event"],
@@ -60,15 +82,23 @@ def sound_identity(document):
 
 
 def render_case(presets, case):
-    """Enforce the original patch identity before comparing a saved baseline."""
-    preset = Path(presets) / f"{case['preset']}.fit.json"
+    """Render the manifest's original patch, verifying identity before use.
+
+    Archived cases declare a preset_file relative to the supplied preset folder.
+    Do not guess/fall back to an archive on hash mismatch: that could conceal a
+    real, unintended preset edit.
+    """
+    preset = Path(presets) / case.get("preset_file", f"{case['preset']}.fit.json")
     content = preset.read_bytes().replace(b"\r\n", b"\n")
     identity = (
         sound_identity(json.loads(content))
         if "sound_sha256" in case
         else hashlib.sha256(content).hexdigest()
     )
-    if identity != case.get("sound_sha256", case["preset_sha256_lf"]):
+    expected = (
+        case["sound_sha256"] if "sound_sha256" in case else case["preset_sha256_lf"]
+    )
+    if identity != expected:
         raise ValueError(f"Migration preset changed: {preset.name}")
     events = [{"time": t} for t in (0, 0.5, 1, 1.5, 2)] if case["repeated"] else None
     with Renderer(preset, case["rate"]) as renderer:

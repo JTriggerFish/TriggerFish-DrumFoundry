@@ -33,6 +33,9 @@ void Voice::Configure(Json document) {
   event_ = event;
 }
 void Voice::Reset() noexcept {
+  // Pending scalar edits become initial conditions, not a pedal gesture that
+  // can unexpectedly sound after a reset.
+  FlushParameters();
   switch (session_->recipe) {
   case detail::Recipe::MetallicPlate:
     session_->cymbal.Reset();

@@ -278,6 +278,7 @@
     },
     {
       "preset": "hihat",
+      "preset_file": "../legacy/hihat.fit.json",
       "rate": 44100,
       "repeated": false,
       "preset_sha256_lf": "ea596de81aaa5040749606ef9dd69b3df6052057b3f470396a1bb52ed2db4dcb",
@@ -309,6 +310,7 @@
     },
     {
       "preset": "hihat",
+      "preset_file": "../legacy/hihat.fit.json",
       "rate": 44100,
       "repeated": true,
       "preset_sha256_lf": "ea596de81aaa5040749606ef9dd69b3df6052057b3f470396a1bb52ed2db4dcb",
@@ -340,6 +342,7 @@
     },
     {
       "preset": "hihat",
+      "preset_file": "../legacy/hihat.fit.json",
       "rate": 48000,
       "repeated": false,
       "preset_sha256_lf": "ea596de81aaa5040749606ef9dd69b3df6052057b3f470396a1bb52ed2db4dcb",
@@ -371,6 +374,7 @@
     },
     {
       "preset": "hihat",
+      "preset_file": "../legacy/hihat.fit.json",
       "rate": 48000,
       "repeated": true,
       "preset_sha256_lf": "ea596de81aaa5040749606ef9dd69b3df6052057b3f470396a1bb52ed2db4dcb",

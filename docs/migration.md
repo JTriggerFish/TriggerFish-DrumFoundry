@@ -59,6 +59,14 @@ python -m drumfoundry.migration tests/fixtures/migration-v1.json presets/factory
 ```
 
 The command verifies preset/oracle hashes and fails above 0.2% relative RMS. It
+uses each manifest case's optional `preset_file`, relative to the supplied preset
+directory. Historical hi-hat cases explicitly point to
+`../legacy/hihat.fit.json`; the current factory Hi-hat is intentionally different.
+The CLI and regression tests share this resolution and identity check. Missing
+or modified archived patches remain errors: there is no automatic fallback or
+regenerated baseline.
+
+The full-PCM comparison
 is read-only. This strict historical check now detects the intentional final-EQ
 Q change from 0.8 to 0.7 in ride/hi-hat: roughly 0.22–0.31% relative RMS, rather
 than a renderer regression. Accounting for that known filter change reduced the

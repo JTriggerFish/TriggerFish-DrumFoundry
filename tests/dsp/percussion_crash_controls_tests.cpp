@@ -71,6 +71,7 @@ void TestSharedOutputEq() {
     for (const bool enabled : {false, true}) {
       CrashCymbalFitParameters fit;
       fit.directGain = .37f;
+      fit.observedNoiseLevel = .5f;
       fit.fieldGain = .81f;
       fit.outputGain = .7f;
       fit.outputEqEnabled = enabled;
@@ -90,6 +91,7 @@ void TestSharedOutputEq() {
         for (int sample = 0; sample < 4000; ++sample) {
           const auto frame = cymbal.ProcessFrame();
           const float mix = fit.directGain * frame.directContact +
+                            fit.observedNoiseLevel * frame.noiseAccent +
                             fit.fieldGain * frame.modalBody;
           const float output =
               fit.outputGain * (enabled ? expected.Process(mix) : mix);

@@ -157,6 +157,13 @@ int df_process(df_voice *p, float *output, uint32_t frames) {
     p->voice.Process(output, frames);
   });
 }
+int df_set_parameter(df_voice *p, uint32_t index, float value) {
+  return Checked([&] {
+    Require(p);
+    if (!p->voice.StageParameter(index, value))
+      throw std::invalid_argument("Invalid or non-live parameter");
+  });
+}
 int df_set_mute(df_voice *p, float amount) {
   return Checked([&] {
     Require(p);

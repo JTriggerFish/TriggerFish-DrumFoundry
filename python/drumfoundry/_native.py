@@ -94,6 +94,7 @@ def load_library():
         "df_default_patch": (string, [string]),
         "df_reset": (integer, [pointer]),
         "df_set_mute": (integer, [pointer, ct.c_float]),
+        "df_set_parameter": (integer, [pointer, ct.c_uint32, ct.c_float]),
         "df_default_strike": (integer, [pointer, ct.POINTER(Strike)]),
         "df_trigger": (integer, [pointer, ct.POINTER(Strike)]),
         "df_process": (integer, [pointer, ct.POINTER(ct.c_float), ct.c_uint32]),

@@ -9,6 +9,7 @@ visage::theme::ColorId SectionAccent(const std::string &section) {
   if (section == "Output")
     return colours::Muted;
   if (section == "Contact" || section == "Contact presentation" ||
+      section == "Strike accent" ||
       section == "Thump")
     return colours::Warning;
   if (section == "Bloom / energy travel" || section == "Strike / tension")

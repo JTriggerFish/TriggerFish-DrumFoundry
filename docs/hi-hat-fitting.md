@@ -1,5 +1,11 @@
 # Hi-hat calibration
 
+**Historical fitting notes.** The current factory Hi-hat uses the accepted
+[rim-contact/rattle model](hi-hat-contact.md) and is the startup voice.
+The previous factory patch is retained in `presets/legacy/hihat.fit.json` for
+sound-preservation tests. Earlier local audition fits and render experiments
+are archived separately; they are not the current recommended starting point.
+
 Current scope: **open hi-hat**, fitted across four layers of one local 14-inch
 reference set. Closed/half-open fitting and pedal interpolation remain separate.
 References, renders and calibration presets stay outside Git.
@@ -199,8 +205,10 @@ saved sound measured about 0.67 dB RMS, the candidate 2.02, and the reference
 check gain invariance, rejection of smooth exponential decay, and sensitivity
 to amplitude modulation. Fixed-scale spectrogram inspection remains necessary.
 
-Private run artifacts are under `build/hat-sizzle-refinement-01` through `-05`;
+Archived private run artifacts are under
+`build/legacy/hi-hat/hat-sizzle-refinement-01` through `-05`;
 the final reload/seed/restrike audit and publication receipt are under
-`build/hat-sizzle-audition-final`. Earlier experiment candidates are not exposed
-in the preset menu. The published local preset is **Hi-hat open — late sizzle
-candidate**; the user's source document is preserved.
+`build/legacy/hi-hat/hat-sizzle-audition-final`. Earlier local audition presets
+are available under **User → Legacy → Hi-hat**. The historical preset
+**Hi-hat open — late sizzle candidate** is archived there too, not the current
+factory sound; the user's source document is preserved.

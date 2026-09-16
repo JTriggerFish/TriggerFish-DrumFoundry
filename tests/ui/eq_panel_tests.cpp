@@ -42,6 +42,13 @@ void EqPanelTests(drumfoundry::editing::Document d) {
                {"output_colour_frequency", 1000},
                {"output_colour_gain", 6}});
     panel.Load(d, false);
+    if (d.Recipe() == "metal.cymbal.v1") {
+      for (const auto *key : {"contact_noise_level", "contact_noise_decay",
+                              "contact_noise_colour", "body_decay_friction",
+                              "hat_openness", "hat_clearance", "hat_contact_loss",
+                              "hat_pedal_strength", "hat_rattle_motion", "hat_settling"})
+        Check(Find<Slider>(panel, ParameterHelp(key)) != nullptr);
+    }
     auto *plot = Find<EqPlot>(panel);
     auto *enabled =
         Find<HelpButton>(panel, ParameterHelp("output_eq_enabled"));

@@ -114,6 +114,15 @@ std::array<CrashMacroDescriptor, CrashMacroCount> BuildDescriptors() {
   set(CrashMacro::DirectGain,
       Linear("direct_gain", "Contact presence", "", 0.f, 2.f,
              fit.directGain));
+  set(CrashMacro::ContactNoiseLevel,
+      Linear("contact_noise_level", "Noise accent level", "x", 0.f, 2.f,
+             fit.observedNoiseLevel));
+  set(CrashMacro::ContactNoiseDecay,
+      Logarithmic("contact_noise_decay", "Noise accent decay", "s", .002f,
+                  .12f, fit.observedNoiseDecaySeconds));
+  set(CrashMacro::ContactNoiseColour,
+      Linear("contact_noise_colour", "Noise accent brightness", "dB", -24.f,
+             24.f, fit.observedNoiseColourDb));
 
   set(CrashMacro::OutputEqEnabled,
       {"output_eq_enabled", "Enable final EQ", "", 0.f, 1.f,
@@ -138,6 +147,29 @@ std::array<CrashMacroDescriptor, CrashMacroCount> BuildDescriptors() {
       Logarithmic("body_decay_frequency_7", "Upper decay frequency", "Hz",
                   15000.f, CrashModalMaximumFrequencyHz,
                   fit.bodyDecayMaximumFrequencyHz));
+  set(CrashMacro::BodyTailDamping,
+      Linear("body_decay_friction", "Tail damping", "/s", 0.f, 1.f, 0.f));
+  set(CrashMacro::HatContactEnabled,
+      {"hat_contact_enabled", "Enable rim contact", "", 0.f, 1.f,
+       fit.rimContact.enabled ? 1.f : 0.f, CrashMacroScale::Boolean});
+  set(CrashMacro::HatOpenness,
+      Linear("hat_openness", "Pedal openness", "", 0.f, 1.f,
+             fit.rimContact.openness));
+  set(CrashMacro::HatClearance,
+      Logarithmic("hat_clearance", "Open clearance", "", .0001f, 2.f,
+                  fit.rimContact.clearance));
+  set(CrashMacro::HatContactLoss,
+      Linear("hat_contact_loss", "Contact damping", "", 0.f, 1.f,
+             fit.rimContact.loss));
+  set(CrashMacro::HatPedalStrength,
+      Linear("hat_pedal_strength", "Pedal strength", "", 0.f, 4.f,
+             fit.rimContact.pedalStrength));
+  set(CrashMacro::HatRattleMotion,
+      Linear("hat_rattle_motion", "Rattle motion", "", 0.f, 1.f,
+             fit.rimContact.motion));
+  set(CrashMacro::HatSettling,
+      Linear("hat_settling", "Settling", "", 0.f, 1.f,
+             fit.rimContact.settling));
   for (std::size_t interior = 0; interior < BodyDecayInteriorPointCount;
        ++interior) {
     const std::size_t point = interior + 1;
@@ -341,10 +373,21 @@ CrashCymbalFitParameters ApplyCrashMacros(
   fit.bodyExcitationGain = Value(values, CrashMacro::BodyExcitation);
   fit.fieldGain = Value(values, CrashMacro::FieldGain);
   fit.directGain = Value(values, CrashMacro::DirectGain);
+  fit.observedNoiseLevel = Value(values, CrashMacro::ContactNoiseLevel);
+  fit.observedNoiseDecaySeconds = Value(values, CrashMacro::ContactNoiseDecay);
+  fit.observedNoiseColourDb = Value(values, CrashMacro::ContactNoiseColour);
   fit.sparseTune = Value(values, CrashMacro::BodyTune);
 
   ApplyResolvedPaint(fit, values);
   ApplyBodyDecay(fit, values);
+  fit.bodyTailDamping = Value(values, CrashMacro::BodyTailDamping);
+  fit.rimContact.enabled = Value(values, CrashMacro::HatContactEnabled) >= .5f;
+  fit.rimContact.openness = Value(values, CrashMacro::HatOpenness);
+  fit.rimContact.clearance = Value(values, CrashMacro::HatClearance);
+  fit.rimContact.loss = Value(values, CrashMacro::HatContactLoss);
+  fit.rimContact.pedalStrength = Value(values, CrashMacro::HatPedalStrength);
+  fit.rimContact.motion = Value(values, CrashMacro::HatRattleMotion);
+  fit.rimContact.settling = Value(values, CrashMacro::HatSettling);
 
   fit.outputEqEnabled =
       Value(values, CrashMacro::OutputEqEnabled) >= .5f;

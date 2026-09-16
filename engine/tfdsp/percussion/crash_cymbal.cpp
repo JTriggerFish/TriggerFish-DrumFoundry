@@ -51,6 +51,8 @@ void CrashCymbal::Prepare(const float sampleRate,
   PrepareComponents(sampleRate, parameters);
   modalField_.Prepare(sampleRate, parameters.modalField,
                       parameters.modalFieldControls, 700.f, 6500.f);
+  modalField_.SetTailDamping(parameters.fit.bodyTailDamping, true);
+  modalField_.SetRimContact(parameters.fit.rimContact, true);
   Reset();
 }
 
@@ -58,6 +60,8 @@ void CrashCymbal::Prepare(
     const CrashCymbalPreparedParameters &prepared) {
   PrepareComponents(prepared.sampleRate, prepared.parameters);
   modalField_.LoadPrepared(prepared.modalField);
+  modalField_.SetTailDamping(prepared.parameters.fit.bodyTailDamping, true);
+  modalField_.SetRimContact(prepared.parameters.fit.rimContact, true);
   Reset();
 }
 
@@ -68,6 +72,7 @@ void CrashCymbal::PrepareComponents(
   sampleRate_ = sampleRate;
   parameters_ = parameters;
   contact_.Prepare(sampleRate);
+  observedNoise_.Prepare(sampleRate);
   outputEq_.Prepare(sampleRate, parameters.outputEq,
                     parameters.fit.outputEqEnabled);
   contactLevel_ = std::clamp(
@@ -82,10 +87,12 @@ void CrashCymbal::PrepareComponents(
   liveBody_.Reset(bodyLevel_);
   liveExcitation_.Reset(bodyExcitationGain_);
   liveOutput_.Reset(parameters.fit.outputGain);
+  liveObservedNoise_.Reset(parameters.fit.observedNoiseLevel);
 }
 
 void CrashCymbal::Reset() noexcept {
   contact_.Reset();
+  observedNoise_.Reset();
   modalField_.Reset();
   outputEq_.Reset();
   modalConstraint_.Reset();
@@ -99,6 +106,8 @@ void CrashCymbal::Trigger(const CrashCymbalHit &hit) noexcept {
     return;
   SetExcitationProjection(hit.location, strength);
   contact_.Trigger(ContactParameters(hit));
+  observedNoise_.Trigger(strength, parameters_.fit.observedNoiseDecaySeconds,
+                         parameters_.fit.observedNoiseColourDb, hit.seed);
 }
 
 CrashCymbalFrame CrashCymbal::ProcessFrame() noexcept {
@@ -108,6 +117,9 @@ CrashCymbalFrame CrashCymbal::ProcessFrame() noexcept {
   hasProcessedSinceReset_ = true;
   const auto modalLoss = modalConstraint_.Process();
   const auto contact = contact_.Process();
+  const float noiseAccent = observedNoise_.Process();
+  const float audibleContact = contactLevel_ * contact.directRadiation +
+      liveObservedNoise_.Next() * noiseAccent;
   const float bodyDrive =
       bodyExcitationGain_ * contact.bodyDrive;
   const float body = modalField_.ProcessExcitedPair(
@@ -117,12 +129,12 @@ CrashCymbalFrame CrashCymbal::ProcessFrame() noexcept {
   // One observation EQ shapes the complete mix; neither source has a hidden EQ.
   const float mix =
       (routing_.Enabled(MetallicPlateRoute::ContactToObservation)
-           ? contactLevel_ * contact.directRadiation : 0.f) +
+           ? audibleContact : 0.f) +
       (routing_.Enabled(MetallicPlateRoute::BodyToObservation)
            ? bodyLevel_ * body : 0.f);
   const float output = outputEq_.Process(mix);
   return {contact.directRadiation, modalField_.LastCascadeTransferEnergy(),
-          body, tfdsp::FiniteNormalOrZero(liveOutput_.Next() * output)};
+          body, tfdsp::FiniteNormalOrZero(liveOutput_.Next() * output), noiseAccent};
 }
 
 void CrashCymbal::SetLiveControls(
@@ -130,9 +142,12 @@ void CrashCymbal::SetLiveControls(
   parameters_.fit = fit;
   outputEq_.SetTarget(CrashOutputEqParameters(fit), fit.outputEqEnabled);
   liveContact_.Target(fit.directGain, sampleRate_);
+  liveObservedNoise_.Target(fit.observedNoiseLevel, sampleRate_);
   liveBody_.Target(fit.fieldGain, sampleRate_);
   liveExcitation_.Target(fit.bodyExcitationGain, sampleRate_);
   liveOutput_.Target(fit.outputGain, sampleRate_);
+  modalField_.SetTailDamping(fit.bodyTailDamping);
+  modalField_.SetRimContact(fit.rimContact);
   modalField_.SetCascadeRates(fit.bloomRateOctavesPerSecond,
                               fit.bloomEnergyAcceleration,
                               fit.bloomEnergySensitivity);

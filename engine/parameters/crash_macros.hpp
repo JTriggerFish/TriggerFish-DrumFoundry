@@ -64,6 +64,17 @@ enum class CrashMacro : std::size_t {
   FieldMotionSharing,
   BodyDecayMaximumFrequency,
   OutputColourQ,
+  ContactNoiseLevel,
+  ContactNoiseDecay,
+  ContactNoiseColour,
+  BodyTailDamping,
+  HatContactEnabled,
+  HatOpenness,
+  HatClearance,
+  HatContactLoss,
+  HatPedalStrength,
+  HatRattleMotion,
+  HatSettling,
   Count
 };
 

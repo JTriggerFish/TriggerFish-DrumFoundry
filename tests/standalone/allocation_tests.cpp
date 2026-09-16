@@ -31,7 +31,10 @@ void operator delete[](void *p, std::size_t) noexcept { ::operator delete(p); }
 
 int main() {
   drumfoundry::standalone::PluginHost host;
+  if (host.Value(100) != 2)
+    return 1; // Standalone and CLAP share the official hi-hat startup voice.
   auto &stoppedPlugin = drumfoundry::clap_adapter::Plugin::Get(host.Api());
+  stoppedPlugin.SelectFactory(0); // First queue test explicitly exercises kick EQ.
   for (const auto &p : drumfoundry::clap_adapter::DesignParameters())
     if (p.recipe == drumfoundry::detail::Recipe::Kick &&
         p.descriptor->key == "output_colour_gain") {
@@ -96,7 +99,8 @@ int main() {
     for (const auto &p : drumfoundry::clap_adapter::DesignParameters())
       if (p.recipe == livePlugin.DesignRecipe()) {
         const auto &d = *p.descriptor;
-        const double v = int(d.scale) >= 2
+        const double v = d.key == "hat_contact_enabled" ? 1.
+                         : int(d.scale) >= 2
                              ? d.defaultValue
                              : d.minimum + .37 * (d.maximum - d.minimum);
         automated.emplace_back(p.id, v);
@@ -105,6 +109,8 @@ int main() {
     for (int block = 0; block < 128; ++block) {
       if (block % 16 == 0)
         host.midi[0].Push({true, 0, 0, {0x90, 60, 100}});
+      host.midi[1].Push({true, 0, 0,
+                        {0xb9, 4, static_cast<uint8_t>(block % 16 ? 127 : 0)}});
       host.controls.Push({false, 105, -18.0, {}});
       // Exercise every advertised live setter in the actual audio callback.
       if (std::size_t(block) < automated.size())

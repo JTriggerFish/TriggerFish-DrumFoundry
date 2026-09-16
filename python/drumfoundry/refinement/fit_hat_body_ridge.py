@@ -19,6 +19,8 @@ def prominence(parameters, boost, frequency, coherence):
     # Scale contact with the other observation paths. Otherwise a relative
     # low-packet boost also raises contact/body ratio, contaminating the attack.
     p["direct_gain"] /= 10 ** (boost / 20)
+    if "contact_noise_level" in p:
+        p["contact_noise_level"] /= 10 ** (boost / 20)
     for i in range(1, 32):
         if p[f"resolved_level_{i}"] > -72:
             p[f"resolved_level_{i}"] = max(-71, p[f"resolved_level_{i}"] - boost)

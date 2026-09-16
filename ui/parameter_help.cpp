@@ -5,23 +5,69 @@ namespace drumfoundry::ui {
 // docs.
 std::string ParameterHelp(const std::string &key) {
   static const std::map<std::string, std::string> help{
+      {"hat_rattle_motion", "Lets contact patches rock between touching and "
+       "separating, and colour the ringing differently for a less stationary "
+       "sizzle. Does not blur the resonant "
+       "pitches or add noise. Zero keeps the contact pattern fixed."},
+      {"hat_settling", "How quickly the loose rattle settles down. Left gives "
+       "slower, more widely spaced returns; right brings them closer together "
+       "and tightens the ending. Zero is the slowest setting, not a closed "
+       "hi-hat or an off switch. Use Pedal openness to close the hat and "
+       "Contact damping to soften each collision. Some cymbal ringing can "
+       "continue after the rattle stops."},
+      {"hat_contact_enabled", "Let the two hi-hat rims interact. Collisions turn "
+       "some ringing into sizzle and lose energy at the same time. Off leaves "
+       "the original cymbal unchanged."},
+      {"hat_openness", "Left closes the hi-hat; right opens it. This affects the "
+       "sound already ringing. A quick closure supplies a pedal chick; a slow "
+       "closure is quieter. MIDI CC4 also controls this (127 closed, 0 open)."},
+      {"hat_clearance", "How far apart the rims are with the pedal fully open. "
+       "Lower values allow more contact and sizzle. Higher values let the "
+       "cymbals ring freely. This is a model distance, not millimetres."},
+      {"hat_contact_loss", "How much energy each rim collision absorbs. Raise "
+       "for a drier, shorter contact sound; lower for livelier bouncing and "
+       "longer sizzle. This does not add a separate noise layer."},
+      {"hat_pedal_strength", "How strongly your foot excites the resonators when "
+       "the rims meet during closing. Raise for a stronger chick. It only acts "
+       "while closing, not on stick hits with a stationary pedal. Zero leaves "
+       "just the much quieter gap-motion impact."},
       {"model_level_db",
        "Overall synth volume, without changing its character or bloom. "
        "Reference selection never adjusts it automatically."},
+      {"body_decay_friction",
+       "Makes quiet ringing die away more decisively instead of fading forever. "
+       "Zero keeps the usual exponential T60 decay. Higher values drain more "
+       "energy, especially noticeable late in a hit; softer hits end sooner. "
+       "Pair with a longer T60 for a sustained sound with a firmer ending. "
+       "Acts on each resonance, not a gate on the final sound."},
       {"direct_gain", "How much of the initial stick, mallet or brush contact "
                       "you hear alongside the ringing body. Raise for a closer "
                       "attack; lower for a body-led sound."},
       {"impact_tone_noise",
-       "Balances pitched stick ping against broadband contact noise."},
+       "Balances pitched stick ping against broadband contact noise. Also "
+       "changes the excitation entering the body. For a separate noisy attack, "
+       "use Strike accent."},
       {"impact_width",
        "Shorter gives a sharper tap; longer softens and spreads the contact. "
-       "This changes the attack, not the ringing tail."},
+       "Also changes which body resonances the contact excites."},
       {"impact_chirp_pitch",
        "Retunes the initial ping without retuning the body. Most noticeable "
        "when the contact mix favours ping."},
       {"impact_noise_tilt",
        "Raise for brighter contact hiss; lower for a rounder attack. The "
-       "body's tonal balance is unchanged."},
+       "excitation entering the body changes too."},
+      {"contact_noise_level",
+       "Adds a short noisy strike on top of the ringing body. Zero is off. "
+       "Independent of Contact presence; never feeds the resonators or bloom. "
+       "Start around 0.2 and raise to taste."},
+      {"contact_noise_decay",
+       "How long the added strike hiss lasts: lower for a tiny tick, higher "
+       "for a broader tss. This is its 60 dB decay time, not the body decay. "
+       "Try 10–30 ms first. Changes apply to the next strike."},
+      {"contact_noise_colour",
+       "Higher makes the added strike brighter and thinner; lower makes it "
+       "darker and fuller. A broad tilt around 4.2 kHz, not a resonant EQ. "
+       "The ringing body is unchanged. Changes apply to the next strike."},
       {"impact_micro_density",
        "Raise for a smoother brush gesture; lower for more separated tiny "
        "contacts. The effect depends on the chosen implement."},

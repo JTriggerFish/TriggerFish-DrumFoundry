@@ -10,6 +10,9 @@ DecayEditor::DecayEditor(Document &d) : document_(d) {
   addChild(&remove_);
   seconds_.position = DecayPosition;
   seconds_.valueAt = DecaySeconds;
+  seconds_.help = "The resonance's ordinary exponential decay time. Tail "
+                  "damping adds extra loss near the end; energy exchange "
+                  "can also change the decay you hear.";
   for (auto *slider : {&seconds_, &frequency_}) {
     slider->changed = [this](double) {
       try {

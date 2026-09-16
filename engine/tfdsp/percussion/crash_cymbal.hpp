@@ -3,6 +3,7 @@
 #include "crash_cymbal_parameters.hpp"
 #include "live_output_eq.hpp"
 #include "modal_constraint.hpp"
+#include "observed_noise_strike.hpp"
 #include "tfdsp/finite_audio.hpp"
 
 #include <array>
@@ -26,6 +27,7 @@ struct CrashCymbalFrame {
   float bloomTransferEnergy{};
   float modalBody{};
   float output{};
+  float noiseAccent{}; // Direct-only source before its visible level.
 };
 
 // Mono crash body. Stereo is an observation/presentation concern and never
@@ -61,9 +63,11 @@ private:
   void SetExcitationProjection(float location, float strength) noexcept;
 
   ContactExciter contact_{};
+  ObservedNoiseStrike observedNoise_{};
   CrashModalField modalField_{};
   LiveOutputEq outputEq_{};
   LiveGain liveContact_, liveBody_, liveOutput_, liveExcitation_;
+  LiveGain liveObservedNoise_;
   float contactLevel_{};
   float bodyLevel_{};
   ModalConstraintController modalConstraint_{};

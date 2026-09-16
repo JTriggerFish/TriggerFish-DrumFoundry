@@ -111,6 +111,23 @@ class Renderer:
             raise ValueError("Mute must be between zero and one")
         checked(self._lib, self._lib.df_set_mute(self._handle, amount))
 
+    def set_parameter(self, key, value):
+        """Live scalar edit, preserving ringing state; source document is unchanged.
+
+        Uses the native host-automation path, including validation and smoothing.
+        Geometry changes needing preparation are rejected, not silently reset.
+        """
+        self._require_open()
+        if not math.isfinite(value):
+            raise ValueError("Parameter value must be finite")
+        for index, descriptor in enumerate(self.descriptors):
+            if descriptor["key"] == key:
+                checked(
+                    self._lib, self._lib.df_set_parameter(self._handle, index, value)
+                )
+                return
+        raise ValueError(f"Unknown parameter: {key}")
+
     def process(self, frames):
         """Render into a NumPy-owned float32 buffer in one native call."""
         self._require_open()

@@ -53,6 +53,34 @@ struct Harness {
   }
 };
 
+void HatPedal() {
+  auto h = std::make_unique<Harness>(5);
+  Check(h->Set("hat_contact_enabled", 1), "Enable live rim contact");
+  h->Block();
+  clap_event_midi_t cc{};
+  cc.header = {sizeof(cc), 0, CLAP_CORE_EVENT_SPACE_ID, CLAP_EVENT_MIDI, 0};
+  cc.data[0] = 0xb9; // All MIDI channels, including conventional drum channel.
+  cc.data[1] = 4;
+  cc.data[2] = 127;
+  h->plugin.Event(&cc.header);
+  double energy = 0;
+  for (int i = 0; i < 32; ++i) energy += h->Block();
+  Check(energy > 1.e-12, "MIDI pedal closure must produce mechanical chick");
+  const auto value = [&] {
+    const auto document = h->plugin.EditableDocument();
+    for (const auto &node : document.at("instrument").at("nodes"))
+      if (node.at("parameters").contains("hat_openness"))
+        return node.at("parameters").at("hat_openness").get<double>();
+    return -1.;
+  };
+  Check(value() == 0, "CC4 high means closed and updates saved/UI scalar");
+  cc.data[2] = 0;
+  h->plugin.Event(&cc.header);
+  h->Block();
+  Check(value() == 1, "CC4 low means open");
+  Check(!h->restarts, "Pedal never replaces the voice");
+}
+
 void TailAndRetrigger(unsigned preset) {
   auto a = std::make_unique<Harness>(preset);
   auto b = std::make_unique<Harness>(preset);
@@ -188,6 +216,7 @@ void DeferredAllocationEdits(unsigned preset) {
 } // namespace
 
 void LiveControlsTests() {
+  HatPedal();
   extern void LiveParameterParity();
   LiveParameterParity();
   for (unsigned preset = 0; preset < 6; ++preset)

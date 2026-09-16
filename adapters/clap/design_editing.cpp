@@ -101,6 +101,21 @@ void Plugin::SetDesignParameter(clap_id id, double value) noexcept {
     if (!ValidLiveDecay(curve))
       return;
   }
+#ifdef DRUMFOUNDRY_UI
+  if (p.recipe == detail::Recipe::MetallicPlate &&
+      p.index == std::size_t(CrashMacro::HatOpenness) &&
+      value < values_[ParameterCount + slot].load()) {
+    const auto &table = DesignParameters();
+    for (std::size_t i = 0; i < table.size(); ++i)
+      if (table[i].recipe == p.recipe &&
+          table[i].index == std::size_t(CrashMacro::HatContactEnabled) &&
+          values_[ParameterCount + i].load() >= .5) {
+        audition_.Stop();
+        pendingStrike_ = true; // Begin live capture for pedal-only gestures too.
+        break;
+      }
+  }
+#endif
   values_[ParameterCount + slot] = value;
   ++automationRevision_;
 }

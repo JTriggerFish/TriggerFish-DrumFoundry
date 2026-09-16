@@ -9,6 +9,7 @@ import pytest
 from drumfoundry.migration import render_case, signature, sound_identity
 
 ROOT = Path(__file__).resolve().parents[2]
+LEGACY = ROOT / "presets/legacy"
 BASELINE = json.loads(
     (ROOT / "tests/fixtures/migration-v1.json").read_text(encoding="utf8")
 )
@@ -42,7 +43,7 @@ def test_explicit_legacy_q_retains_oracle_identity():
 
 
 def test_explicit_legacy_endpoint_retains_oracle_identity():
-    document = json.loads((ROOT / "presets/factory/hihat.fit.json").read_text())
+    document = json.loads((LEGACY / "hihat.fit.json").read_text())
     body = next(
         n["parameters"] for n in document["instrument"]["nodes"] if n["id"] == "body"
     )
@@ -51,6 +52,41 @@ def test_explicit_legacy_endpoint_retains_oracle_identity():
     assert sound_identity(document) == explicit
     body["body_decay_frequency_7"] = 20000
     assert sound_identity(document) != explicit
+
+
+def test_optional_tail_and_strike_bypass_retain_original_identity():
+    document = json.loads((LEGACY / "hihat.fit.json").read_text())
+    body = next(
+        n["parameters"] for n in document["instrument"]["nodes"] if n["id"] == "body"
+    )
+    observation = next(
+        n["parameters"]
+        for n in document["instrument"]["nodes"]
+        if n["id"] == "observation"
+    )
+    original = sound_identity(document)
+    body.pop("body_decay_friction")
+    for key in ("contact_noise_level", "contact_noise_decay", "contact_noise_colour"):
+        observation.pop(key)
+    assert sound_identity(document) == original
+    body["body_decay_friction"] = 0.001
+    assert sound_identity(document) != original
+    body["body_decay_friction"] = 0
+    observation["contact_noise_level"] = 0.1
+    assert sound_identity(document) != original
+
+
+def test_disabled_rim_contact_preserves_identity():
+    document = json.loads((LEGACY / "hihat.fit.json").read_text())
+    original = sound_identity(document)
+    body = next(
+        n["parameters"] for n in document["instrument"]["nodes"] if n["id"] == "body"
+    )
+    body["hat_openness"] = 0.2
+    body["hat_clearance"] = 0.0003
+    assert sound_identity(document) == original
+    body["hat_contact_enabled"] = 1
+    assert sound_identity(document) != original
 
 
 @pytest.mark.parametrize(

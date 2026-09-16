@@ -12,7 +12,7 @@ double LogOffset(const std::string &key) {
   return 0;
 }
 double Power(const std::string &key) {
-  if (key == "bloom_energy_acceleration")
+  if (key == "bloom_energy_acceleration" || key == "body_decay_friction")
     return 3;
   if (key == "bloom_energy_sensitivity" || key == "field_motion_depth" ||
       key == "field_phase_bandwidth" || key == "field_beat_depth")

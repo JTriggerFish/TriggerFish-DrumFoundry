@@ -75,6 +75,7 @@ void NativeStrikeParity(const drumfoundry::Json &document) {
   Check(plugin.Init());
   const auto sourceStrike =
       ReadStrike(document.at("controls").at("event"), true);
+  plugin.SelectFactory(0); // This parity fixture supplies the kick factory patch.
   Check(plugin.Value(Hardness) == double(sourceStrike.hardness));
   Check(plugin.Value(Implement) == double(sourceStrike.implement));
   Check(plugin.Value(ContactSpread) == double(sourceStrike.contactSpread));

@@ -23,6 +23,7 @@ void WorkbenchLiveTests() {
   clap_host_t host{CLAP_VERSION, nullptr, "Test", "TriggerFish", "", "1"};
   auto plugin = std::make_unique<clap_adapter::Plugin>(&host);
   Check(plugin->Init(), "UI live init");
+  plugin->SelectFactory(0); // Kick-specific EQ boundary and thump automation.
   auto document = plugin->EditableDocument();
   document["controls"]["analysis"]["view"] = {{"renderSeconds", .25}};
   plugin->EditDocument(document);

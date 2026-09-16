@@ -26,6 +26,23 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
         sections.end())
       sections.push_back(section);
   }
+  // New descriptors are appended for stable indexing, but audible strike
+  // shaping belongs beside contact controls, not below the decay editor.
+  const auto contact = std::find(sections.begin(), sections.end(),
+                                 "Contact presentation");
+  const auto accent = std::find(sections.begin(), sections.end(), "Strike accent");
+  if (contact != sections.end() && accent != sections.end() && contact < accent)
+    std::rotate(contact + 1, accent, accent + 1);
+  const auto strike = std::find(sections.begin(), sections.end(), "Strike accent");
+  const auto hat = std::find(sections.begin(), sections.end(), "Hi-hat contact");
+  if (strike != sections.end() && hat != sections.end() && strike < hat)
+    std::rotate(strike + 1, hat, hat + 1);
+  // Contact-enabled presets are played with this pedal. Put it within reach
+  // on load; ordinary cymbals retain their familiar section order. Live edits
+  // do not reorder controls under the pointer.
+  const auto pedal = std::find(sections.begin(), sections.end(), "Hi-hat contact");
+  if (pedal != sections.end() && document.Value("hat_contact_enabled") >= .5)
+    std::rotate(sections.begin(), pedal, pedal + 1);
   for (const auto &section : sections) {
     AddGroup(section);
     if (section == "Output") {
@@ -72,6 +89,9 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
       };
       addScrolledChild(editor.get());
       rows_.push_back({std::move(editor), 366});
+      for (const auto &p : document.Parameters())
+        if (p.key == "body_decay_friction")
+          AddParameter(document, p);
       continue;
     }
     if (section == "Output") {

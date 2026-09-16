@@ -8,7 +8,8 @@ bool Starts(std::string_view key, std::string_view prefix) {
 std::string_view MetalOwner(std::string_view k) {
   if (k == "model_level_db")
     return "output";
-  if (Starts(k, "output_") || k == "direct_gain" || k == "field_gain")
+  if (Starts(k, "output_") || Starts(k, "contact_noise_") ||
+      k == "direct_gain" || k == "field_gain")
     return "observation";
   if (Starts(k, "impact_") || k == "velocity_brightness")
     return "contact";

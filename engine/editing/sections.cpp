@@ -7,6 +7,10 @@ bool Starts(const std::string &text, const char *prefix) {
 } // namespace
 std::string Section(const Parameter &p) {
   const auto &k = p.key;
+  if (Starts(k, "hat_"))
+    return "Hi-hat contact";
+  if (p.owner == "observation" && Starts(k, "contact_noise_"))
+    return "Strike accent";
   if (p.owner == "membrane-body")
     return "Membrane"; // Its brightness is not the metallic diffusion control.
   if (Starts(k, "body_decay_"))
@@ -57,7 +61,7 @@ std::string Section(const Parameter &p) {
 }
 bool RightColumn(const Parameter &p) {
   const auto section = Section(p);
-  if (section == "Modal T60")
+  if (section == "Modal T60" || section == "Hi-hat contact")
     return false;
   return section == "Bloom / energy travel" || section == "Resonance" ||
          section == "Thump" || section == "Strike / tension" ||

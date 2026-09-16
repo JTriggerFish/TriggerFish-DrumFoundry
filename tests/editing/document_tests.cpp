@@ -28,6 +28,13 @@ int main(int argc, char **argv) {
       Require(document.Value(p.key) == value,
               "Lossy value round trip: " + p.key);
       Require(!Section(p).empty(), "Missing control grouping");
+      if (p.key == "body_decay_friction")
+        Require(Section(p) == "Modal T60" && !RightColumn(p) &&
+                    std::abs(ValueAt(p, .5) - .125) < 1.e-12,
+                "Tail damping belongs by the T60 curve with a fine low taper");
+      if (p.owner == "observation" && p.key.rfind("contact_noise_", 0) == 0)
+        Require(Section(p) == "Strike accent" && !RightColumn(p),
+                "Direct noise controls belong in the visible left strike group");
       for (double position : {0., .1, .5, .9, 1.}) {
         const double v = ValueAt(p, position);
         Require(std::isfinite(v) && float(v) >= float(p.minimum) &&

@@ -101,7 +101,7 @@ private:
                                                visage::UiButton("Mallet"),
                                                visage::UiButton("Stick")}};
   Slider location_{"Strike location", 0, 1, 0};
-  Slider mute_{"Mute / closure", 0, 1, 0};
+  Slider mute_{"Hand mute", 0, 1, 0};
   StrikePad strike_;
   editing::Document document_;
   LiveSpectrum liveSpectrum_; // Outlives the panel that borrows its Frame.

@@ -34,6 +34,11 @@ int main(int argc, char **argv) {
   clap_host_t host{CLAP_VERSION, nullptr, "Test", "TriggerFish", "", "1"};
   Plugin presets(&host);
   Require(presets.Init());
+  Require(presets.Value(Preset) == 2);
+  Require(presets.EditableDocument().at("id") == "factory.hihat");
+  clap_param_info_t presetInfo{};
+  Require(ParamsExtension.get_info(&presets.api, 0, &presetInfo));
+  Require(presetInfo.id == Preset && presetInfo.default_value == 2);
   Require(presets.EditableDocument().at("reference").is_null());
   for (unsigned i = 0; i < 6; ++i) {
     presets.SelectFactory(i);

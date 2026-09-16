@@ -54,6 +54,8 @@ struct CrashCymbalFitParameters {
   float fieldBeatRateTilt{.25f}; // octaves of rate per frequency octave, at 125 Hz
   // Explicit endpoint preserves existing curves; the editor can extend it.
   float bodyDecayMaximumFrequencyHz{15000.f};
+  float bodyTailDamping{}; // normalized modal amplitude loss per second
+  ModalRimContactParameters rimContact{};
   std::array<float, CrashBodyDecayInteriorPointCount> bodyDecayFrequencyHz{
       500.f, 1500.f, 5000.f, 8000.f, 12000.f, 14000.f};
   std::array<float, CrashBodyDecayPointCount> bodyDecaySeconds{
@@ -94,6 +96,10 @@ struct CrashCymbalFitParameters {
   float contactMicroDurationScale{1.f};
   float contactMicroDensityScale{1.f};
   float directGain{.18f};
+  // Direct-only short noise accent. Zero level preserves existing presets.
+  float observedNoiseLevel{};
+  float observedNoiseDecaySeconds{.02f}; // T60, not the burst's -80 dB cutoff
+  float observedNoiseColourDb{12.f};
   float outputGain{1.f};
   bool outputEqEnabled{true};
   float outputLowCutHz{40.f};

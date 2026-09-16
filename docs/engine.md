@@ -19,6 +19,10 @@ controls. The runtime supports both prepared structural changes and
 state-preserving scalar automation. There is no implicit gain matching,
 limiter, sample-rate conversion or output EQ beyond
 the controls explicitly present in the patch. EQ can be disabled in the patch.
+Metallic voices also offer an independent, direct-only [strike noise accent](strike-observation.md);
+its level defaults to zero and it never drives the modal body.
+An optional [modal tail damping](modal-tail-damping.md) control adds passive,
+friction-like loss to metallic resonances; zero preserves exponential damping.
 
 Preparation allocates and must run off the audio thread. A failed JSON load
 leaves the existing voice intact. Loading a valid replacement resets its state;
@@ -67,6 +71,11 @@ owned session. This is not a global instance limit, but can be reduced to active
 recipe storage before polyphonic/multi-instrument host integration.
 
 ## Live control edits
+
+The metallic body also has optional [hi-hat rim contact](hi-hat-contact.md):
+passive modal collision impulses, moving-pedal work and live MIDI CC4 openness.
+It defaults off in the component but is enabled in the factory Hi-hat, the
+startup instrument. It shares the existing modal energy, rather than adding noise.
 
 `runtime/live_controls` validates design edits on the main thread without creating
 a replacement voice. UI changes enter a bounded single-producer/single-consumer

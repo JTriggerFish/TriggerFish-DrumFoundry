@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
     clap_test::TestAudio(first);
     clap_test::TestState(first);
     clap_test::TestTiming(first);
-    clap_test::Require(second.Get(100) == 0 && second.Get(106) == 1,
+    clap_test::Require(second.Get(100) == 2 && second.Get(106) == 1,
                        "instances remain independent");
     std::cout
         << "CLAP loading, MIDI, presets, safety, state and lifecycle passed\n";

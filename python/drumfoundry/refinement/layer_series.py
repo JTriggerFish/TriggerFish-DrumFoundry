@@ -27,7 +27,8 @@ def stretched_series(parameters, fundamental, stretch, count=24, core=3, level=-
 def observation_headroom(parameters, boost_db=12):
     """Equivalent visible gain staging, leaving excitation and stored energy alone.
 
-    Raise every active observation bar and direct observation gain together,
+    Raise every active observation bar and both direct observation gains
+    (contact presence and noise accent) together,
     compensating at model level. Subsequent level fitting then has upward room
     without requiring positive model dB or per-reference normalization.
     """
@@ -39,7 +40,13 @@ def observation_headroom(parameters, boost_db=12):
             if result[key] > 6:
                 raise ValueError("Observation headroom exceeds modal level range")
     result["direct_gain"] *= 10 ** (boost_db / 20)
+    if "contact_noise_level" in result:
+        result["contact_noise_level"] *= 10 ** (boost_db / 20)
     result["model_level_db"] -= boost_db
-    if result["direct_gain"] > 2 or result["model_level_db"] < -60:
+    if (
+        result["direct_gain"] > 2
+        or result.get("contact_noise_level", 0) > 2
+        or result["model_level_db"] < -60
+    ):
         raise ValueError("Equivalent observation scaling exceeds native limits")
     return result

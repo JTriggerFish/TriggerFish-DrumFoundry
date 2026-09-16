@@ -18,7 +18,8 @@ bool Voice::StageParameter(std::size_t i, float value) noexcept {
     if (!ValidLiveDecay(values))
       return false;
     s.crashValues = values;
-    decayDirty_ |= d.key.rfind("body_decay_", 0) == 0;
+    decayDirty_ |= d.key.rfind("body_decay_", 0) == 0 &&
+                   d.key != "body_decay_friction";
   } else if (s.recipe == detail::Recipe::Kick)
     s.kickValues[i] = value;
   else if (s.recipe == detail::Recipe::MembraneDrum)

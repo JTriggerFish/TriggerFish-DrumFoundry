@@ -88,6 +88,9 @@ bool StochasticModalField<N>::RetainState(
   cascade_.RetainHistory(old.cascade_);
   drift_.RetainHistory(old.drift_, source);
   motion_.RetainHistory(old.motion_, source);
+  tailDamping_ = old.tailDamping_;
+  liveTailDamping_ = old.liveTailDamping_;
+  rimContact_.RetainState(old.rimContact_);
   UpdateDamping(old.damping_);
   return true;
 }

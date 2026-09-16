@@ -47,6 +47,10 @@ DF_EXPORT int df_reset(df_voice *);
 DF_EXPORT int df_default_strike(df_voice *, df_strike *);
 DF_EXPORT int df_trigger(df_voice *, const df_strike *);
 DF_EXPORT int df_set_mute(df_voice *, float amount);
+// Scalar live automation by descriptor index, effective at the next sample.
+// Does not reset the voice or change the saved source document. Non-live
+// geometry parameters are rejected; use configuration for offline fitting.
+DF_EXPORT int df_set_parameter(df_voice *, uint32_t index, float value);
 DF_EXPORT int df_process(df_voice *, float *output, uint32_t frames);
 #ifdef __cplusplus
 }

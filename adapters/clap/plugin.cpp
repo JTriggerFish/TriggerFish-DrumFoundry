@@ -12,7 +12,10 @@ static_assert(std::atomic<uint64_t>::is_always_lock_free,
 bool Plugin::Init() {
   for (std::size_t i = 0; i < Controls.size(); ++i)
     values_[i].store(Controls[i].initial);
-  Voice initial(48000, ParseJson(PresetJson[0]));
+  // Keep the document and selector aligned with the advertised startup preset.
+  // Host state restoration can subsequently replace both in the normal path.
+  documentPreset_ = static_cast<int>(Value(Preset));
+  Voice initial(48000, ParseJson(PresetJson.at(documentPreset_)));
   document_ = initial.Document();
   InitializeDesignParameters(document_);
   const auto &strike = initial.Event();

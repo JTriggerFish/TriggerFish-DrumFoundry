@@ -14,7 +14,7 @@ bool IsLiveParameter(std::string_view recipe, std::string_view key) {
     return true;
   if (recipe == "metal.cymbal.v1")
     return Starts(key, "impact_") || Starts(key, "contact_") ||
-           Starts(key, "bloom_") || Starts(key, "body_decay_") ||
+           Starts(key, "bloom_") || Starts(key, "body_decay_") || Starts(key, "hat_") ||
            key == "direct_gain" || key == "field_gain" ||
            key == "body_excitation" || key == "velocity_brightness";
   if (recipe == "drum.snare.v1" &&
