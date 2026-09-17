@@ -1,4 +1,6 @@
 #include "adapters/clap/plugin.hpp"
+#include "editing/document.hpp"
+#include "patch/modules.hpp"
 #include <cmath>
 #include <cstring>
 #include <stdexcept>
@@ -108,6 +110,36 @@ void TimedAutomation() {
                   1e-5 * (1 + std::abs(info.default_value)),
           "Design parameter text roundtrip");
   }
+}
+
+void OptionalModuleAvailability() {
+  clap_host_t host{CLAP_VERSION, nullptr, "Modules", "TriggerFish", "", "1"};
+  auto plugin = std::make_unique<Plugin>(&host);
+  Check(plugin->Init(), "Module automation init");
+  plugin->SelectFactory(0);
+  const auto id = Id(detail::Recipe::Kick, "hat_contact_enabled");
+  const auto slot = DesignSlot(id);
+  const auto visible = [&] {
+    clap_param_info_t info{};
+    Check(ParamsExtension.get_info(&plugin->api, ParameterCount + slot, &info), "Module metadata");
+    return !(info.flags & CLAP_PARAM_IS_HIDDEN);
+  };
+  Check(!visible(), "Absent module automation must be hidden");
+  plugin->SetParameter(id, 1);
+  Check(plugin->Value(id) == 0 && !plugin->QueueEdit(id, 1),
+        "Inactive host/editor must not activate an absent module");
+  editing::Document d;
+  d.Load(plugin->EditableDocument());
+  d.SetModule(RimContactType, true);
+  plugin->EditDocument(d.JsonValue());
+  Check(visible() && plugin->Value(id) == 1, "Added module exposes stable automation");
+  d.SetModule(RimContactType, false);
+  plugin->EditDocument(d.JsonValue());
+  Check(plugin->Activate(48000, 1, 128), "Activate module test");
+  plugin->SetParameter(id, 1);
+  Check(!visible() && plugin->Value(id) == 0,
+        "Audio-thread automation cannot resurrect removed module");
+  plugin->Deactivate();
 }
 
 void GestureAndState() {
@@ -233,6 +265,7 @@ void CurveEventOrder() {
 } // namespace
 
 void DesignAutomationTests() {
+  OptionalModuleAvailability();
   TimedAutomation();
   GestureAndState();
   InactiveCurveValidation();

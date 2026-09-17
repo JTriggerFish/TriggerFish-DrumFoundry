@@ -58,13 +58,11 @@ void Plugin::Event(const clap_event_header_t *header) noexcept {
     const auto kind = e.data[0] & 0xf0;
     if (kind == 0x90 && e.data[2]) {
       StrikeVoice(e.data[2] / 127.f);
-    } else if (kind == 0xb0 && e.data[1] == 4 &&
-               voice_->Recipe() == detail::Recipe::MetallicPlate) {
+    } else if (kind == 0xb0 && e.data[1] == 4) {
       // The registry is warmed before activation. No allocation, JSON edit,
       // voice replacement or note trigger occurs on this controller path.
       for (const auto &p : DesignParameters())
-        if (p.recipe == detail::Recipe::MetallicPlate &&
-            p.index == std::size_t(CrashMacro::HatOpenness)) {
+        if (p.recipe == voice_->Recipe() && p.descriptor->key == "hat_openness") {
           SetParameter(p.id, 1.0 - e.data[2] / 127.0);
           break;
         }

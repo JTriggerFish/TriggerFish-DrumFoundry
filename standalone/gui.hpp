@@ -7,4 +7,6 @@ namespace drumfoundry::standalone {
 void RunGui(PluginHost &, const ui::DeviceConfiguration &, bool smoke = false,
             unsigned overrides = 0);
 void PluginGuiSmoke(PluginHost &);
+// Capture the factory hi-hat editor without devices or user presets.
+void DocumentationScreenshot(PluginHost &);
 } // namespace drumfoundry::standalone

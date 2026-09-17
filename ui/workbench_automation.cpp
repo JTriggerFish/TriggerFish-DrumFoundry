@@ -68,10 +68,17 @@ void Workbench::PollAutomation() {
   if (changes.empty())
     return;
   document_.SetMany(changes);
+  if (std::any_of(changes.begin(), changes.end(), [](const auto &change) {
+        return change.first == "hat_contact_enabled";
+      })) {
+    routing_.Load(document_);
+    routes_.Refresh();
+  }
   if (!gestureDocument_.is_null())
     gestureDocument_ = document_.JsonValue();
   excitation_.SyncValues(document_);
   resonance_.SyncValues(document_);
+  playing_.SyncValues(document_);
 }
 
 editing::Json Workbench::LiveEditBaseline(const editing::Json &after) const {

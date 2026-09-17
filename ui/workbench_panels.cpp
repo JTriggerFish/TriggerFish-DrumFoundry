@@ -4,7 +4,14 @@
 #include <exception>
 namespace drumfoundry::ui {
 void Workbench::SetupPanels() {
+  playing_.playingOnly = true;
+  playing_.setName("playing-controls");
+  playing_.strikeLocation = &location_;
+  playing_.handMute = &mute_;
   resonance_.holdDecay = &holdDecay_;
+  holdDecay_.timing = [this] {
+    if (resonance_.meta) resonance_.meta(false);
+  };
   holdDecay_.error = [this](const auto &text) { Error(text); };
   holdDecay_.apply = [this](const auto &result) {
     document_.SetMany(result.values);
@@ -15,7 +22,7 @@ void Workbench::SetupPanels() {
   };
   excitation_.outputSpectrum = &liveSpectrum_;
   excitation_.previewRate = [this] { return analysis_.RenderRate(); };
-  for (auto *panel : {&excitation_, &resonance_}) {
+  for (auto *panel : {&excitation_, &resonance_, &playing_}) {
     panel->committed = [this] { ApplyDocument(); };
     panel->changed = [this] { PreviewLiveDocument(); };
     panel->error = [this](const auto &text) { Error(text); };
@@ -30,8 +37,8 @@ void Workbench::SetupPanels() {
 void Workbench::SetupAnalysis() {
   addChild(&right_);
   for (auto *frame : std::initializer_list<visage::Frame *>{
-           &analysis_, &modal_, &strike_, &hardness_, &velocity_, &spread_,
-           &analysisSplit_, &fixedStrike_})
+           &analysis_, &modal_, &strike_, &hardness_, &spread_,
+           &analysisSplit_, &freezeStrike_, &playing_})
     right_.addScrolledChild(frame);
   analysisSplit_.started = [this] { splitStart_ = analysis_.height(); };
   analysisSplit_.dragged = [this](float delta) {
@@ -85,6 +92,7 @@ void Workbench::SetupMetas() {
     help_.Hide();
     excitation_.Load(document_, false);
     resonance_.Load(document_, true);
+    playing_.Load(document_, false);
     modal_.Refresh();
     PreviewLiveDocument();
     ControlErrors(*this, [this](const auto &text) { Error(text); });

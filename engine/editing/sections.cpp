@@ -7,8 +7,10 @@ bool Starts(const std::string &text, const char *prefix) {
 } // namespace
 std::string Section(const Parameter &p) {
   const auto &k = p.key;
+  if (k == "hat_openness")
+    return "Playing";
   if (Starts(k, "hat_"))
-    return "Hi-hat contact";
+    return "Rim contact";
   if (p.owner == "observation" && Starts(k, "contact_noise_"))
     return "Strike accent";
   if (p.owner == "membrane-body")
@@ -61,7 +63,7 @@ std::string Section(const Parameter &p) {
 }
 bool RightColumn(const Parameter &p) {
   const auto section = Section(p);
-  if (section == "Modal T60" || section == "Hi-hat contact")
+  if (section == "Modal T60" || section == "Rim contact" || section == "Playing")
     return false;
   return section == "Bloom / energy travel" || section == "Resonance" ||
          section == "Thump" || section == "Strike / tension" ||

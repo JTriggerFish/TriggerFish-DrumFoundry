@@ -14,6 +14,7 @@ std::string Number(double value) {
 }
 } // namespace
 bool Slider::SubmitText(const std::string &text) {
+  if (!enabled_) return false;
   std::istringstream stream(text);
   stream.imbue(std::locale::classic());
   double value{};

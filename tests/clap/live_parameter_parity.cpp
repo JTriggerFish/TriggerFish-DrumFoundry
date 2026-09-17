@@ -1,4 +1,6 @@
 #include "adapters/clap/plugin.hpp"
+#include "editing/document.hpp"
+#include "patch/modules.hpp"
 #include <cmath>
 #include <stdexcept>
 
@@ -16,6 +18,10 @@ void LiveParameterParity() {
     else
       plugin->EditDocument(
           DefaultPatch(Topology(detail::Recipe::MembraneDrum).at("recipe")));
+    editing::Document modules;
+    modules.Load(plugin->EditableDocument());
+    modules.SetModule(RimContactType, true);
+    plugin->EditDocument(modules.JsonValue());
     const auto before = plugin->EditableDocument();
     Voice metadata(48000, before);
     const auto recipe = before.at("instrument").at("recipe").get<std::string>();

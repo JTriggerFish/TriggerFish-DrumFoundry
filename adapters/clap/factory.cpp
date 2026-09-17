@@ -1,4 +1,5 @@
 #include "plugin.hpp"
+#include "drumfoundry/version.hpp"
 #ifdef DRUMFOUNDRY_UI
 #include "gui.hpp"
 #endif
@@ -23,8 +24,8 @@ const clap_plugin_descriptor_t Descriptor{
     "https://github.com/JTriggerFish/TriggerFish-DrumFoundry",
     "",
     "",
-    "0.1.0",
-    "Native modular percussion synthesizer — headless development shell",
+    Version,
+    "Modular percussion synthesizer",
     Features};
 
 Plugin::Plugin(const clap_host_t *host) : host_(host) {

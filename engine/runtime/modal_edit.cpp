@@ -19,6 +19,7 @@ std::unique_ptr<PreparedModalEdit> PrepareModalEdit(float rate, Json next) {
   auto result = std::make_unique<PreparedModalEdit>();
   result->sampleRate = rate;
   result->recipe = recipe;
+  result->rimContactPresent = session->rimContactPresent;
   using namespace tfdsp::percussion;
   const auto copy = [&](const auto &values) {
     static_assert(std::tuple_size_v<std::decay_t<decltype(values)>> <=
@@ -63,6 +64,7 @@ bool Voice::CanApplyModalEdit() const noexcept {
 
 bool Voice::ApplyModalEdit(PreparedModalEdit &edit) noexcept {
   if (session_->recipe != edit.recipe || edit.sampleRate != sampleRate_ ||
+      session_->rimContactPresent != edit.rimContactPresent ||
       !CanApplyModalEdit())
     return false;
   // Prepared snapshots must not roll back newer sample-timed automation.

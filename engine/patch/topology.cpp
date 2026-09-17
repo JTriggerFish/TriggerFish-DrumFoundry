@@ -1,6 +1,7 @@
 #include "document.hpp"
 #include "parameters/access.hpp"
 #include "topology_data.hpp"
+#include "modules.hpp"
 #include <set>
 #include <stdexcept>
 
@@ -42,7 +43,8 @@ void ValidateTopology(const Json &patch, detail::Recipe recipe) {
               patch.at("engineMinimum") == 1,
           "Unsupported patch schema or engine version");
   Require(patch.at("nodes").is_array() && patch.at("connections").is_array() &&
-              patch.at("nodes").size() == expected.at("nodes").size() &&
+              patch.at("nodes").size() == expected.at("nodes").size() +
+                  (HasRimContact(patch) ? 1 : 0) &&
               patch.at("connections").size() ==
                   expected.at("connections").size(),
           "Unsupported recipe structure");
@@ -50,6 +52,12 @@ void ValidateTopology(const Json &patch, detail::Recipe recipe) {
   for (const auto &node : patch.at("nodes")) {
     const auto id = node.at("id").get<std::string>();
     Require(ids.insert(id).second, "Duplicate node ID");
+    if (id == RimContactId) {
+      Require(node.at("type") == RimContactType &&
+                  node.at("version").is_number_integer() && node.at("version") == 1,
+              "Unsupported rim contact type or version");
+      continue;
+    }
     const auto &nodes = expected.at("nodes");
     const auto found =
         std::find_if(nodes.begin(), nodes.end(),
@@ -59,6 +67,7 @@ void ValidateTopology(const Json &patch, detail::Recipe recipe) {
                 node.at("version") == 1,
             "Unsupported node type or version");
   }
+  ValidateAttachments(patch, recipe);
   std::map<std::string, bool> edges;
   ids.clear();
   for (const auto &edge : patch.at("connections")) {

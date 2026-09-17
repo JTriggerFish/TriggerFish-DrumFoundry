@@ -22,6 +22,7 @@ install(FILES themes/classic.json themes/lazyvim.json themes/theme.schema.json D
 install(FILES themes/LICENSE.lazyvim.txt DESTINATION licenses/lazyvim)
 target_sources(drumfoundry_ui PRIVATE ui/slider_text.cpp ui/slider_layout.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/strike_pad.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/strike_freeze.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/workbench_panels.cpp ui/workbench_presets.cpp
   ui/workbench_performance.cpp ui/workbench_poll.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/workbench_settings.cpp ui/analysis_reference.cpp)
@@ -31,6 +32,7 @@ target_sources(drumfoundry_ui PRIVATE ui/help_bubble.cpp ui/parameter_help.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/live_spectrum.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/eq_plot.cpp ui/eq_gestures.cpp ui/eq_drawing.cpp ui/eq_values.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/routing_diagram.cpp ui/routing_gestures.cpp ui/routing_panel.cpp ui/workbench_routing.cpp)
+target_sources(drumfoundry_ui PRIVATE ui/routing_modules.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/decay_editor.cpp ui/decay_gestures.cpp)
 target_sources(drumfoundry_ui PRIVATE ui/modal_plot.cpp ui/modal_gestures.cpp ui/modal_paint.cpp
   ui/modal_selection.cpp ui/modal_panel.cpp ui/modal_layout.cpp ui/series_panel.cpp)

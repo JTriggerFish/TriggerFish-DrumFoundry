@@ -12,6 +12,7 @@ std::string ModuleName(const editing::Json &node) {
       {"body.membrane-modal", "Modal membrane"},
       {"interaction.strike-energy", "Strike energy"},
       {"interaction.wire-rack", "Snare wires"},
+      {"interaction.rim-contact", "Rim contact"},
       {"observation.equalizer", "Output colour"},
       {"observation.dual-source", "Observation"},
       {"observation.three-source", "Observation"},
@@ -19,6 +20,9 @@ std::string ModuleName(const editing::Json &node) {
       {"transform.sum3", "Source mix"},
       {"output.mono", "Mono"}};
   const auto type = node.at("type").get<std::string>();
+  if (type == "interaction.rim-contact" &&
+      node.at("parameters").at("hat_contact_enabled").get<double>() < .5)
+    return "Rim contact · off";
   const auto found = names.find(type);
   return node.value("name", found == names.end() ? type : found->second);
 }
@@ -37,7 +41,7 @@ visage::theme::ColorId ModuleColour(const std::string &type) {
   return colours::Muted;
 }
 RoutingDiagram::RoutingDiagram() {
-  help = "Double-click for routing controls. Optional routes can be switched "
+  help = "Click for routing controls. Optional routes can be switched "
          "on/off; required connections stay locked. The expanded diagram's "
          "boxes can be moved without changing the sound.";
 }
@@ -102,7 +106,8 @@ void RoutingDiagram::draw(visage::Canvas &c) {
     visage::Path path;
     path.moveTo(a);
     path.bezierTo({a.x + bend, a.y}, {b.x - bend, b.y}, b);
-    c.setColor(route.enabled ? colours::Border : colours::Grid);
+    c.setColor(!route.enabled ? colours::Grid :
+               route.interaction ? colours::Success : colours::Border);
     c.fill(path.stroke(route.enabled ? 1.5f : 1.f));
   }
   const float scale = Scale();

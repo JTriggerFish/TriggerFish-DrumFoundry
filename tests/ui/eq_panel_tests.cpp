@@ -45,9 +45,15 @@ void EqPanelTests(drumfoundry::editing::Document d) {
     if (d.Recipe() == "metal.cymbal.v1") {
       for (const auto *key : {"contact_noise_level", "contact_noise_decay",
                               "contact_noise_colour", "body_decay_friction",
-                              "hat_openness", "hat_clearance", "hat_contact_loss",
+                              "hat_clearance", "hat_contact_loss",
                               "hat_pedal_strength", "hat_rattle_motion", "hat_settling"})
         Check(Find<Slider>(panel, ParameterHelp(key)) != nullptr);
+      Check(Find<Slider>(panel, ParameterHelp("hat_openness")) == nullptr);
+      Check(Find<HelpButton>(panel, ParameterHelp("hat_contact_enabled")) == nullptr);
+      ParameterPanel playing;
+      playing.playingOnly = true;
+      playing.Load(d, false);
+      Check(Find<Slider>(playing, ParameterHelp("hat_openness")) != nullptr);
     }
     auto *plot = Find<EqPlot>(panel);
     auto *enabled =

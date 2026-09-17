@@ -181,15 +181,22 @@ Audio callbacks never touch Visage, allocate display data or wait for rendering.
   retains the old explicit design endpoints, not the current calibrated fits;
   neutral is the authoritative descriptor defaults for its affected controls.
   Endpoints and interpolation live in `engine/editing`, with validation tests.
-  Neither tool adds voice parameters. The hold-decay optimizer remains to port.
-- Gesture spread and fixed audition velocity are beside the strike controls.
+  Neither tool adds voice parameters. The native hold-decay optimizer is described below.
+- Hardness, spread, location, pedal and mute share two untitled control columns
+  beside the strike pad. They stack on compact layouts. Spread is inactive only
+  for metallic sticks/mallets, where the engine does not use it.
+  Freeze strike opens an editor-local popup for a fixed velocity/location pair;
+  a highlighted button indicates frozen pad input. MIDI is unaffected, and a
+  change between kick hardness and strike-location axes clears the freeze.
   Native pad strikes retain continuous velocity; MIDI remains velocity/127,
   with no compression. The latest strike updates the offline-render gesture.
   Performance defaults come from the loaded fit. Tests compare initial and
   repeated native pad output against an independent direct Voice render.
 - Routing is collapsed above the two left control columns. Expand for a compact
-  diagram, then double-click it for a larger in-window editor with native route
-  switches. Required routes are locked by the compiled contract, not by editable
+  diagram, then click it for a larger in-window editor with native route
+  switches and a **Modules…** menu. [Rim contact](topology-modules.md) can be added,
+  bypassed or removed on metallic and membrane bodies. Green connections are
+  body-energy attachments, not audio paths. Required audio routes are locked by the compiled contract, not by editable
   JSON hints. Invalid disconnections leave the patch unchanged. There are no
   extra edge gains. Moving boxes saves only validated node positions, marks host
   state dirty and neither restarts nor retunes the voice. The canvas fits the
@@ -321,8 +328,9 @@ before mutating the existing analysis display.
 
 ## Hold decay
 
-The bloom section retains the optional **Hold decay** switch (on initially),
-with Cancel, elapsed time and render count. After a bloom/excitation gesture,
+The bloom section keeps **Bloom timing** and **Hold decay** side by side.
+Hold decay is on initially; while busy its button shows Cancel and elapsed time,
+with render count and results in the tooltip. After a bloom/excitation gesture,
 an independent native worker attempts to preserve the prior 1–6 second tail
 while protecting the edited 0–450 ms attack/bloom. A new sound or performance
 edit cancels it; changing zoom or moving routing boxes does not. Accepted changes

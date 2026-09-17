@@ -10,7 +10,7 @@ bool Starts(std::string_view text, std::string_view prefix) {
 }
 } // namespace
 bool IsLiveParameter(std::string_view recipe, std::string_view key) {
-  if (Starts(key, "output_") || key == "model_level_db")
+  if (Starts(key, "output_") || Starts(key, "hat_") || key == "model_level_db")
     return true;
   if (recipe == "metal.cymbal.v1")
     return Starts(key, "impact_") || Starts(key, "contact_") ||

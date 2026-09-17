@@ -17,6 +17,12 @@ template <class T> T *Find(visage::Frame &frame) {
       return match;
   return nullptr;
 }
+visage::Frame *Named(visage::Frame &frame, const std::string &name) {
+  if (frame.name() == name) return &frame;
+  for (auto *child : frame.children())
+    if (auto *found = Named(*child, name)) return found;
+  return nullptr;
+}
 void CheckChildren(visage::Frame &frame) {
   for (auto *child : frame.children())
     if (child->isVisible())
@@ -33,6 +39,8 @@ void WorkbenchTests() {
   WorkbenchHistoryTests();
   extern void WorkbenchLiveTests();
   WorkbenchLiveTests();
+  extern void WorkbenchModuleTests();
+  WorkbenchModuleTests();
   using namespace drumfoundry;
   using namespace clap_adapter;
   clap_host_t host{CLAP_VERSION, nullptr, "Test", "TriggerFish", "", "1"};
@@ -44,6 +52,7 @@ void WorkbenchTests() {
   plugin.EditDocument(document);
   bool running = false;
   unsigned settings = 0, strikes = 0;
+  float lastVelocity = 0, lastPosition = 0;
   ui::Bridge bridge;
   bridge.value = [&](unsigned id) { return plugin.Value(id); };
   bridge.document = [&] { return plugin.EditableDocument(); };
@@ -51,6 +60,8 @@ void WorkbenchTests() {
   bridge.settings = [&] { ++settings; };
   bridge.strike = [&](float v, float x) {
     ++strikes;
+    lastVelocity = v;
+    lastPosition = x;
     Check(plugin.QueueStrike(v, x));
   };
   ui::Workbench editor(bridge);
@@ -92,6 +103,16 @@ void WorkbenchTests() {
     for (float controlWidth : {300.f, 460.f, 700.f}) {
       editor.SetControlWidth(controlWidth);
       Check(pad->width() <= 360 && pad->height() >= 120);
+      auto *playing = Named(editor, "playing-controls");
+      auto *freezeButton = Named(editor, "freeze-strike");
+      Check(playing && freezeButton && playing->parent() == pad->parent());
+      Check(freezeButton->y() >= pad->bottom());
+      if (playing->isVisible()) {
+        Check(playing->right() <= pad->parent()->width());
+        Check(playing->x() >= pad->right() || playing->y() >= freezeButton->bottom());
+        auto *modes = Find<ui::ModalPanel>(editor);
+        Check(modes && modes->y() >= playing->bottom());
+      }
       CheckChildren(editor);
       CheckChildren(*analysis);
       auto *plot = Find<ui::AnalysisView>(*analysis);
@@ -133,14 +154,44 @@ void WorkbenchTests() {
       energy += v * v;
   }
   Check(energy > 1e-6 && plugin.PreviewStrength() == .75);
+  auto *freezeButton = dynamic_cast<visage::UiButton *>(Named(editor, "freeze-strike"));
+  auto *freeze = Find<ui::StrikeFreeze>(editor);
+  Check(freezeButton && freeze);
+  freezeButton->onToggle().callback(freezeButton, false);
+  Check(freeze->parent()->isVisible());
+  auto *enabled = dynamic_cast<visage::UiButton *>(Named(*freeze, "freeze-enabled"));
+  auto *velocity = dynamic_cast<ui::Slider *>(Named(*freeze, "frozen-velocity"));
+  auto *position = dynamic_cast<ui::Slider *>(Named(*freeze, "frozen-position"));
+  Check(enabled && velocity && position);
+  Check(velocity->SubmitText("0.65") && position->SubmitText("0.35"));
+  enabled->onToggle().callback(enabled, false);
+  freeze->close();
+  pad->strike(.1f, .9f);
+  Check(lastVelocity == .65f && lastPosition == .35f);
+  pad->strike(.9f, .1f);
+  Check(lastVelocity == .65f && lastPosition == .35f);
+  // Reopening keeps the frozen values, independent of later performance input.
+  freeze->Open(.2f, .8f, false);
+  Check(freeze->Apply(.9f, .1f) == std::pair(.65f, .35f));
+  enabled->onToggle().callback(enabled, false);
+  pad->strike(.9f, .1f);
+  Check(lastVelocity == .9f && lastPosition == .1f);
+  enabled->onToggle().callback(enabled, false);
+  freeze->SetKick(true);
+  Check(!freeze->Enabled());
   plugin.Deactivate();
-  for (unsigned preset = 1; preset < 6; ++preset) {
+  for (unsigned preset = 0; preset < 6; ++preset) {
     plugin.SelectFactory(preset);
     auto smallDocument = plugin.EditableDocument();
     smallDocument["controls"]["analysis"]["view"] = {{"renderSeconds", .25}};
     plugin.EditDocument(smallDocument);
     const auto sound = plugin.EditableDocument().at("instrument");
     ui::Workbench small(bridge);
+    auto *spread = dynamic_cast<ui::Slider *>(Named(small, "contact-spread"));
+    Check(spread);
+    Check(spread->Enabled() ==
+          (smallDocument.at("instrument").at("recipe") != "metal.cymbal.v1" ||
+           plugin.Value(102) < .5));
     small.setBounds(0, 0, 900, 600);
     small.SetControlWidth(340);
     auto *modes = Find<ui::ModalPanel>(small);

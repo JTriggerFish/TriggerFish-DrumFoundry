@@ -101,6 +101,11 @@ public:
     motionSample_ = 0;
   }
   const ModalRimContactParameters &Parameters() const noexcept { return parameters_; }
+  // Pitch/tension changes alter displacement conversion, not stored energy.
+  void SetFrequency(std::size_t i, float hz) noexcept {
+    if (i < active_)
+      inverseOmega_[i] = 1.f / (6.28318530718f * std::max(1.f, hz));
+  }
 
   void Process(Values &velocity, const Values &scaledDisplacement) noexcept {
     work_ = dissipated_ = 0;

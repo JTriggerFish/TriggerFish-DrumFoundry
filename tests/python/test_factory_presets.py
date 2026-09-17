@@ -32,7 +32,9 @@ def test_official_hat_has_live_contact_and_audible_strike():
     path = ROOT / "presets/factory/hihat.fit.json"
     document = json.loads(path.read_text(encoding="utf8"))
     body = next(
-        n["parameters"] for n in document["instrument"]["nodes"] if n["id"] == "body"
+        n["parameters"]
+        for n in document["instrument"]["nodes"]
+        if n["id"] == "rim-contact"
     )
     assert document["instrument"]["id"] == "factory.hihat"
     assert body["hat_contact_enabled"] == 1

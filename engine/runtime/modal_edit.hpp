@@ -12,6 +12,7 @@ struct PreparedMetallicEdit {
 };
 struct PreparedModalEdit {
   detail::Recipe recipe{};
+  bool rimContactPresent{};
   CrashMacroValues
       values{}; // Capacity covers every recipe; only its prefix is used.
   std::unique_ptr<PreparedMetallicEdit> metallic;

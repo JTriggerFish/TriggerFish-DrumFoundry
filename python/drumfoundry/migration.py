@@ -40,6 +40,17 @@ def signature(audio, rate):
 def sound_identity(document):
     """Hash the DSP patch and strike defaults, not reference/view metadata."""
     instrument = deepcopy(document["instrument"])
+    # This is only a historical hash adapter, not a second parameter/DSP map.
+    # Native loading moves the unchanged metallic contact values to a module;
+    # the old PCM oracle hashed them under body. Preserve that oracle identity.
+    if instrument["recipe"] == "metal.cymbal.v1":
+        nodes = instrument["nodes"]
+        module = next((n for n in nodes if n["id"] == "rim-contact"), None)
+        if module is not None:
+            body = next(n for n in nodes if n["id"] == "body")
+            body["parameters"].update(module["parameters"])
+            nodes.remove(module)
+            instrument.pop("attachments", None)
     # The historical endpoint was fixed at 15 kHz. Its explicit neutral value
     # is equivalent to absence; other values must still change the identity.
     # This keeps the original audio oracles/hashes, rather than regenerating them.

@@ -20,6 +20,8 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     if (editing::RightColumn(p) != right)
       continue;
     const auto section = editing::Section(p);
+    if ((section == "Playing") != playingOnly)
+      continue;
     if (section == "Modal anchors")
       continue;
     if (std::find(sections.begin(), sections.end(), section) ==
@@ -34,17 +36,35 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
   if (contact != sections.end() && accent != sections.end() && contact < accent)
     std::rotate(contact + 1, accent, accent + 1);
   const auto strike = std::find(sections.begin(), sections.end(), "Strike accent");
-  const auto hat = std::find(sections.begin(), sections.end(), "Hi-hat contact");
+  const auto hat = std::find(sections.begin(), sections.end(), "Rim contact");
   if (strike != sections.end() && hat != sections.end() && strike < hat)
     std::rotate(strike + 1, hat, hat + 1);
   // Contact-enabled presets are played with this pedal. Put it within reach
   // on load; ordinary cymbals retain their familiar section order. Live edits
   // do not reorder controls under the pointer.
-  const auto pedal = std::find(sections.begin(), sections.end(), "Hi-hat contact");
+  const auto pedal = std::find(sections.begin(), sections.end(), "Rim contact");
   if (pedal != sections.end() && document.Value("hat_contact_enabled") >= .5)
     std::rotate(sections.begin(), pedal, pedal + 1);
+  auto playing = std::find(sections.begin(), sections.end(), "Playing");
+  if (playing != sections.end())
+    std::rotate(sections.begin(), playing, playing + 1);
+  else if (playingOnly && document.Recipe() != "drum.kick.v1" && strikeLocation)
+    sections.insert(sections.begin(), "Playing");
   for (const auto &section : sections) {
-    AddGroup(section);
+    if (!playingOnly) AddGroup(section);
+    if (section == "Playing") {
+      if (strikeLocation && document.Recipe() != "drum.kick.v1") {
+        addScrolledChild(strikeLocation);
+        rows_.emplace_back(*strikeLocation, 48);
+      }
+      for (const auto &p : document.Parameters())
+        if (editing::Section(p) == section) AddParameter(document, p);
+      if (handMute && document.Recipe() == "metal.cymbal.v1") {
+        addScrolledChild(handMute);
+        rows_.emplace_back(*handMute, 48);
+      }
+      continue;
+    }
     if (section == "Output") {
       for (const auto &p : document.Parameters())
         if (editing::Section(p) == section &&
@@ -55,7 +75,7 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
         AddOutputPreview(document);
     }
     if (meta &&
-        (section == "Bloom / energy travel" ||
+        ((section == "Bloom / energy travel" && !holdDecay) ||
          (section == "Resonance" && document.Recipe() == "metal.cymbal.v1"))) {
       const bool size = section == "Resonance";
       auto tool = std::make_unique<visage::UiButton>(size ? "Size meta…"
@@ -71,7 +91,7 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
     }
     if (section == "Bloom / energy travel" && holdDecay) {
       addScrolledChild(holdDecay);
-      rows_.emplace_back(*holdDecay, 94);
+      rows_.emplace_back(*holdDecay, 38);
     }
     if (section == "Modal T60") {
       auto editor = std::make_unique<DecayEditor>(document);
@@ -106,6 +126,10 @@ void ParameterPanel::Load(editing::Document &document, bool right) {
 }
 void ParameterPanel::AddParameter(editing::Document &document,
                                   const editing::Parameter &p) {
+  // Module bypass belongs only in the routing editor. Keep its native/JSON
+  // parameter so bypassing retains the module's settings and automation.
+  if (p.key == "hat_contact_enabled")
+    return;
   auto change = [this, &document, key = p.key](double v) {
     try {
       document.Set(key, v);

@@ -9,6 +9,9 @@
 extern "C" {
 #endif
 typedef struct df_voice df_voice;
+// Product version, independent of preset schemas. Static library-owned string;
+// does not allocate or change the thread-local error state.
+DF_EXPORT const char *df_version(void);
 // Non-realtime modal editing. Output capacity is always 32 modes. The caller
 // supplies all fields; generation uses the same C++ implementation as the UI.
 typedef struct df_series {

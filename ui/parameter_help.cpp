@@ -12,13 +12,13 @@ std::string ParameterHelp(const std::string &key) {
       {"hat_settling", "How quickly the loose rattle settles down. Left gives "
        "slower, more widely spaced returns; right brings them closer together "
        "and tightens the ending. Zero is the slowest setting, not a closed "
-       "hi-hat or an off switch. Use Pedal openness to close the hat and "
+       "contact or an off switch. Use Separation / pedal to close the gap and "
        "Contact damping to soften each collision. Some cymbal ringing can "
        "continue after the rattle stops."},
-      {"hat_contact_enabled", "Let the two hi-hat rims interact. Collisions turn "
+      {"hat_contact_enabled", "Let loose contact interact with this resonator. Collisions turn "
        "some ringing into sizzle and lose energy at the same time. Off leaves "
-       "the original cymbal unchanged."},
-      {"hat_openness", "Left closes the hi-hat; right opens it. This affects the "
+       "the original body unchanged. Available on metallic and membrane bodies."},
+      {"hat_openness", "Left closes the contact gap; right opens it. This affects the "
        "sound already ringing. A quick closure supplies a pedal chick; a slow "
        "closure is quieter. MIDI CC4 also controls this (127 closed, 0 open)."},
       {"hat_clearance", "How far apart the rims are with the pedal fully open. "

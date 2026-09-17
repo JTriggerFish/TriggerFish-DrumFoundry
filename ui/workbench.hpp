@@ -15,6 +15,7 @@
 #include "routing_panel.hpp"
 #include "split_bar.hpp"
 #include "status_line.hpp"
+#include "strike_freeze.hpp"
 
 namespace drumfoundry::ui {
 // Shared content, independent of CLAP windows and standalone device
@@ -44,6 +45,7 @@ private:
   void PollPerformance();
   void PollAutomation();
   void LayoutRight();
+  float LayoutStrike(float top, float width);
   float LeftWidth() const;
   bool SingleColumn() const;
   void SetupLayout();
@@ -91,11 +93,12 @@ private:
   visage::EventTimer timer_;
   visage::UiButton preset_{"Kick"}, settings_{"Settings"},
       limiter_{"Limiter ON"};
-  visage::UiButton fixedStrike_{"Strike"};
+  HelpButton freezeStrike_{"Freeze strike…"};
+  visage::Frame freezeShade_;
+  StrikeFreeze freeze_;
   HelpButton undo_{"Undo"}, redo_{"Redo"};
   Slider master_{"Master", -60, 0, -12, " dB"};
   Slider hardness_{"Tip hardness", 0, 1, .5};
-  Slider velocity_{"Audition velocity", 0, 1, .8};
   Slider spread_{"Gesture spread", 0, 1, .2};
   std::array<visage::UiButton, 3> implements_{{visage::UiButton("Brush"),
                                                visage::UiButton("Mallet"),
@@ -107,7 +110,7 @@ private:
   LiveSpectrum liveSpectrum_; // Outlives the panel that borrows its Frame.
   DecayHoldPanel holdDecay_;
   bool applyingHold_{};
-  ParameterPanel excitation_, resonance_;
+  ParameterPanel excitation_, resonance_, playing_;
   visage::ScrollableFrame right_;
   AnalysisPanel analysis_;
   SplitBar analysisSplit_;

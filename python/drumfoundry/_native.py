@@ -68,6 +68,7 @@ def load_library():
     lib = ct.CDLL(str(path))
     pointer, string, integer = ct.c_void_p, ct.c_char_p, ct.c_int
     signatures = {
+        "df_version": (string, []),
         "df_last_error": (string, []),
         "df_generate_series": (
             integer,

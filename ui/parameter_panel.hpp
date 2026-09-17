@@ -16,6 +16,9 @@ public:
   std::function<void()> changed, committed;
   std::function<void(const std::string &)> error;
   std::function<void(bool size)> meta;
+  // Borrowed performance controls retain their host automation/history callbacks.
+  Slider *strikeLocation{}, *handMute{};
+  bool playingOnly{}; // Untitled inline performance controls beside the strike pad.
   visage::Frame
       *holdDecay{}; // Borrowed design-time tool in the bloom section.
   LiveSpectrum

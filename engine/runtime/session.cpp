@@ -13,6 +13,8 @@ void Initialize(Session &session, const Recipe recipe,
   session.kickValues = DefaultKickParameters();
   session.membraneValues = DefaultMembraneParameters();
   session.snareValues = DefaultSnareParameters();
+  session.rimValues = DefaultRimControls();
+  session.rimContactPresent = false;
   session.cymbalRouting = {};
   session.kickRouting = {};
   session.membraneRouting = {};
@@ -25,6 +27,9 @@ const ParameterDescriptor *Description(const Session &session,
 }
 const ParameterDescriptor *Description(Recipe recipe,
                                        std::size_t index) noexcept {
+  const auto first = RimParameterFirst(recipe);
+  if (recipe != Recipe::Count && index >= first && index < first + RimControlCount)
+    return &CrashMacroDescription(RimControlFirst + index - first);
   switch (recipe) {
   case Recipe::MetallicPlate:
     return index < ActiveCrashMacroCount ? &ActiveCrashMacroDescription(index)
@@ -50,6 +55,17 @@ std::size_t ParameterCount(const Session &session) noexcept {
   return ParameterCount(session.recipe);
 }
 std::size_t ParameterCount(Recipe recipe) noexcept {
+  return BaseParameterCount(recipe) +
+      (recipe != Recipe::MetallicPlate && recipe != Recipe::Count ? RimControlCount : 0);
+}
+std::size_t RimParameterFirst(Recipe recipe) noexcept {
+  return recipe == Recipe::MetallicPlate ? RimControlFirst : BaseParameterCount(recipe);
+}
+bool ParameterAvailable(const Session &s, std::size_t index) noexcept {
+  return index < ParameterCount(s) &&
+      (index < RimParameterFirst(s.recipe) || s.rimContactPresent);
+}
+std::size_t BaseParameterCount(Recipe recipe) noexcept {
   switch (recipe) {
   case Recipe::MetallicPlate:
     return ActiveCrashMacroCount;
@@ -77,17 +93,28 @@ void Prepare(Session &session) {
     auto parameters = ApplyKickParameters(session.kickValues);
     tfdsp::percussion::ApplyKickRouting(parameters, session.kickRouting);
     session.kick.Prepare(session.sampleRate, parameters);
+    ApplyMembraneRimControls(session, true);
     return;
   }
   if (session.recipe == Recipe::MembraneDrum) {
     auto parameters = ApplyMembraneParameters(session.membraneValues);
     parameters.routing = session.membraneRouting;
     session.membrane.Prepare(session.sampleRate, parameters);
+    ApplyMembraneRimControls(session, true);
     return;
   }
   auto parameters = ApplySnareParameters(session.snareValues);
   parameters.routing = session.snareRouting;
   session.snare.Prepare(session.sampleRate, parameters);
+  ApplyMembraneRimControls(session, true);
+}
+
+void ApplyMembraneRimControls(Session &s, bool immediate) noexcept {
+  auto p = ApplyRimControls(s.rimValues.data());
+  p.enabled &= s.rimContactPresent;
+  if (s.recipe == Recipe::Kick) s.kick.SetRimContact(p, immediate);
+  else if (s.recipe == Recipe::MembraneDrum) s.membrane.SetRimContact(p, immediate);
+  else if (s.recipe == Recipe::SnareDrum) s.snare.SetRimContact(p, immediate);
 }
 
 float Process(Session &session) noexcept {

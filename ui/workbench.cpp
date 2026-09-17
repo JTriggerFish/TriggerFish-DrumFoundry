@@ -13,7 +13,7 @@ constexpr const char *factoryIds[]{"factory.kick",  "factory.snare",
 Workbench::Workbench(Bridge bridge) : bridge_(std::move(bridge)) {
   for (auto *frame : std::initializer_list<visage::Frame *>{
            &preset_, &undo_, &redo_, &settings_, &limiter_, &master_,
-           &location_, &mute_, &excitation_, &resonance_, &excitationTab_,
+           &excitation_, &resonance_, &excitationTab_,
            &resonanceTab_, &columnSplit_, &footer_})
     addChild(frame);
   SetupHistory();
@@ -100,7 +100,6 @@ void Workbench::RefreshDocument() {
   routing_.Load(document_);
   routes_.Load(document_);
   const auto &event = document_.JsonValue().at("controls").at("event");
-  velocity_.SetDefault(event.at("strength"));
   hardness_.SetDefault(event.at("hardness"));
   spread_.SetDefault(event.at("contactSpread"));
   location_.SetDefault(event.at("location"));
@@ -110,6 +109,7 @@ void Workbench::RefreshDocument() {
   reloadDocument_ = false;
   excitation_.Load(document_, false);
   resonance_.Load(document_, true);
+  playing_.Load(document_, false);
   modal_.Load(document_);
   analysis_.SetDocument(document_.JsonValue());
   ApplyTextSize();
@@ -139,6 +139,11 @@ void Workbench::ApplyDocument() {
     liveEditBefore_ = nullptr;
     gestureKeys_.clear();
     gestureDocument_ = nullptr;
+    if (next.at("instrument").at("nodes").size() !=
+        current.at("instrument").at("nodes").size()) {
+      reloadDocument_ = true; // Added/removed owners require new control rows.
+      return;
+    }
     // Merge incoming automation into the editable model too; otherwise the
     // next gesture could mistake stale widget values for intentional edits.
     std::vector<std::pair<std::string, double>> accepted;
@@ -147,8 +152,10 @@ void Workbench::ApplyDocument() {
         if (document_.Value(key) != value.get<double>())
           accepted.emplace_back(key, value.get<double>());
     document_.SetMany(accepted);
+    routing_.Load(document_);
     excitation_.SyncValues(document_);
     resonance_.SyncValues(document_);
+    playing_.SyncValues(document_);
     displayedDocument_ = next;
     analysis_.UpdateModel(next);
     preview_.Reset(next);

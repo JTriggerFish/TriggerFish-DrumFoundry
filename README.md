@@ -1,41 +1,46 @@
 # TriggerFish DrumFoundry
 
-A modular percussion synthesizer for kicks, snares, toms, cymbals and gongs.
-Available as a CLAP plugin and standalone application for Windows, Linux and macOS.
+A percussion synthesizer for shaping drum hits, metallic shimmer and evolving
+resonance. Available as a CLAP plugin and standalone application for Windows,
+Linux and macOS.
 
-The native Visage editor combines live MIDI performance, graphical modal and
-decay editing, output EQ, spectrogram analysis and saved presets.
-Optional reference libraries support side-by-side sound design and calibration.
-The output limiter has a visible bypass switch and 1 ms lookahead.
+**0.5.0 · Development preview** — [User manual](docs/manual.md) ·
+[Changelog](CHANGELOG.md)
 
-## Build and run
+![DrumFoundry: hi-hat pedal controls, routing, spectrogram, strike pad and modal editor](docs/images/drumfoundry.png)
 
-Requires PowerShell 7, CMake and Ninja. Windows uses MSYS2 MinGW64 GCC;
-Linux uses GCC or Clang, and macOS uses Apple Clang.
+Play from MIDI or the strike pad, draw and tune resonances, shape their decay,
+and add beating, shimmer and bloom. The resizable editor includes graphical
+output EQ, undo/redo, user presets and optional reference-sample comparison.
+An output limiter provides switchable protection with 1 ms lookahead.
 
-```powershell
-./dev.ps1 ui-test
-./dev.ps1 ui-dist
-./build/native/TriggerFishDrumFoundry.exe
-```
+## Included presets
 
-Omit `.exe` on Linux/macOS. Choose your audio/MIDI devices in **Settings**;
-saved device settings are restored on launch. Windows supports ASIO and WASAPI.
-The build also produces the CLAP plugin with the same editor.
-Packages are development previews, not signed releases.
+| Preset | Status |
+|---|---|
+| Hi-hat | Provisional fit with continuous pedal opening and a closing chick, controlled by slider or MIDI CC4. |
+| Kick | Provisional fit. |
+| Snare | Provisional fit. |
+| Crash | Provisional fit; needs more work. |
+| Gong | Provisional fit; needs more work. |
+| Ride | Needs further tuning and refinement. |
 
-## Optional development tools
+## Get started
 
-Python provides offline rendering, analysis and fitting through the native C++
-engine. It is not required to build or run the plugin or standalone.
+Preview packages are available from successful runs on the
+[builds page](https://github.com/JTriggerFish/TriggerFish-DrumFoundry/actions/workflows/ci.yml).
+Choose the **UI** artifact for your platform; it includes the standalone and
+CLAP plugin. Packages are unsigned.
 
-```powershell
-./dev.ps1 setup
-./dev.ps1 python-test
-```
+Open the standalone, choose **Settings → Audio / MIDI settings…**, select your
+devices and click **Apply & start**. Choose a sound from **Presets → Factory**
+and play the strike pad or your MIDI controller. Windows supports ASIO and WASAPI.
 
-See [development setup](DEVELOPMENT.md), [audio/MIDI settings](docs/standalone.md),
-[reference libraries](docs/reference-libraries.md) and [fitting](docs/fitting.md).
+For a DAW, install the `.clap` plugin in its CLAP search folder and load
+DrumFoundry on an instrument track. See the [user manual](docs/manual.md) for
+sound design, pedal control and keyboard shortcuts.
+
+Building from source: [build instructions](DEVELOPMENT.md).
 
 ## Licence
 

@@ -11,6 +11,8 @@ void Require(bool condition, const std::string &message) {
 }
 int main(int argc, char **argv) {
   Require(argc == 2, "Expected preset directory");
+  extern void ModuleTests();
+  ModuleTests();
   for (const auto *name :
        {"kick", "snare", "hihat", "crash", "ride", "gong"}) {
     std::ifstream input(std::string(argv[1]) + "/" + name + ".fit.json");

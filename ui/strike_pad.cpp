@@ -79,6 +79,12 @@ void StrikePad::Marker(visage::Canvas &c) {
   c.setColor(colours::Text);
   c.circle(x - 4, y - 4, 8);
 }
+void StrikePad::ShowStrike(float velocity, float position) {
+  lastX_ = std::clamp(position, 0.f, 1.f);
+  lastY_ = 1.f - std::clamp(velocity, 0.f, 1.f);
+  struck_ = true;
+  redraw();
+}
 void StrikePad::mouseDown(const visage::MouseEvent &e) {
   if (!e.isLeftButton() || height() <= 0 || width() <= 0)
     return;

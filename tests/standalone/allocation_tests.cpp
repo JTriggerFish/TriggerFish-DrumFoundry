@@ -1,4 +1,6 @@
 #include "adapters/clap/plugin.hpp"
+#include "editing/document.hpp"
+#include "patch/modules.hpp"
 #include "plugin_host.hpp"
 #include <cstdlib>
 #include <iostream>
@@ -75,9 +77,13 @@ int main() {
   host.Stop();
   for (int preset = 0; preset < 6; ++preset) {
     host.SetStopped(100, preset);
+    auto &livePlugin = drumfoundry::clap_adapter::Plugin::Get(host.Api());
+    drumfoundry::editing::Document modules;
+    modules.Load(livePlugin.EditableDocument());
+    modules.SetModule(drumfoundry::RimContactType, true);
+    livePlugin.EditDocument(modules.JsonValue());
     host.Prepare(48000, 128);
     std::array<float, 256> output{};
-    auto &livePlugin = drumfoundry::clap_adapter::Plugin::Get(host.Api());
     auto liveDocument = livePlugin.EditableDocument();
     for (auto &node : liveDocument["instrument"]["nodes"])
       if (node["parameters"].contains("output_colour_gain"))

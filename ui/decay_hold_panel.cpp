@@ -4,22 +4,28 @@
 #include <sstream>
 namespace drumfoundry::ui {
 DecayHoldPanel::DecayHoldPanel() {
+  setName("bloom-actions");
+  addChild(&timing_);
   addChild(&enabled_);
-  addChild(&cancel_, false);
-  enabled_.help =
-      "After changing bloom, try to keep the old 1–6 second tail while "
-      "preserving your new attack. Adjusts visible T60 knots and, unless you "
-      "changed it, concentration dependence. No gain matching or extra "
-      "envelope. Large changes may not be compensable.";
+  timing_.setName("bloom-timing");
+  enabled_.setName("hold-decay");
+  timing_.help = "Move several bloom controls together towards an earlier or "
+                 "later bloom. Opens the timing control and its explanation.";
+  timing_.onToggle() = [this](auto *, bool) {
+    if (timing) timing();
+  };
   enabled_.onToggle() = [this](auto *, bool) {
+    if (NeedsPoll()) {
+      Cancel(); // The busy button reads Cancel; the enabled preference stays on.
+      return;
+    }
     enabledValue_ = !enabledValue_;
-    enabled_.setText(enabledValue_ ? "Hold decay ON" : "Hold decay OFF");
     Cancel();
     status_ = enabledValue_ ? "Ready for a bloom edit."
                             : "Decay controls stay fixed.";
-    redraw();
+    RefreshControls();
   };
-  cancel_.onToggle() = [this](auto *, bool) { Cancel(); };
+  RefreshControls();
 }
 editing::Json DecayHoldPanel::Sound(const editing::Json &d) {
   return SoundIdentity(d);
@@ -29,8 +35,7 @@ void DecayHoldPanel::Cancel() {
   if (waiting_ || pending_)
     status_ = "Cancelled; your edit is unchanged.";
   pending_ = waiting_ = false;
-  cancel_.setVisible(false);
-  redraw();
+  RefreshControls();
 }
 void DecayHoldPanel::Edited(const editing::Json &before,
                             const editing::Json &after, unsigned rate) {
@@ -46,9 +51,8 @@ void DecayHoldPanel::Edited(const editing::Json &before,
   rate_ = rate;
   started_ = std::chrono::steady_clock::now();
   pending_ = true;
-  cancel_.setVisible(true);
   status_ = "Checking bloom edit…";
-  redraw();
+  RefreshControls();
 }
 void DecayHoldPanel::Poll(const editing::Json &current) {
   if ((waiting_ || pending_) && Sound(current) != expected_) {
@@ -62,11 +66,12 @@ void DecayHoldPanel::Poll(const editing::Json &current) {
     pending_ = false;
     waiting_ = worker_.Start(baseline_, edited_, rate_);
   }
-  if (!waiting_)
+  if (!waiting_) {
+    RefreshControls();
     return;
+  }
   if (auto completion = worker_.Take()) {
     waiting_ = false;
-    cancel_.setVisible(false);
     if (!completion->error.empty()) {
       status_ = "Hold failed; your edit is unchanged.";
       if (error)
@@ -89,13 +94,39 @@ void DecayHoldPanel::Poll(const editing::Json &current) {
          << " s · " << worker_.Evaluations() << " renders";
     status_ = text.str();
   }
-  redraw();
+  RefreshControls();
 }
 void DecayHoldPanel::resized() {
-  enabled_.setBounds(0, 0, width() - 84, 28);
-  cancel_.setBounds(width() - 78, 0, 74, 28);
+  const float half = std::max(1.f, (width() - 8) / 2);
+  timing_.setBounds(0, 0, half, height());
+  enabled_.setBounds(half + 8, 0, half, height());
+  RefreshControls();
 }
-void DecayHoldPanel::draw(visage::Canvas &c) {
-  Label(c, status_, 0, 32, width() - 4, 54);
+void DecayHoldPanel::RefreshControls() {
+  std::ostringstream label;
+  if (NeedsPoll()) {
+    const double elapsed = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - started_).count();
+    label << "Cancel · " << std::fixed << std::setprecision(1) << elapsed << " s";
+  } else label << (enabledValue_ ? "Hold decay ON" : "Hold decay OFF");
+  const auto fits = [this](const std::string &text) {
+    return FrameFont(*this).stringWidth(visage::String(text).toUtf32()) <=
+           enabled_.width() - 12;
+  };
+  timing_.setText(fits("Bloom timing…") ? "Bloom timing…" : "Timing…");
+  std::string caption = label.str();
+  if (!fits(caption)) {
+    if (NeedsPoll()) {
+      const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(
+          std::chrono::steady_clock::now() - started_).count();
+      caption = "Cancel " + std::to_string(seconds) + "s";
+    } else caption = enabledValue_ ? "Hold ON" : "Hold OFF";
+  }
+  enabled_.setText(caption);
+  enabled_.setActionButton(enabledValue_);
+  enabled_.help = "Keep a similar tail after changing bloom by adjusting the "
+                  "visible decay controls. While working, click to cancel. "
+                  "Large changes may not be compensable.\n" + status_;
+  redraw();
 }
 } // namespace drumfoundry::ui

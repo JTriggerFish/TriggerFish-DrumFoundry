@@ -1,0 +1,5 @@
+#pragma once
+// Generated from VERSION.txt; never edit this header manually.
+namespace drumfoundry {
+inline constexpr char Version[] = "@PROJECT_VERSION@";
+}

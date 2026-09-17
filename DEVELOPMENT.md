@@ -49,6 +49,25 @@ job steps, demonstrating that Python is not required to build the engine.
 Engine, CLAP and standalone preview artifacts are uploaded per runner; tagged public release
 automation and application bundles remain future work.
 
+## Versioning
+
+`VERSION.txt` is the single product-version source (`major.minor.patch`). CMake
+generates native metadata from it; Python packaging reads the same file.
+Change it and update `CHANGELOG.md`, then run `uv lock` and
+`uv sync --locked --group dev --inexact`
+to refresh the optional Python package metadata and lockfile.
+
+Before 1.0, use minor bumps for features or compatibility changes and patch
+bumps for compatible fixes. Release tags use `v<version>` (for example
+`v0.5.0`); CI rejects tags that disagree with `VERSION.txt`. Creating/pushing a
+tag and publishing a release are separate, explicit steps, not build actions.
+CPack archives include the product version. Preset schemas, recipe versions,
+CLAP SDK versions and ABI compatibility are independent: do not bump them
+merely to match a product release.
+
+Check the running native version with standalone `--version`, the standalone
+window title, the CLAP descriptor or Python's `drumfoundry.native_version()`.
+
 ## Code boundaries
 
 Keep files focused and new integration functions short. `engine/tfdsp` holds

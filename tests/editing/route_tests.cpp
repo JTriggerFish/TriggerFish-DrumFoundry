@@ -12,7 +12,7 @@ void RouteTests(drumfoundry::editing::Document d) {
   const auto routes = Routes(d);
   Check(!routes.empty());
   for (const auto &route : routes) {
-    d.SetRoute(route.id, route.enabled);
+    if (!route.interaction) d.SetRoute(route.id, route.enabled);
     Check(d.JsonValue() == before);
     if (route.required) {
       bool rejected = false;

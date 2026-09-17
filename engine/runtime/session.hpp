@@ -4,6 +4,7 @@
 #include "kick_macros.hpp"
 #include "membrane_macros.hpp"
 #include "snare_macros.hpp"
+#include "rim_controls.hpp"
 #include "tfdsp/percussion/crash_cymbal.hpp"
 #include "tfdsp/percussion/kick_voice_parameters.hpp"
 #include "tfdsp/percussion/membrane_drum.hpp"
@@ -32,6 +33,8 @@ struct Session {
   KickParameterValues kickValues{};
   MembraneParameterValues membraneValues{};
   SnareParameterValues snareValues{};
+  RimControlValues rimValues{}; // Non-metal recipes; metallic indices stay stable.
+  bool rimContactPresent{};
   tfdsp::percussion::MetallicPlateRouting cymbalRouting{};
   tfdsp::percussion::KickVoiceRouting kickRouting{};
   tfdsp::percussion::MembraneDrumRouting membraneRouting{};
@@ -50,5 +53,9 @@ const ParameterDescriptor *Description(const Session &session,
 std::size_t ParameterCount(const Session &session) noexcept;
 const ParameterDescriptor *Description(Recipe, std::size_t index) noexcept;
 std::size_t ParameterCount(Recipe) noexcept;
+std::size_t BaseParameterCount(Recipe) noexcept;
+std::size_t RimParameterFirst(Recipe) noexcept;
+bool ParameterAvailable(const Session &, std::size_t) noexcept;
+void ApplyMembraneRimControls(Session &, bool immediate = false) noexcept;
 
 } // namespace drumfoundry::detail

@@ -42,6 +42,9 @@ public:
   float StrikeEnergy() const noexcept { return strikeEnergy_.Value(); }
   float ModalEnergy() const noexcept { return membrane_.StoredEnergy(); }
   void SetLiveControls(const MembraneDrumParameters &parameters) noexcept;
+  void SetRimContact(const ModalRimContactParameters &p, bool immediate = false) noexcept {
+    membrane_.SetRimContact(p, immediate);
+  }
   void AdoptModalEdit(const MembraneResonator<MembraneModeCount>::PreparedParameters &p) noexcept {
     membrane_.SetPreparedParameters(p);
   }

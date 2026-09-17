@@ -26,6 +26,7 @@ set(DRUMFOUNDRY_ENGINE_SOURCES
   engine/patch/fit_envelope.cpp
   engine/patch/output_eq_upgrade.cpp
   engine/patch/topology.cpp
+  engine/patch/modules.cpp
   engine/patch/ownership.cpp
   engine/patch/validation.cpp
   engine/parameters/access.cpp

@@ -1,4 +1,5 @@
 #include "document.hpp"
+#include "modules.hpp"
 #include "parameters/access.hpp"
 #include <map>
 #include <set>
@@ -47,7 +48,9 @@ Json ParseJson(const char *text) {
   });
 }
 void ApplyPatch(detail::Session &session, Json &patch) {
+  UpgradeRimContact(patch);
   ValidateTopology(patch, session.recipe);
+  session.rimContactPresent = HasRimContact(patch);
   ExpandDefaults(session, patch);
   std::map<std::string, std::size_t> indices;
   for (std::size_t i = 0; i < detail::ParameterCount(session); ++i)
@@ -78,6 +81,7 @@ Json DescribeParameters(const detail::Session &s) {
   auto result = Json::array();
   for (std::size_t i = 0; i < detail::ParameterCount(s); ++i) {
     const auto &d = *detail::Description(s, i);
+    if (!detail::ParameterAvailable(s, i)) continue;
     result.push_back({{"key", d.key},
                       {"name", d.name},
                       {"unit", d.unit},
@@ -100,11 +104,13 @@ Json DefaultPatch(const std::string &key) {
   patch["outputs"] = {{"mono", patch["connections"].back()["to"]}};
   for (auto &node : patch["nodes"])
     node["parameters"] = Json::object();
-  ExpandDefaults(*session, patch);
   for (std::size_t i = 0; i < patch["connections"].size(); ++i) {
     patch["connections"][i]["id"] = "route-" + std::to_string(i);
     patch["connections"][i]["enabled"] = true;
   }
+  patch["nodes"].push_back(RimContactNode());
+  patch["attachments"] = Json::array({RimContactAttachment(session->recipe)});
+  ExpandDefaults(*session, patch);
   return patch;
 }
 } // namespace drumfoundry

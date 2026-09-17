@@ -60,13 +60,6 @@
           "body_decay_frequency_6": 14000,
           "body_decay_frequency_7": 15000,
           "body_decay_friction": 0,
-          "hat_contact_enabled": 0,
-          "hat_openness": 1,
-          "hat_clearance": 0.001,
-          "hat_contact_loss": 0.25,
-          "hat_pedal_strength": 1,
-          "hat_rattle_motion": 0,
-          "hat_settling": 0,
           "body_decay_seconds_0": 10,
           "body_decay_seconds_1": 2.9657819271087646,
           "body_decay_seconds_2": 2.3728408813476562,
@@ -254,6 +247,20 @@
           "x": 650,
           "y": 92
         }
+      },
+      {
+        "id": "rim-contact",
+        "parameters": {
+          "hat_clearance": 0.001,
+          "hat_contact_enabled": 0,
+          "hat_contact_loss": 0.25,
+          "hat_openness": 1,
+          "hat_pedal_strength": 1,
+          "hat_rattle_motion": 0,
+          "hat_settling": 0
+        },
+        "type": "interaction.rim-contact",
+        "version": 1
       }
     ],
     "connections": [
@@ -298,6 +305,13 @@
       "hardness",
       "implement",
       "contactSpread"
+    ],
+    "attachments": [
+      {
+        "body": "body",
+        "module": "rim-contact",
+        "port": "modal-state"
+      }
     ]
   },
   "reference": null,

@@ -26,6 +26,8 @@ public:
   void Set(double value);
   void SetDefault(double value);
   void SetRange(double low, double high);
+  void SetEnabled(bool enabled);
+  bool Enabled() const { return enabled_; }
   // Explicit text entry is strict: invalid/out-of-range input never changes
   // sound.
   bool SubmitText(const std::string &text);
@@ -61,6 +63,7 @@ private:
   double low_, high_, initial_, value_, dragValue_{};
   float dragX_{};
   bool dragging_{};
+  bool enabled_{true};
   std::unique_ptr<visage::TextEditor> text_;
 };
 
@@ -83,6 +86,7 @@ public:
   // Axes, input and marker share this playable rectangle; margins clamp to
   // it.
   visage::Bounds PlayingBounds() const;
+  void ShowStrike(float velocity, float position);
   std::function<void(float, float)> strike;
 
 private:

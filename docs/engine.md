@@ -31,7 +31,9 @@ replacement is distinct from the state-preserving prepared modal edits below. `R
 voice must not be called concurrently. C ABI strings are library-owned and copied
 immediately by the Python wrapper; NumPy owns each output buffer.
 
-Topology is a fixed compiled recipe, not a general graph interpreter. The JSON
+Topology uses compiled audio recipes plus optional typed body interactions,
+not a general graph interpreter. See [topology modules](topology-modules.md).
+The JSON
 contract rejects wrong owners, invalid values, duplicate keys/IDs/routes, unknown
 types/versions, missing/disabled required connections and disconnected outputs.
 Missing node parameters are expanded from the authoritative C++ defaults during
@@ -72,7 +74,7 @@ recipe storage before polyphonic/multi-instrument host integration.
 
 ## Live control edits
 
-The metallic body also has optional [hi-hat rim contact](hi-hat-contact.md):
+Metallic and membrane bodies have optional [rim contact](hi-hat-contact.md):
 passive modal collision impulses, moving-pedal work and live MIDI CC4 openness.
 It defaults off in the component but is enabled in the factory Hi-hat, the
 startup instrument. It shares the existing modal energy, rather than adding noise.

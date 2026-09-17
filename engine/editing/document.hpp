@@ -23,6 +23,8 @@ public:
   void Set(const std::string &key, double value);
   void SetMany(const std::vector<std::pair<std::string, double>> &values);
   void SetRoute(const std::string &id, bool enabled);
+  // Structural edit: add/remove a compatible optional state interaction.
+  void SetModule(const std::string &type, bool present);
   void MoveNode(const std::string &id, double x, double y);
   const std::string &Recipe() const { return recipe_; }
 

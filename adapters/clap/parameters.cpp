@@ -75,7 +75,7 @@ const clap_plugin_params_t ParamsExtension{
         info->flags = CLAP_PARAM_IS_AUTOMATABLE | CLAP_PARAM_REQUIRES_PROCESS;
         if (int(d.scale) >= 2)
           info->flags |= CLAP_PARAM_IS_STEPPED;
-        if (p.recipe != Plugin::Get(plugin).DesignRecipe())
+        if (!Plugin::Get(plugin).DesignAvailable(p))
           info->flags |= CLAP_PARAM_IS_HIDDEN;
         std::snprintf(info->name, sizeof(info->name), "%s", d.name.c_str());
         std::snprintf(info->module, sizeof(info->module), "%s",

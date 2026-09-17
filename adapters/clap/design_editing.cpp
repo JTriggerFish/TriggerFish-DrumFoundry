@@ -1,4 +1,5 @@
 #include "plugin.hpp"
+#include "patch/modules.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <thread>
@@ -7,6 +8,7 @@ namespace drumfoundry::clap_adapter {
 void Plugin::InitializeDesignParameters(const Json &document) {
   const auto &patch = document.at("instrument");
   const auto recipe = ParseRecipe(patch.at("recipe"));
+  designRimPresent_ = HasRimContact(patch);
   const auto &table = DesignParameters(); // Warm registry before audio starts.
   for (std::size_t i = 0; i < table.size(); ++i) {
     const auto &p = table[i];
@@ -89,6 +91,7 @@ void Plugin::SetDesignParameter(clap_id id, double value) noexcept {
       active && voice_ ? voice_->Recipe() : designRecipe_.load();
   if (p.recipe != recipe || !ValidDesignValue(p, value))
     return;
+  if (!active && !DesignAvailable(p)) return;
   if (active && voice_ && !voice_->StageParameter(p.index, float(value)))
     return;
   if (!active && recipe == detail::Recipe::MetallicPlate) {
@@ -102,13 +105,12 @@ void Plugin::SetDesignParameter(clap_id id, double value) noexcept {
       return;
   }
 #ifdef DRUMFOUNDRY_UI
-  if (p.recipe == detail::Recipe::MetallicPlate &&
-      p.index == std::size_t(CrashMacro::HatOpenness) &&
+  if (p.descriptor->key == "hat_openness" &&
       value < values_[ParameterCount + slot].load()) {
     const auto &table = DesignParameters();
     for (std::size_t i = 0; i < table.size(); ++i)
       if (table[i].recipe == p.recipe &&
-          table[i].index == std::size_t(CrashMacro::HatContactEnabled) &&
+          table[i].descriptor->key == "hat_contact_enabled" &&
           values_[ParameterCount + i].load() >= .5) {
         audition_.Stop();
         pendingStrike_ = true; // Begin live capture for pedal-only gestures too.

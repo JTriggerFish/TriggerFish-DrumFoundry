@@ -1,4 +1,5 @@
 #include "crash_macros.hpp"
+#include "rim_controls.hpp"
 
 #include <algorithm>
 #include <array>
@@ -153,7 +154,7 @@ std::array<CrashMacroDescriptor, CrashMacroCount> BuildDescriptors() {
       {"hat_contact_enabled", "Enable rim contact", "", 0.f, 1.f,
        fit.rimContact.enabled ? 1.f : 0.f, CrashMacroScale::Boolean});
   set(CrashMacro::HatOpenness,
-      Linear("hat_openness", "Pedal openness", "", 0.f, 1.f,
+      Linear("hat_openness", "Separation / pedal", "", 0.f, 1.f,
              fit.rimContact.openness));
   set(CrashMacro::HatClearance,
       Logarithmic("hat_clearance", "Open clearance", "", .0001f, 2.f,
@@ -381,13 +382,7 @@ CrashCymbalFitParameters ApplyCrashMacros(
   ApplyResolvedPaint(fit, values);
   ApplyBodyDecay(fit, values);
   fit.bodyTailDamping = Value(values, CrashMacro::BodyTailDamping);
-  fit.rimContact.enabled = Value(values, CrashMacro::HatContactEnabled) >= .5f;
-  fit.rimContact.openness = Value(values, CrashMacro::HatOpenness);
-  fit.rimContact.clearance = Value(values, CrashMacro::HatClearance);
-  fit.rimContact.loss = Value(values, CrashMacro::HatContactLoss);
-  fit.rimContact.pedalStrength = Value(values, CrashMacro::HatPedalStrength);
-  fit.rimContact.motion = Value(values, CrashMacro::HatRattleMotion);
-  fit.rimContact.settling = Value(values, CrashMacro::HatSettling);
+  fit.rimContact = ApplyRimControls(values.data() + RimControlFirst);
 
   fit.outputEqEnabled =
       Value(values, CrashMacro::OutputEqEnabled) >= .5f;

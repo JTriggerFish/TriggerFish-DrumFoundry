@@ -1,3 +1,11 @@
+add_test(NAME version_release_tag COMMAND ${CMAKE_COMMAND} -E env
+  GITHUB_REF_TYPE=tag GITHUB_REF_NAME=v${PROJECT_VERSION}
+  ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/read-version.cmake)
+add_test(NAME version_reject_tag COMMAND ${CMAKE_COMMAND} -E env
+  GITHUB_REF_TYPE=tag GITHUB_REF_NAME=not-a-release
+  ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/read-version.cmake)
+set_tests_properties(version_reject_tag PROPERTIES WILL_FAIL TRUE)
+
 set(DRUMFOUNDRY_DSP_TESTS
   percussion_contact_tests
   percussion_control_tests
@@ -9,6 +17,7 @@ set(DRUMFOUNDRY_DSP_TESTS
   percussion_gain_tests
   percussion_kick_tests
   percussion_membrane_tests
+  percussion_membrane_contact_tests
   percussion_micro_contact_tests
   percussion_modal_drift_tests
   percussion_modal_motion_tests
@@ -35,7 +44,7 @@ target_link_libraries(percussion_benchmark PRIVATE drumfoundry_engine)
 if(MINGW)
   target_link_options(percussion_benchmark PRIVATE -static -static-libgcc -static-libstdc++)
 endif()
-add_executable(editing_document_tests editing/document_tests.cpp editing/route_tests.cpp)
+add_executable(editing_document_tests editing/document_tests.cpp editing/route_tests.cpp editing/module_tests.cpp)
 target_link_libraries(editing_document_tests PRIVATE drumfoundry_editing)
 if(MINGW)
   target_link_options(editing_document_tests PRIVATE -static -static-libgcc -static-libstdc++)
@@ -83,6 +92,10 @@ if(MINGW)
 endif()
 add_test(NAME output_allocation_tests COMMAND output_allocation_tests)
 if(DRUMFOUNDRY_BUILD_STANDALONE)
+  add_test(NAME standalone_version COMMAND drumfoundry_standalone --version)
+  string(REPLACE "." "\\." version_pattern "${PROJECT_VERSION}")
+  set_tests_properties(standalone_version PROPERTIES
+    PASS_REGULAR_EXPRESSION "TriggerFish DrumFoundry ${version_pattern}")
   add_test(NAME standalone_host_smoke COMMAND drumfoundry_standalone --smoke)
   add_executable(standalone_queue_tests standalone/queue_tests.cpp)
   target_include_directories(standalone_queue_tests PRIVATE ${PROJECT_SOURCE_DIR}/standalone)
@@ -161,6 +174,7 @@ if(DRUMFOUNDRY_BUILD_CLAP)
   if(DRUMFOUNDRY_BUILD_UI)
     target_sources(clap_editor_events_tests PRIVATE clap/workbench_split_tests.cpp)
     target_sources(clap_editor_events_tests PRIVATE clap/workbench_live_tests.cpp)
+    target_sources(clap_editor_events_tests PRIVATE clap/workbench_module_tests.cpp)
     target_sources(clap_editor_events_tests PRIVATE clap/workbench_history_tests.cpp)
     target_sources(clap_editor_events_tests PRIVATE clap/workbench_history_controls.cpp)
     target_sources(clap_editor_events_tests PRIVATE clap/workbench_history_presets.cpp)
@@ -172,6 +186,7 @@ if(DRUMFOUNDRY_BUILD_CLAP)
   endif()
   add_test(NAME clap_editor_events_tests COMMAND clap_editor_events_tests ${PROJECT_SOURCE_DIR}/presets/factory/kick.fit.json)
   add_executable(clap_host_tests clap/host.cpp clap/streams.cpp clap/audio.cpp clap/state.cpp clap/timing.cpp)
+  target_include_directories(clap_host_tests PRIVATE "${PROJECT_BINARY_DIR}/generated")
   target_link_libraries(clap_host_tests PRIVATE drumfoundry_clap_sdk ${CMAKE_DL_LIBS})
   if(MINGW)
     target_link_options(clap_host_tests PRIVATE -static -static-libgcc -static-libstdc++)

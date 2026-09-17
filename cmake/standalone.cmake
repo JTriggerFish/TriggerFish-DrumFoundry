@@ -43,9 +43,11 @@ endif()
 add_library(drumfoundry_standalone_host STATIC
   standalone/plugin_host.cpp standalone/plugin_audio.cpp standalone/audio_device.cpp standalone/midi.cpp)
 target_include_directories(drumfoundry_standalone_host PUBLIC ${PROJECT_SOURCE_DIR}/standalone)
+target_include_directories(drumfoundry_standalone_host PRIVATE "${PROJECT_BINARY_DIR}/generated")
 target_link_libraries(drumfoundry_standalone_host PUBLIC drumfoundry_devices drumfoundry_clap_sdk)
 add_executable(drumfoundry_standalone standalone/main.cpp standalone/console.cpp)
 if(DRUMFOUNDRY_BUILD_UI)
+  target_sources(drumfoundry_standalone PRIVATE standalone/gui_documentation.cpp)
   target_sources(drumfoundry_standalone PRIVATE standalone/gui.cpp standalone/gui_smoke.cpp standalone/gui_capture.cpp
     standalone/gui_session.cpp standalone/device_catalog.cpp standalone/settings_store.cpp)
   target_compile_definitions(drumfoundry_standalone PRIVATE DRUMFOUNDRY_UI=1)

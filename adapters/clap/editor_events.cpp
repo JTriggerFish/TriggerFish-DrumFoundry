@@ -36,7 +36,7 @@ bool Plugin::QueueEdit(clap_id id, double value) noexcept {
   const auto design = DesignSlot(id);
   if (design < DesignCapacity &&
       (designPending_ ||
-       DesignParameters()[design].recipe != designRecipe_.load()))
+       !DesignAvailable(DesignParameters()[design])))
     return false;
   const unsigned gesture =
       design < DesignCapacity ? (designGesturesMain_[design] ? 2 : 1) : 0;

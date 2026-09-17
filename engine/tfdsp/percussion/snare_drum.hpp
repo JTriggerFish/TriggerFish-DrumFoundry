@@ -64,6 +64,9 @@ public:
   float MembraneEnergy() const noexcept { return membrane_.ModalEnergy(); }
   float WireEnergy() const noexcept { return wires_.StoredEnergy(); }
   void SetLiveControls(const SnareDrumParameters &parameters) noexcept;
+  void SetRimContact(const ModalRimContactParameters &p, bool immediate = false) noexcept {
+    membrane_.SetRimContact(p, immediate);
+  }
   bool CanAdoptModalEdit() const noexcept { return wires_.CanAdoptPrepared(); }
   bool AdoptModalEdit(
       const MembraneResonator<MembraneModeCount>::PreparedParameters &membrane,

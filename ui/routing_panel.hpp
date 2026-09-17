@@ -7,6 +7,7 @@ public:
   RoutingPanel();
   void Load(editing::Document &);
   void Refresh();
+  void SetModule(const std::string &type, bool present);
   void resized() override;
   void draw(visage::Canvas &) override;
   std::function<void()> changed, layoutChanged;
@@ -14,10 +15,12 @@ public:
 
 private:
   void Toggle(const std::string &);
+  void ModulesMenu();
   editing::Document *document_{};
   RoutingDiagram diagram_;
   visage::ScrollableFrame scroll_;
   visage::UiButton close_{"Close"};
+  HelpButton modules_{"Modules…"};
   std::vector<std::unique_ptr<HelpButton>> routes_;
 };
 } // namespace drumfoundry::ui

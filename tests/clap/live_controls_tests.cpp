@@ -1,4 +1,6 @@
 #include "adapters/clap/plugin.hpp"
+#include "editing/document.hpp"
+#include "patch/modules.hpp"
 #include <cmath>
 #include <stdexcept>
 
@@ -17,12 +19,18 @@ struct Harness {
   float *channels[2]{left.data(), right.data()};
   clap_audio_buffer_t bus{channels, nullptr, 2, 0, 0};
   clap_process_t process{};
-  Harness(unsigned preset) {
+  Harness(unsigned preset, bool rim = false) {
     host.request_restart = [](const clap_host_t *h) {
       ++static_cast<Harness *>(h->host_data)->restarts;
     };
     Check(plugin.Init(), "Live test initialization");
     plugin.SelectFactory(preset);
+    if (rim) {
+      editing::Document d;
+      d.Load(plugin.EditableDocument());
+      d.SetModule(RimContactType, true);
+      plugin.EditDocument(d.JsonValue());
+    }
     plugin.SetParameter(Master, 0);
     plugin.SetParameter(Protection, 0);
     Check(plugin.Activate(48000, 1, 128), "Live test activation");
@@ -53,8 +61,8 @@ struct Harness {
   }
 };
 
-void HatPedal() {
-  auto h = std::make_unique<Harness>(5);
+void RimPedal(unsigned preset) {
+  auto h = std::make_unique<Harness>(preset, true);
   Check(h->Set("hat_contact_enabled", 1), "Enable live rim contact");
   h->Block();
   clap_event_midi_t cc{};
@@ -216,7 +224,7 @@ void DeferredAllocationEdits(unsigned preset) {
 } // namespace
 
 void LiveControlsTests() {
-  HatPedal();
+  for (unsigned preset : {0u, 1u, 5u}) RimPedal(preset);
   extern void LiveParameterParity();
   LiveParameterParity();
   for (unsigned preset = 0; preset < 6; ++preset)

@@ -62,6 +62,19 @@ void Slider::SetDefault(double value) {
   if (std::isfinite(value))
     initial_ = std::clamp(value, low_, high_);
 }
+void Slider::SetEnabled(bool enabled) {
+  if (enabled_ == enabled) return;
+  const bool finishGesture = !enabled && dragging_;
+  enabled_ = enabled;
+  if (!enabled) {
+    dragging_ = false;
+    CloseText();
+  }
+  setAlphaTransparency(enabled ? 1.f : .4f);
+  // An implement/host change can disable a control before mouse-up. Preserve
+  // that completed part of the gesture as one undo entry.
+  if (finishGesture && committed) committed();
+}
 void Slider::Edit(double value) {
   Set(value);
   if (changed)
@@ -94,6 +107,7 @@ void Slider::draw(visage::Canvas &c) {
   c.circle(x - 3.5f, trackY - 1.75f, 7);
 }
 void Slider::mouseDown(const visage::MouseEvent &e) {
+  if (!enabled_) return;
   if (e.button_id == visage::kMouseButtonRight) {
     dragging_ = false;
     BeginText();

@@ -17,18 +17,10 @@ void Workbench::resized() {
   routingToggle_.setBounds(16, 60, left - 32, 28);
   routing_.setBounds(16, 92, left - 32, 150);
   const float controlsTop = LeftControlsTop();
-  const bool kick = document_.Recipe() == "drum.kick.v1";
-  const bool stackedPerformance = SingleColumn() && analysis_.textSize > 0;
-  const float controlsOffset =
-      kick ? 30.f : (stackedPerformance ? 126.f : 78.f);
+  const float controlsOffset = 30.f;
   columnSplit_.setBounds(left - 6, 60, 14, height() - 100);
   right_.setBounds(left + 16, 60, width() - left - 32, height() - 100);
   LayoutRight();
-  location_.setBounds(16, controlsTop + 24,
-                      stackedPerformance ? left - 32 : col, 44);
-  mute_.setBounds(stackedPerformance ? 16 : 32 + col,
-                  controlsTop + (stackedPerformance ? 72 : 24),
-                  stackedPerformance ? left - 32 : col, 44);
   const bool single = SingleColumn();
   excitationTab_.setVisible(single);
   resonanceTab_.setVisible(single);
@@ -53,6 +45,8 @@ void Workbench::resized() {
   presetSave_.setBounds((width() - 550) / 2, (height() - 164) / 2, 550, 164);
   layoutShade_.setBounds(localBounds());
   layoutPanel_.setBounds(width() - 356, 60, 340, 284);
+  freezeShade_.setBounds(localBounds());
+  freeze_.setBounds((width() - 400) / 2, (height() - 226) / 2, 400, 226);
   fileShade_.setBounds(localBounds());
   files_.setBounds((width() - 640) / 2, (height() - 300) / 2, 640, 300);
   metaShade_.setBounds(localBounds());

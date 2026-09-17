@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "triggerfish-drumfoundry"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Optional native DrumFoundry rendering, testing and fitting tools"
 requires-python = ">=3.11"
 dependencies = ["numpy>=2.0"]
@@ -19,6 +19,13 @@ perceptual-fit = ["torch>=2.8", "auraloss==0.4.0", "librosa==0.11.0", "wavespin 
 
 [tool.setuptools.packages.find]
 where = ["python"]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION.txt"}
+
+[tool.uv]
+# A version-only bump must refresh editable package metadata too.
+cache-keys = [{file = "pyproject.toml"}, {file = "VERSION.txt"}]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/python"]

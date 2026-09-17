@@ -11,8 +11,6 @@ void Workbench::PollPerformance() {
   master_.Set(bridge_.value(105));
   hardness_.Set(bridge_.value(101));
   spread_.Set(bridge_.value(109));
-  if (bridge_.velocity)
-    velocity_.Set(bridge_.velocity());
   const double implement = bridge_.value(102);
   for (unsigned i = 0; i < implements_.size(); ++i)
     implements_[i].setActionButton(std::abs(implement - i * .5) < .01);
@@ -20,6 +18,15 @@ void Workbench::PollPerformance() {
                      : implement < .75 ? "Mallet firmness"
                                        : "Tip hardness");
   const bool kick = document_.Recipe() == "drum.kick.v1";
+  const bool metallic = document_.Recipe() == "metal.cymbal.v1";
+  const bool spreadActive = !metallic || implement < .5;
+  spread_.SetEnabled(spreadActive);
+  spread_.SetLabel(metallic ? "Brush spread" : "Contact spread");
+  spread_.help = metallic
+      ? "Lengthens the brush gesture and spreads its bristle contacts in time. Only affects brushes; sticks and mallets ignore it."
+      : "Stretches the noisy contact burst and its micro-contacts. Higher values make a broader attack; applies to all implements.";
+  freeze_.SetKick(kick);
+  freezeStrike_.setActionButton(freeze_.Enabled());
   strike_.SetKick(kick);
   strike_.SetMembrane(document_.Recipe().find("drum.") == 0 && !kick);
   location_.setVisible(!kick);

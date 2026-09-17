@@ -27,6 +27,7 @@ void Voice::Configure(Json document) {
   const auto recipeName = patch.at("recipe").get<std::string>();
   for (std::size_t i = 0; i < detail::ParameterCount(*session_); ++i)
     liveIndices_[i] =
+        detail::ParameterAvailable(*session_, i) &&
         IsLiveParameter(recipeName, detail::Description(*session_, i)->key);
   liveDirty_ = decayDirty_ = false;
   document_ = std::move(document);

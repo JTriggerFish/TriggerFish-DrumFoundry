@@ -88,6 +88,7 @@ void Workbench::ApplyTextSize() {
   // Reflow even if a frame's outer bounds have not changed.
   excitation_.resized();
   resonance_.resized();
+  playing_.resized();
   modal_.resized();
   presetSave_.resized();
   if (textSizeChanged)

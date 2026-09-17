@@ -1,4 +1,5 @@
 #include "routing_panel.hpp"
+#include "patch/modules.hpp"
 #include <algorithm>
 namespace drumfoundry::ui {
 namespace {
@@ -19,6 +20,12 @@ RoutingPanel::RoutingPanel() {
   addChild(&diagram_);
   addChild(&scroll_);
   addChild(&close_);
+  addChild(&modules_);
+  modules_.setName("routing-modules");
+  modules_.help = "Add or remove rim contact on this instrument's resonator. "
+                  "Bypass keeps its settings. Green connections exchange body "
+                  "energy; they are not separate audio or noise signals.";
+  modules_.onToggle() = [this](auto *, bool) { ModulesMenu(); };
   diagram_.editable = true;
   diagram_.layoutChanged = [this] {
     if (layoutChanged)
@@ -38,7 +45,10 @@ void RoutingPanel::Load(editing::Document &d) {
   for (const auto &route : editing::Routes(d)) {
     auto button = std::make_unique<HelpButton>();
     button->help =
-        route.required
+        route.interaction
+            ? "Rim contact exchanges energy with this resonator. Use Modules to "
+              "bypass or remove it; this is not an audio connection."
+        : route.required
             ? "Required by this compiled recipe; cannot be disconnected."
             : "Switch this route on or off. There are no hidden route gains. "
               "An edit that disconnects every audible path is rejected.";
@@ -58,7 +68,8 @@ void RoutingPanel::Refresh() {
   const auto routes = editing::Routes(*document_);
   for (unsigned i = 0; i < routes.size(); ++i) {
     const auto &r = routes[i];
-    routes_[i]->setText((r.required  ? "Required  |  "
+    routes_[i]->setText((r.interaction ? (r.enabled ? "Body energy  |  " : "Bypassed  |  ")
+                         : r.required  ? "Required  |  "
                          : r.enabled ? "ON  |  "
                                      : "OFF  |  ") +
                         EndpointLabel(*document_, r.from) + "  →  " +
@@ -87,6 +98,7 @@ void RoutingPanel::resized() {
   if (width() < 100 || height() < 100)
     return;
   close_.setBounds(width() - 106, 14, 90, 28);
+  modules_.setBounds(width() - 246, 14, 132, 28);
   diagram_.setBounds(16, 54, width() - 32, 210);
   scroll_.setBounds(16, 304, width() - 32, std::max(1.f, height() - 320));
   for (unsigned i = 0; i < routes_.size(); ++i)
@@ -96,10 +108,10 @@ void RoutingPanel::resized() {
 void RoutingPanel::draw(visage::Canvas &c) {
   c.setColor(colours::Panel);
   c.roundedRectangle(0, 0, width(), height(), 8);
-  Label(c, "INSTRUMENT ROUTING", 16, 14, width() - 140, 28, colours::Heading);
+  Label(c, "INSTRUMENT ROUTING", 16, 14, width() - 270, 28, colours::Heading);
   Label(c,
-        "Move boxes to arrange the diagram. Switch routes below; levels stay "
-        "in the parameter sections.",
+        "Modules: add / bypass / remove. Green lines couple body energy. "
+        "Audio paths and levels stay in their own sections.",
         16, 274, width() - 32, 24);
 }
 } // namespace drumfoundry::ui

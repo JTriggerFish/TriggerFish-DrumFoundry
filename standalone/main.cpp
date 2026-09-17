@@ -1,4 +1,5 @@
 #include "console.hpp"
+#include "drumfoundry/version.hpp"
 #include "midi.hpp"
 #include "settings_store.hpp"
 #ifdef DRUMFOUNDRY_UI
@@ -89,7 +90,8 @@ Options Parse(int argc, char **argv) {
 }
 void Help() {
   std::cout
-      << "TriggerFish DrumFoundry — native device-test standalone\n"
+      << "TriggerFish DrumFoundry " << drumfoundry::Version << '\n'
+      << "--version: print version without opening devices\n"
       << "--list [--api asio|wasapi|core|alsa] [--device name]\n"
       << "--api asio --device \"MOTU M Series\" [--buffer 128] [--rate 48000]\n"
       << "  [--midi all|none|name] [--preset "
@@ -101,6 +103,7 @@ void Help() {
       << "--gui: native editor (./dev.ps1 ui); omit --device to inspect "
          "silently\n"
       << "--ui-smoke: open/capture/close editor without audio hardware\n"
+      << "--ui-screenshot: capture the factory hi-hat editor without devices\n"
       << "--clap-ui-smoke: embedded editor lifecycle check (Windows verified)\n"
       << "Without --gui or --test-seconds, runs an interactive control "
          "console.\n"
@@ -114,6 +117,17 @@ int main(int argc, char **argv) {
   // launcher.
   std::cout << std::unitbuf;
   try {
+#ifdef DRUMFOUNDRY_UI
+    if (argc == 2 && std::string(argv[1]) == "--ui-screenshot") {
+      PluginHost host;
+      DocumentationScreenshot(host);
+      return 0;
+    }
+#endif
+    if (argc == 2 && std::string(argv[1]) == "--version") {
+      std::cout << "TriggerFish DrumFoundry " << drumfoundry::Version << '\n';
+      return 0; // No plugin construction or device access.
+    }
     if ((argc > 1 && std::string(argv[1]) == "--help")
 #ifndef DRUMFOUNDRY_UI
         || argc == 1

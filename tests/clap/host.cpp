@@ -1,4 +1,5 @@
 #include "host.hpp"
+#include "drumfoundry/version.hpp"
 #include <algorithm>
 #include <cstring>
 #include <stdexcept>
@@ -76,6 +77,9 @@ Host::Host(const char *path) {
           "one instrument factory");
   Require(!factory->get_plugin_descriptor(factory, 1), "invalid factory index");
   const auto *descriptor = factory->get_plugin_descriptor(factory, 0);
+  Require(descriptor && descriptor->version &&
+              std::strcmp(descriptor->version, drumfoundry::Version) == 0,
+          "CLAP product version matches native build");
   plugin = factory->create_plugin(factory, &host_, descriptor->id);
   Require(plugin && plugin->init(plugin), "initialize plugin");
   params = static_cast<const clap_plugin_params_t *>(

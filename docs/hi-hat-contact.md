@@ -1,6 +1,6 @@
 # Hi-hat rim contact
 
-This is a **reduced contact interaction inside the metallic modal body**, not
+This is a **reduced contact interaction attached to a modal body**, not
 a second complete cymbal voice and not an added noise envelope. It is optional
 and defaults off at the component level. The factory **Hi-hat** enables it and
 is the startup preset for new plugin instances and standalone launches.
@@ -9,14 +9,17 @@ no sample reference; the accepted reference-linked calibration stays local.
 Presets with contact disabled retain their sound. The original strike
 accent remains a separate, explicitly direct-only contact sound.
 
+The same module can now attach to metallic or membrane resonators via the
+[topology editor](topology-modules.md), not just a hi-hat preset.
+
 ## Controls and routing
 
-The visible **Hi-hat contact** group has seven controls, all serialized and live:
+The visible **Rim contact** group has seven controls, all serialized and live:
 
 | Control | Meaning |
 | --- | --- |
 | Enable rim contact | Exact bypass when off |
-| Pedal openness | 0 closed, 1 open; also MIDI CC4, with 127 closed and 0 open |
+| Separation / pedal | 0 closed, 1 open; also MIDI CC4, with 127 closed and 0 open |
 | Open clearance | Maximum normalized relative-rim gap, not millimetres |
 | Contact damping | Fraction of relative kinetic energy lost in each impact; also resting contact drag |
 | Pedal strength | External closing-velocity coupling, independent of stick hits |

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tfdsp/finite_audio.hpp"
+#include "modal_rim_contact.hpp"
 
 #include <algorithm>
 #include <array>
@@ -34,6 +35,7 @@ public:
     std::array<float, ModeCount> outputGains{};
     std::array<float, ModeCount> center{};
     std::array<float, ModeCount> edge{};
+    ModalRimContact<ModeCount> rimContact{};
     float sampleRate{48000.f};
   };
 
@@ -82,6 +84,10 @@ public:
       result.cosines[mode] = std::cos(angle);
       result.sines[mode] = std::sin(angle);
     }
+    std::array<std::uint32_t, ModeCount> identities{};
+    for (std::size_t i = 0; i < ModeCount; ++i) identities[i] = std::uint32_t(i);
+    result.rimContact.Prepare(sampleRate, result.frequencies,
+                             result.inputGains, identities, ModeCount);
     return result;
   }
 
@@ -97,6 +103,7 @@ public:
     gainRampRemaining_ = 0;
     center_ = prepared.center;
     edge_ = prepared.edge;
+    rimContact_ = prepared.rimContact;
     tensionScale_ = 1.f;
     Reset();
   }
@@ -104,11 +111,15 @@ public:
   void Reset() noexcept {
     real_.fill(0.f);
     imaginary_.fill(0.f);
+    rimContact_.Reset();
     updateCountdown_ = 0;
   }
 
   void SetDecayRadii(const std::array<float, ModeCount> &radii) noexcept {
     radii_ = radii; // Damping only: does not change quadrature state or pitch.
+  }
+  void SetRimContact(const ModalRimContactParameters &p, bool immediate = false) noexcept {
+    rimContact_.SetParameters(p, immediate);
   }
 
   // Fixed mode slots already are stable identities. Retain quadrature and
@@ -120,6 +131,11 @@ public:
     targetOutputGains_ = p.outputGains;
     center_ = p.center;
     edge_ = p.edge;
+    // Geometry was prepared on the worker. Preserve moving contact/energy on
+    // the audio thread, just as the metallic packet body does.
+    auto rim = p.rimContact;
+    rim.RetainState(rimContact_);
+    rimContact_ = rim;
     const float tension = tensionScale_;
     tensionScale_ = -1.f;
     updateCountdown_ = 0;
@@ -158,10 +174,14 @@ public:
           radii_[mode] * (sines_[mode] * priorReal +
                           cosines_[mode] * priorImaginary));
     }
-    float output = 0.f;
     for (std::size_t mode = 0; mode < ModeCount; ++mode) {
       real_[mode] = tfdsp::FiniteNormalOrZero(
           real_[mode] + forces[mode]);
+    }
+    if (rimContact_.Parameters().enabled)
+      rimContact_.Process(real_, imaginary_);
+    float output = 0.f;
+    for (std::size_t mode = 0; mode < ModeCount; ++mode) {
       output += outputGains_[mode] * real_[mode];
     }
     return tfdsp::FiniteNormalOrZero(output);
@@ -172,7 +192,8 @@ public:
     for (std::size_t mode = 0; mode < ModeCount; ++mode)
       result += real_[mode] * real_[mode] +
                 imaginary_[mode] * imaginary_[mode];
-    return tfdsp::FiniteNormalOrZero(result);
+    // Body quadratures use twice physical energy; include the attached mass.
+    return tfdsp::FiniteNormalOrZero(result + float(2 * rimContact_.StoredEnergy()));
   }
 
 private:
@@ -195,6 +216,7 @@ private:
       const float frequency = std::min(
           .45f * sampleRate_, frequencies_[mode] * tensionScale_);
       const float angle = TwoPi * frequency / sampleRate_;
+      rimContact_.SetFrequency(mode, frequency);
       cosines_[mode] = std::cos(angle);
       sines_[mode] = std::sin(angle);
     }
@@ -202,6 +224,7 @@ private:
 
   static constexpr std::size_t CoefficientInterval = 16;
   std::array<float, ModeCount> real_{};
+  ModalRimContact<ModeCount> rimContact_{};
   std::array<float, ModeCount> imaginary_{};
   std::array<float, ModeCount> frequencies_{};
   std::array<float, ModeCount> radii_{};

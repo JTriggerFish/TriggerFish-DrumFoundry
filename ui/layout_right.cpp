@@ -2,12 +2,42 @@
 #include <algorithm>
 
 namespace drumfoundry::ui {
+// Two performance columns beside the pad on wide layouts, below it on smaller
+// ones. Return the occupied height so analysis/modal resizing stays independent.
+float Workbench::LayoutStrike(float top, float w) {
+  const bool beside = w >= 1000, columns = w >= 560;
+  const float padWidth = beside ? std::clamp(w * .26f, 280.f, 360.f)
+                                : std::min(w, 360.f);
+  strike_.setBounds(0, top, padWidth, 180);
+  freezeStrike_.setBounds(0, top + 188, padWidth, 30);
+
+  const float controlsX = beside ? padWidth + 16 : 0;
+  const float controlsTop = beside ? top : top + 234;
+  const float controlWidth = columns ? (w - controlsX - 16) / 2 : w;
+  const float buttonWidth = (w - controlsX - 16) / 3;
+  for (unsigned i = 0; i < implements_.size(); ++i)
+    implements_[i].setBounds(controlsX + i * (buttonWidth + 8), controlsTop,
+                             buttonWidth, 28);
+  const float row = std::max(44.f, hardness_.PreferredHeight(controlWidth));
+  hardness_.setBounds(controlsX, controlsTop + 36, controlWidth, row);
+  spread_.setBounds(controlsX, hardness_.bottom() + 4, controlWidth, row);
+  const float playingX = columns ? controlsX + controlWidth + 16 : 0;
+  const float playingTop = columns ? controlsTop + 36 : spread_.bottom() + 12;
+  playing_.setBounds(playingX, playingTop, controlWidth, 1);
+  playing_.resized(); // Measure inline controls at the current width/text size.
+  const float playingHeight = playing_.scrollableHeight();
+  playing_.setVisible(playingHeight > 0);
+  playing_.setBounds(playingX, playingTop, controlWidth, playingHeight);
+  playing_.setYPosition(0); // The outer analysis column owns scrolling here.
+  const float bottom = std::max({freezeStrike_.bottom(), spread_.bottom(),
+                                 playingHeight > 0 ? playing_.bottom() : 0.f});
+  return bottom - top + 20;
+}
 void Workbench::LayoutRight() {
   if (right_.width() < 160 || right_.height() < 1)
     return;
   const float w = std::max(1.f, right_.width() - 14);
-  const bool narrow = w < 560;
-  const float strikeHeight = narrow ? 386.f : 252.f;
+  const float strikeHeight = 20 + LayoutStrike(0, w);
   const bool modes = analysis_.showModalEditor && modal_.Available();
   modal_.setVisible(modes);
   modal_.setBounds(0, modal_.y(), w, modal_.height());
@@ -29,22 +59,7 @@ void Workbench::LayoutRight() {
   analysisSplit_.setVisible(analysis_.showSpectrogram);
   analysisSplit_.setBounds(0, analysisHeight, w, 14);
   const float top = analysisHeight + 20;
-  const float padWidth =
-      narrow ? std::min(w, 360.f) : std::clamp(w * .3f, 280.f, 360.f);
-  strike_.setBounds(0, top, padWidth, 180);
-  const float controlsX = narrow ? 0 : padWidth + 16;
-  const float controlsTop = narrow ? top + 188 : top;
-  const float controlWidth = std::min(540.f, w - controlsX);
-  const float buttonWidth = std::min(140.f, (controlWidth - 16) / 3);
-  for (unsigned i = 0; i < implements_.size(); ++i)
-    implements_[i].setBounds(controlsX + i * (buttonWidth + 8), controlsTop,
-                             buttonWidth, 28);
-  hardness_.setBounds(controlsX, controlsTop + 36, controlWidth, 44);
-  spread_.setBounds(controlsX, controlsTop + 84, controlWidth, 44);
-  const float velocityTop = narrow ? controlsTop + 132 : top + 186;
-  const float velocityWidth = std::min(360.f, w - 116);
-  velocity_.setBounds(0, velocityTop, velocityWidth, 44);
-  fixedStrike_.setBounds(velocityWidth + 12, velocityTop + 7, 92, 30);
+  LayoutStrike(top, w);
   const float modalTop = analysisHeight + strikeHeight;
   modal_.setBounds(0, modalTop, w,
                    std::max(minModal, contentHeight - modalTop));

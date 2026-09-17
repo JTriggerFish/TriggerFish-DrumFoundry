@@ -6,7 +6,7 @@ void RoutingDiagram::mouseDown(const visage::MouseEvent &e) {
   if (!e.isLeftButton() || !document_)
     return;
   if (!editable) {
-    if (e.repeatClickCount() == 2 && open)
+    if (open)
       open();
     return;
   }

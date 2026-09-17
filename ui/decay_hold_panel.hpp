@@ -13,13 +13,14 @@ public:
   void Cancel();
   bool NeedsPoll() const { return pending_ || waiting_; }
   void resized() override;
-  void draw(visage::Canvas &) override;
+  std::function<void()> timing;
   std::function<void(const decay_hold::Result &)> apply;
   std::function<void(const std::string &)> error;
 
 private:
   static editing::Json Sound(const editing::Json &);
-  HelpButton enabled_{"Hold decay ON"}, cancel_{"Cancel"};
+  void RefreshControls();
+  HelpButton timing_{"Bloom timing…"}, enabled_{"Hold decay ON"};
   decay_hold::Worker worker_;
   editing::Json baseline_, edited_, expected_;
   std::chrono::steady_clock::time_point started_;

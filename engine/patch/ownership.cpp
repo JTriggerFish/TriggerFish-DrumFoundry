@@ -37,6 +37,7 @@ std::string_view MembraneOwner(std::string_view k) {
 }
 } // namespace
 std::string_view ParameterOwner(detail::Recipe recipe, std::string_view k) {
+  if (Starts(k, "hat_")) return "rim-contact";
   if (recipe == detail::Recipe::MetallicPlate)
     return MetalOwner(k);
   if (recipe == detail::Recipe::Kick) {

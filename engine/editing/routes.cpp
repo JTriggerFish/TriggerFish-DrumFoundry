@@ -1,5 +1,6 @@
 #include "routes.hpp"
 #include "patch/document.hpp"
+#include "patch/modules.hpp"
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -22,6 +23,11 @@ std::vector<Route> Routes(const Document &d) {
     result.push_back({edge.at("id"), edge.at("from"), edge.at("to"),
                       edge.at("enabled"), required});
   }
+  for (const auto &attachment : patch.value("attachments", Json::array()))
+    result.push_back({"attachment." + attachment.at("module").get<std::string>(),
+        attachment.at("module").get<std::string>() + ".state",
+        attachment.at("body").get<std::string>() + ".state",
+        d.Value("hat_contact_enabled") >= .5, true, true});
   return result;
 }
 void Document::SetRoute(const std::string &id, bool enabled) {
@@ -41,12 +47,23 @@ void Document::SetRoute(const std::string &id, bool enabled) {
 Json NodePositions(const Json &document) {
   Json positions = Json::object();
   unsigned i = 0;
+  bool autoPlaceRim = false;
   for (const auto &node : Patch(document).at("nodes")) {
     const auto p = node.value("editor", Json::object());
     positions[node.at("id").get<std::string>()] = {
         {"x", p.value("x", 24. + 160 * (i % 5))},
         {"y", p.value("y", 22. + 70 * (i / 5))}};
     ++i;
+    autoPlaceRim |= node.at("id") == RimContactId && !node.contains("editor");
+  }
+  if (autoPlaceRim) {
+    // Put attachments beneath the audio path rather than drawing a long
+    // backwards cable through every output node. Saved layouts take priority.
+    double bottom = 22;
+    for (const auto &[id, p] : positions.items())
+      if (id != RimContactId) bottom = std::max(bottom, p.at("y").get<double>());
+    const auto target = ResonatorId(ParseRecipe(Patch(document).at("recipe")));
+    positions[RimContactId] = {{"x", positions.at(target).at("x")}, {"y", bottom + 70}};
   }
   return positions;
 }

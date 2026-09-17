@@ -20,7 +20,9 @@ bool Voice::StageParameter(std::size_t i, float value) noexcept {
     s.crashValues = values;
     decayDirty_ |= d.key.rfind("body_decay_", 0) == 0 &&
                    d.key != "body_decay_friction";
-  } else if (s.recipe == detail::Recipe::Kick)
+  } else if (i >= detail::RimParameterFirst(s.recipe))
+    s.rimValues[i - detail::RimParameterFirst(s.recipe)] = value;
+  else if (s.recipe == detail::Recipe::Kick)
     s.kickValues[i] = value;
   else if (s.recipe == detail::Recipe::MembraneDrum)
     s.membraneValues[i] = value;
@@ -41,6 +43,7 @@ void Voice::FlushParameters() noexcept {
     if (decayDirty_)
       s.cymbal.SetLiveDecayCurve(fit);
   } else {
+    detail::ApplyMembraneRimControls(s);
     auto snare = s.recipe == detail::Recipe::SnareDrum
                      ? ApplySnareParameters(s.snareValues)
                      : SnareDrumParameters{};

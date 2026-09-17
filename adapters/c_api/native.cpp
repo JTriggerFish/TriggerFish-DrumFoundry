@@ -1,4 +1,5 @@
 #include "native.h"
+#include "drumfoundry/version.hpp"
 #include "editing/modes.hpp"
 #include "runtime/voice.hpp"
 #include <algorithm>
@@ -31,6 +32,7 @@ void Require(const void *pointer) {
 }
 } // namespace
 extern "C" {
+const char *df_version() { return drumfoundry::Version; }
 const char *df_last_error() { return error; }
 
 int df_generate_series(const df_series *s, df_mode *output, uint32_t *count) {

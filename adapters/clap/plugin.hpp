@@ -94,6 +94,10 @@ public:
   unsigned DocumentRevision() const { return documentRevision_; }
   unsigned AutomationRevision() const { return automationRevision_.load(); }
   detail::Recipe DesignRecipe() const { return designRecipe_.load(); }
+  bool DesignAvailable(const DesignParameter &p) const {
+    return p.recipe == DesignRecipe() &&
+        (p.owner != "rim-contact" || designRimPresent_.load());
+  }
   const void *Extension(const char *) const noexcept;
   bool QueueEdit(clap_id, double) noexcept;
   bool QueueStrike(float velocity, float location) noexcept;
@@ -178,6 +182,7 @@ private:
   std::atomic<bool> restartQueued_{};
   std::atomic<unsigned> automationRevision_{};
   std::atomic<detail::Recipe> designRecipe_{detail::Recipe::Kick};
+  std::atomic<bool> designRimPresent_{};
   std::array<bool, DesignCapacity> designGesturesMain_{},
       designGesturesAudio_{};
   std::unique_ptr<host::EventQueue<2048>> editorParams_{

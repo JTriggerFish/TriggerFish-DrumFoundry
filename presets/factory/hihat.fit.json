@@ -113,13 +113,6 @@
           "field_turbulence_slope": 0.20172914862632751,
           "field_wander_hz": 2.270492686562069,
           "field_wander_rate": 8,
-          "hat_clearance": 0.00038572824865181876,
-          "hat_contact_enabled": 1,
-          "hat_contact_loss": 0.6212739935113692,
-          "hat_openness": 1,
-          "hat_pedal_strength": 0.1,
-          "hat_rattle_motion": 0.7,
-          "hat_settling": 0.9894291876883806,
           "resolved_allocation_0": 1,
           "resolved_allocation_1": 1,
           "resolved_allocation_10": 1,
@@ -285,6 +278,20 @@
         },
         "type": "output.mono",
         "version": 1
+      },
+      {
+        "id": "rim-contact",
+        "parameters": {
+          "hat_clearance": 0.00038572824865181876,
+          "hat_contact_enabled": 1,
+          "hat_contact_loss": 0.6212739935113692,
+          "hat_openness": 1,
+          "hat_pedal_strength": 0.1,
+          "hat_rattle_motion": 0.7,
+          "hat_settling": 0.9894291876883806
+        },
+        "type": "interaction.rim-contact",
+        "version": 1
       }
     ],
     "outputs": {
@@ -298,7 +305,14 @@
       "contactSpread"
     ],
     "recipe": "metal.cymbal.v1",
-    "schema": "triggerfish.percussion.patch/v1"
+    "schema": "triggerfish.percussion.patch/v1",
+    "attachments": [
+      {
+        "body": "body",
+        "module": "rim-contact",
+        "port": "modal-state"
+      }
+    ]
   },
   "reference": null,
   "controls": {

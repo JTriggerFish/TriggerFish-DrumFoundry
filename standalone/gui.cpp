@@ -1,4 +1,5 @@
 #include "gui.hpp"
+#include "drumfoundry/version.hpp"
 #include "gui_capture.hpp"
 #include "gui_session.hpp"
 #include "settings_store.hpp"
@@ -63,7 +64,7 @@ void RunGui(PluginHost &host, const ui::DeviceConfiguration &cli, bool smoke,
     settings.setVisible(true);
   };
   visage::ApplicationWindow window;
-  window.setTitle("TriggerFish DrumFoundry");
+  window.setTitle(std::string("TriggerFish DrumFoundry ") + Version);
   window.setMinimumDimensions(900, 600);
   ui::Workbench editor(std::move(bridge));
   editor.textSizeChanged = [&] {

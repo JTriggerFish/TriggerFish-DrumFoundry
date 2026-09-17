@@ -8,6 +8,11 @@ void SetParameter(detail::Session &s, std::size_t index, double value) {
   if (!d || !ValidParameterValue(*d, value))
     throw std::invalid_argument("Invalid parameter: " + (d ? d->key : "index"));
   const auto v = static_cast<float>(value);
+  if (s.recipe != detail::Recipe::MetallicPlate &&
+      index >= detail::RimParameterFirst(s.recipe)) {
+    s.rimValues[index - detail::RimParameterFirst(s.recipe)] = v;
+    return;
+  }
   switch (s.recipe) {
   case detail::Recipe::MetallicPlate:
     s.crashValues[index] = v;

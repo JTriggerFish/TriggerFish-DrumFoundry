@@ -1,4 +1,5 @@
 #include "plugin_host.hpp"
+#include "drumfoundry/version.hpp"
 #include <cstring>
 #include <sstream>
 #include <stdexcept>
@@ -9,7 +10,7 @@ PluginHost::PluginHost() {
   if (!clap_entry.init(""))
     throw std::runtime_error("CLAP entry initialization failed");
   host_ = {CLAP_VERSION,  this, "DrumFoundry standalone",
-           "TriggerFish", "",   "0.1.0"};
+           "TriggerFish", "",   Version};
   host_.request_restart = [](const clap_host_t *h) {
     static_cast<PluginHost *>(h->host_data)->restart = true;
   };

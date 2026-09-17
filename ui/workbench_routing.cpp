@@ -13,7 +13,7 @@ void Workbench::SetupRouting() {
   routingToggle_.onToggle() = [this](auto *, bool) {
     routingOpen_ = !routingOpen_;
     routingToggle_.setText(routingOpen_
-                               ? "▾ Routing — double-click diagram to edit"
+                               ? "▾ Routing — click diagram to edit"
                                : "▸ Routing");
     routing_.setVisible(routingOpen_);
     resized();
